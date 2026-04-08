@@ -38,27 +38,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.initState();
     startAutoSlide();
   }
-void startAutoSlide() {
-  _timer?.cancel(); 
 
-  _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    if (!mounted) return;
+  void startAutoSlide() {
+    _timer?.cancel();
 
-    if (currentIndex < controller.data.length - 1) {
-      currentIndex++;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
 
-      _pageController.animateToPage(
-        currentIndex,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+      if (currentIndex < controller.data.length - 1) {
+        currentIndex++;
 
-      setState(() {});
-    } else {
-      timer.cancel();
-    }
-  });
-}
+        _pageController.animateToPage(
+          currentIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+
+        setState(() {});
+      } else {
+        timer.cancel();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -73,24 +74,24 @@ void startAutoSlide() {
       body: SafeArea(
         child: Column(
           children: [
-   Expanded(
-  child: PageView.builder(
-    controller: _pageController,
-    physics: const BouncingScrollPhysics(),
-    itemCount: controller.data.length,
-    onPageChanged: (index) {
-      setState(() {
-        currentIndex = index;
-      });
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                physics: const BouncingScrollPhysics(),
+                itemCount: controller.data.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    currentIndex = index;
+                  });
 
-      _timer?.cancel();        
-      startAutoSlide();        
-    },
-    itemBuilder: (context, index) {
-      return buildPage(controller.data[index]);
-    },
-  ),
-),
+                  _timer?.cancel();
+                  startAutoSlide();
+                },
+                itemBuilder: (context, index) {
+                  return buildPage(controller.data[index]);
+                },
+              ),
+            ),
 
             // DOT INDICATOR
             Row(
@@ -129,24 +130,26 @@ void startAutoSlide() {
                         ),
                       ),
                       onPressed: () {},
-                      child: const Text("Daftar", 
-                      style: TextStyle(color: Colors.white),),
+                      child: const Text(
+                        "Daftar",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                     const SizedBox(height: 10),
-               Row(
-  mainAxisAlignment: MainAxisAlignment.center, 
-  children: const [
-    Text("Sudah punya akun? "),
-    Text(
-      "Masuk disini",
-      style: TextStyle(
-        color: Color(0xFF7A7A3C),
-        fontWeight: FontWeight.bold,
-        decoration: TextDecoration.underline,
-      ),
-    ),
-  ],
-)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text("Sudah punya akun? "),
+                        Text(
+                          "Masuk disini",
+                          style: TextStyle(
+                            color: Color(0xFF7A7A3C),
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -164,17 +167,11 @@ void startAutoSlide() {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SvgPicture.asset(
-            item["image"]!,
-            height: 220,
-          ),
+          SvgPicture.asset(item["image"]!, height: 220),
           const SizedBox(height: 30),
           Text(
             item["title"]!,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           Text(
