@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
  
 void main() {
   runApp(const MyApp());
@@ -38,11 +39,18 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() {
         progress += 0.02;
       });
+if (progress >= 1) {
+  timer.cancel();
 
-      if (progress >= 1) {
-        timer.cancel();
-        // nanti bisa navigate ke halaman utama
-      }
+  if (!mounted) return;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const OnboardingScreen(),
+    ),
+  );
+}
     });
   }
 
@@ -52,32 +60,23 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          /// GLITCH OVERLAY (optional)
           Positioned.fill(
             child: Container(
               color: Colors.green.withOpacity(0.05),
             ),
           ),
-
-          /// CONTENT CENTER
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
-                /// ✅ SVG LOGO (PINDAH KE SINI)
                 Image.asset(
                   "assets/logo_jamusaripah.png",
                   width: 200,
                 ),
 
                 const SizedBox(height: 25),
-
-      
-
                 const SizedBox(height: 30),
 
-                /// LOADING BAR (COKELAT)
                 Container(
                   width: 200,
                   height: 8,
@@ -97,10 +96,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-            
               ],
             ),
           ),

@@ -1,5 +1,6 @@
-import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:jamu_saripah/hooks/splash_screen.dart';
 
 void main() {
@@ -14,7 +15,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
+
+      // ✅ GLOBAL FONT
+      theme: ThemeData(
+        textTheme: GoogleFonts.montserratTextTheme(),
+      ),
     );
   }
 }
-
