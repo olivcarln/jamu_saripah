@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "523756741499",
+    "project_id": "jamu-saripah-78774",
+    "storage_bucket": "jamu-saripah-78774.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523756741499:android:da218b19466f56d584d3de",
+        "android_client_info": {
+          "package_name": "com.example.jamu_saripah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBymYUiuQeqzolGvFnixdk9-6xGu4ROBRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

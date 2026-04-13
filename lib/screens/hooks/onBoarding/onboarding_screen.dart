@@ -2,8 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:jamu_saripah/controllers/onboarding_controller.dart';
-import 'package:jamu_saripah/hooks/auth/login_screen.dart';
-import 'package:jamu_saripah/hooks/auth/register_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -131,43 +129,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegisterScreen(),
-                          ),
-                        );
-                      },
+                      onPressed: () {},
                       child: const Text(
                         "Daftar",
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 10),
-                  Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    const Text("Sudah punya akun? "),
-    GestureDetector(
-      onTap: () {
-        // Navigasi ke LoginScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
-      },
-      child: const Text(
-        "Masuk disini",
-        style: TextStyle(
-          color: Color(0xFF7A7A3C),
-          fontWeight: FontWeight.bold,
-          decoration: TextDecoration.underline,
-        ),
-      ),
-    ),
-  ],
-),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text("Sudah punya akun? "),
+                        Text(
+                          "Masuk disini",
+                          style: TextStyle(
+                            color: Color(0xFF7A7A3C),
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

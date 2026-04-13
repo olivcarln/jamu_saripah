@@ -1,10 +1,22 @@
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:jamu_saripah/hooks/splash_screen.dart';
-import 'package:jamu_saripah/screen/notification_screen.dart';
+import 'package:jamu_saripah/hooks/auth/login_screen.dart';
+import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyBymYUiuQeqzolGvFnixdk9-6xGu4ROBRs",
+      appId: "1:523756741499:android:da218b19466f56d584d3de",
+      messagingSenderId: "523756741499",
+      projectId: "jamu-saripah-78774",
+    ),
+  );
+
   runApp(const MyApp());
 }
 
@@ -15,11 +27,26 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const NotificationScreen(),
-
-      // ✅ GLOBAL FONT
       theme: ThemeData(
         textTheme: GoogleFonts.montserratTextTheme(),
+      ),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF7E8959),
+                ),
+              ),
+            );
+          }
+          if (snapshot.hasData) {
+            return const HomeScreen(); 
+          }
+          return const LoginScreen();
+        },
       ),
     );
   }
