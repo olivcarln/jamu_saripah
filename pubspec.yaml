@@ -75,7 +75,15 @@ flutter:
     - assets/delivery.svg
     - assets/preorder.svg
     - assets/start.svg
-    - assets/animation_notification.png
+    # - assets/animation_notification.png
+    # - assets/home_banner.png
+    - assets/banner.png
+    - assets/promo_banner.png
+    - assets/jamu-1.png
+    - assets/product(1).png
+    - assets/banner.png
+    - assets/pickup.png
+    - assets/delivery.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
