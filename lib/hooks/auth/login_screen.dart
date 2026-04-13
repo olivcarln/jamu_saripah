@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/hooks/auth/register_screen.dart';
-import 'package:jamu_saripah/screens/home_screen.dart';
+import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const DummyHomeScreen()),
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
         (route) => false,
       );
     } on FirebaseAuthException catch (e) {

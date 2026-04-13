@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -11,7 +13,7 @@ class HomeHeader extends StatelessWidget {
         child: Column(
           children: [
             // 1. Bagian Atas (Lokasi & Icon)
-            _buildTopBar(),
+            _buildTopBar(context),
             const SizedBox(height: 20),
             
             // 2. Search Bar
@@ -26,7 +28,7 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -37,7 +39,15 @@ class HomeHeader extends StatelessWidget {
             Text("Jakarta, Indonesia", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ],
         ),
-        const Icon(Icons.notifications, color: Colors.white),
+        IconButton(
+  icon: const Icon(Icons.notifications, color: Colors.white),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationScreen()), // Ganti dengan nama kelas halaman tujuanmu
+    );
+  },
+)
       ],
     );
   }
@@ -76,8 +86,8 @@ class HomeHeader extends StatelessWidget {
         Positioned(
           right: -10, // Sesuaikan biar koinnya mepet atau agak keluar ke kanan
           top: -25,   // Biar koinnya agak naik ke atas seperti di desain
-          child: Image.asset(
-            '', // Ganti dengan nama file koin kamu
+          child: SvgPicture.asset(
+            'assets/coins.svg', // Ganti dengan nama file koin kamu
             width: 120, // Atur ukuran grup koinnya
           ),
         ),

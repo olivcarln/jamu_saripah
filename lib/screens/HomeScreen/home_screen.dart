@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             // JARAK ANTARA POINT CARD KE PROMO
-            const SizedBox(height: 85),
+            const SizedBox(height: 25),
 
             // KOMPONEN BANNER PROMO (Flash Sale)
             const PromoBanner(),
