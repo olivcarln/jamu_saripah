@@ -1,5 +1,3 @@
-// ignore: file_names
-// ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/Models/product_cart.dart';
 
@@ -14,23 +12,21 @@ class HomeRecommended extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Section
           const Text(
             "Recommended For You",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
 
-          // Grid Produk
           GridView.builder(
-            shrinkWrap: true, // WAJIB supaya bisa masuk dalam scroll halaman utama
-            physics: const NeverScrollableScrollPhysics(), // Scroll-nya ikut halaman utama saja
-            itemCount: allProducts.length, // Sesuai jumlah di products.dart (6 produk)
+            shrinkWrap: true, 
+            physics: const NeverScrollableScrollPhysics(), 
+            itemCount: allProducts.length, 
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // 2 kolom
+              crossAxisCount: 2, 
               crossAxisSpacing: 15,
               mainAxisSpacing: 15,
-              childAspectRatio: 0.75, // Atur angka ini kalau card-nya kepotong
+              childAspectRatio: 0.75, 
             ),
             itemBuilder: (context, index) {
               final product = allProducts[index];
@@ -42,7 +38,6 @@ class HomeRecommended extends StatelessWidget {
     );
   }
 
-  // Widget Kartu Produk Satuan
   Widget _buildProductCard(BuildContext context, Product product) {
     return Container(
       decoration: BoxDecoration(
@@ -59,7 +54,6 @@ class HomeRecommended extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Gambar Produk
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -71,7 +65,6 @@ class HomeRecommended extends StatelessWidget {
               ),
             ),
           ),
-          // Info Produk
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -84,14 +77,14 @@ class HomeRecommended extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  product.size, // Menampilkan ukuran (250 ml, dsb)
+                  product.size,
                   style: const TextStyle(color: Colors.grey, fontSize: 11),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   product.price,
                   style: const TextStyle(
-                    color: Color(0xFF7B8D5E), // Hijau tema jamu kamu
+                    color: Color(0xFF7B8D5E), 
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),

@@ -19,7 +19,6 @@ class OrderMethod extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nama User Dinamis
           Text(
             "Hi $userName, Ready to Order?",
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -27,7 +26,6 @@ class OrderMethod extends StatelessWidget {
           const SizedBox(height: 15),
           Row(
             children: [
-              // CARD PICK UP
               _buildMethodCard(
                 title: "Pick Up",
                 subtitle: "Ambil sendiri pesananmu di outlet terdekat.",
@@ -35,7 +33,6 @@ class OrderMethod extends StatelessWidget {
                 onTap: onPickUpTap,
               ),
               const SizedBox(width: 15),
-              // CARD DELIVERY
               _buildMethodCard(
                 title: "Delivery",
                 subtitle: "Jamu segar akan kami antar ke depan pintumu.",
@@ -82,7 +79,7 @@ class OrderMethod extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 SizedBox(
-                  width: 85, // Mencegah teks nabrak gambar orang
+                  width: 85, 
                   child: Text(
                     subtitle,
                     style: const TextStyle(fontSize: 9, color: Colors.black54),

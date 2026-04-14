@@ -62,7 +62,7 @@ if (progress >= 1) {
         children: [
           Positioned.fill(
             child: Container(
-              color: Colors.green.withOpacity(0.05),
+              color: Colors.green.withAlpha(13),
             ),
           ),
           Center(

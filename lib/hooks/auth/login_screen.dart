@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:jamu_saripah/hooks/auth/register_screen.dart';
 import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart';
 
+// TODO: Fixing login screen, pastikan semua fungsi berjalan dengan baik,
+// terutama error handling dan navigasi setelah login berhasil. --- IGNORE ---
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 

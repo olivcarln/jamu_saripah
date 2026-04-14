@@ -10,7 +10,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // ================= STATE =================
   bool _rememberMe = false;
   bool _isObscure = true;
   bool _isLoading = false;
@@ -143,7 +142,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 25),
 
-                    // ===== SOCIAL BUTTON =====
                     Row(
                       children: [
                         _authButton(
@@ -163,8 +161,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
 
                     const SizedBox(height: 30),
-
-                    // ===== INPUT =====
                     _buildTextField(
                       icon: Icons.email_outlined,
                       hint: "Email",
@@ -188,10 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onToggleVisibility: () =>
                           setState(() => _isObscure = !_isObscure),
                     ),
-
                     const SizedBox(height: 10),
-
-                    // ===== REMEMBER =====
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -206,8 +199,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
 
                     const SizedBox(height: 40),
-
-                    // ===== BUTTON =====
                     SizedBox(
                       width: double.infinity,
                       height: 55,
@@ -232,7 +223,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 25),
 
-                    // ===== FOOTER =====
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -267,7 +257,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ================= COMPONENTS =================
   Widget _buildTextField({
     required IconData icon,
     required String hint,
