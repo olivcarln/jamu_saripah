@@ -4,6 +4,7 @@ import 'Components/home_header.dart';
 import 'Components/order_method.dart'; // Nama komponen sesuai request kamu
 import 'Components/home_recommended.dart';
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -22,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // 2. BOTTOM NAVIGATION BAR (Warna Hijau Tema)
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF7B8D5E),
+        backgroundColor:  Color(0xFF7B8D5E),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
         currentIndex: 0,

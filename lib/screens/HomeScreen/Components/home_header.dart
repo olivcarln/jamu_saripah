@@ -37,7 +37,7 @@ class HomeHeader extends StatelessWidget {
             Text("Jakarta, Indonesia", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ],
         ),
-        const Icon(Icons.notifications, color: Colors.white),
+         Icon(Icons.notifications, color: Colors.white),
       ],
     );
   }
@@ -77,8 +77,8 @@ class HomeHeader extends StatelessWidget {
           right: -10, // Sesuaikan biar koinnya mepet atau agak keluar ke kanan
           top: -25,   // Biar koinnya agak naik ke atas seperti di desain
           child: Image.asset(
-            '', // Ganti dengan nama file koin kamu
-            width: 120, // Atur ukuran grup koinnya
+            'assets/Coints.svg', // Ganti dengan nama file koin kamu
+            width: 50, // Atur ukuran grup koinnya
           ),
         ),
 
