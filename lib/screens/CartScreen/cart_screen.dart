@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/screens/NotificationScreen/Components/filter_sheet.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+
+  String selectedFilter = ""; 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         centerTitle: true,
         title: Text(
           "Keranjang",
@@ -21,9 +31,11 @@ class CartScreen extends StatelessWidget {
         backgroundColor: Color(0xFF7E8959),
         elevation: 0,
         actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.tune, color: Colors.white),
+          IconButton(
+            icon: Icon(Icons.tune, color: Colors.white),
+            onPressed: () {
+              openFilterSheet(context);
+            },
           )
         ],
       ),
@@ -34,11 +46,10 @@ class CartScreen extends StatelessWidget {
           children: [
 
             Image.asset(
-              'assets/keranjang.svg',
+              'assets/cartShopping.svg',
               height: 200,
               color: Color(0xFF7E8959),
             ),
-
             SizedBox(height: 20),
 
             Text(
@@ -47,37 +58,31 @@ class CartScreen extends StatelessWidget {
                 fontSize: 16,
                 color: Colors.grey,
               ),
-            )
+            ),
           ],
         ),
       ),
+    );
+  }
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor:Color(0xFF7E8959),
-        type: BottomNavigationBarType.fixed,
-
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_offer),
-            label: "Vouchers",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag),
-            label: "Your order",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Account",
-          ),
-        ],
+  void openFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
       ),
+      builder: (context) {
+        return FilterSheet(
+          onApply: (value) {
+            setState(() {
+              selectedFilter = value;
+            });
+          },
+        );
+      },
     );
   }
 }

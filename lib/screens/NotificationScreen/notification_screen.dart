@@ -1,65 +1,103 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/common/constasts.dart';
-import 'package:jamu_saripah/common/widgets/bottom_nav_bar.dart'; 
-class NotificationScreen extends StatelessWidget {
+import 'Components/filter_sheet.dart';
+
+class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
+
+  @override
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+
+  String selectedFilter = "Relevance"; // simpan filter
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.inputFieldGrey,
+      backgroundColor: Colors.grey[200],
 
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: AppColors.white),
-        centerTitle: false,
-        title: const Text(
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
           "Pemberitahuan",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.white,
+            color: Colors.white,
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 118, 137, 88),
+        backgroundColor: Color(0xFF7E8959),
         elevation: 0,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.tune, color: AppColors.white),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.tune, color: Colors.white),
+            onPressed: () {
+              openFilterSheet(context);
+            },
           )
         ],
       ),
 
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.defaultPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/animation_notification.png',
-                height: 200,
-                // Mengikuti warna tema utama
-                color: AppColors.primaryOlive, 
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/animation_notification.png',
+              height: 200,
+              color: Color(0xFF7E8959),
+            ),
+
+            SizedBox(height: 20),
+
+            Text(
+              "Belum Ada Pemberitahuan",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
               ),
+            ),
 
-              const SizedBox(height: 20),
-
-              const Text(
-                "Belum Ada Pemberitahuan",
-                style: AppTextStyles.subHeading, 
-              )
-            ],
-          ),
+      
+          ],
         ),
       ),
 
-      bottomNavigationBar: BottomNav(
-        currentIndex: 2, 
-        onTap: (index) {
-      
-        },
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        backgroundColor: Color(0xFF7E8959),
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: "Vouchers"),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: "Your order"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Account"),
+        ],
       ),
+    );
+  }
+
+  void openFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (context) {
+        return FilterSheet(
+          onApply: (value) {
+            setState(() {
+              selectedFilter = value;
+            });
+          },
+        );
+      },
     );
   }
 }
