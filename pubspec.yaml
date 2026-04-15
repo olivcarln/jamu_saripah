@@ -87,7 +87,6 @@ flutter:
     - assets/product(1).png
     - assets/promo_banner.png
     - assets/start.svg
-    - assets/Coints.svg
     - assets/orderhistory.svg
     - assets/cartShopping.svg
   #   - images/a_dot_ham.jpeg
