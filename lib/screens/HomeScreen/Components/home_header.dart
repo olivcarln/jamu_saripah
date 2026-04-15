@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -29,7 +30,7 @@ class HomeHeader extends StatelessWidget {
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children:[
             Text(
               "Location",
               style: TextStyle(color: Colors.white70, fontSize: 10),
@@ -46,6 +47,7 @@ class HomeHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
+<<<<<<< HEAD
               icon: const Icon(Icons.notifications, color: Colors.white),
               onPressed: () {
                 Navigator.push(
@@ -62,6 +64,21 @@ class HomeHeader extends StatelessWidget {
             ),
           ],
         ),
+=======
+              icon: Icon(Icons.notifications, color: Colors.white),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.shopping_cart, color: Colors.white),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+              },
+            ),
+          ],
+        )
+>>>>>>> 95ec7f187c1d05560bc5391c610b074ae43a40a9
       ],
     );
   }

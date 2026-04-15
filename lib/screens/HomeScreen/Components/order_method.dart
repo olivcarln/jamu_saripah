@@ -15,15 +15,15 @@ class OrderMethod extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Hi $userName, Ready to Order?",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 15),
+          SizedBox(height: 15),
           Row(
             children: [
               _buildMethodCard(
@@ -32,7 +32,7 @@ class OrderMethod extends StatelessWidget {
                 imagePath: "assets/pickup.png",
                 onTap: onPickUpTap,
               ),
-              const SizedBox(width: 15),
+               SizedBox(width: 15),
               _buildMethodCard(
                 title: "Delivery",
                 subtitle: "Jamu segar akan kami antar ke depan pintumu.",
@@ -65,24 +65,24 @@ class OrderMethod extends StatelessWidget {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF5E6D45),
                   ),
                 ),
-                const SizedBox(height: 4),
+                 SizedBox(height: 4),
                 SizedBox(
                   width: 85, 
                   child: Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 9, color: Colors.black54),
+                    style: TextStyle(fontSize: 9, color: Colors.black54),
                     maxLines: 4,
                   ),
                 ),

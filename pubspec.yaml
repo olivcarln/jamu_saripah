@@ -78,6 +78,7 @@ flutter:
     - assets/start.svg
     - assets/banner.png
     - assets/delivery.png
+<<<<<<< HEAD
     - assets/delivery.svg
     - assets/home_banner.png
     - assets/jamu-1.png
@@ -88,6 +89,11 @@ flutter:
     - assets/promo_banner.png
     - assets/start.svg
     - assets/Coints.svg
+=======
+    - assets/orderhistory.svg
+    - assets/cartShopping.svg
+
+>>>>>>> 95ec7f187c1d05560bc5391c610b074ae43a40a9
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

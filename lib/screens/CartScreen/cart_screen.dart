@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
-import 'Components/filter_sheet.dart';
+import 'package:jamu_saripah/screens/NotificationScreen/Components/filter_sheet.dart';
 
-class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
 
   @override
-  State<NotificationScreen> createState() => _NotificationScreenState();
+  State<CartScreen> createState() => _CartScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
+class _CartScreenState extends State<CartScreen> {
 
-  String selectedFilter = "Relevance"; // simpan filter
+  String selectedFilter = ""; 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
-<<<<<<< HEAD
-=======
         iconTheme: IconThemeData(color: Colors.white),
->>>>>>> 95ec7f187c1d05560bc5391c610b074ae43a40a9
+        centerTitle: true,
         title: Text(
-          "Pemberitahuan",
+          "Keranjang",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -46,39 +44,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
             Image.asset(
-              'assets/animation_notification.png',
+              'assets/cartShopping.svg',
               height: 200,
               color: Color(0xFF7E8959),
             ),
-
             SizedBox(height: 20),
 
             Text(
-              "Belum Ada Pemberitahuan",
+              "Keranjang Masih kosong",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
               ),
             ),
-
-      
           ],
         ),
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor: Color(0xFF7E8959),
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: "Vouchers"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: "Your order"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Account"),
-        ],
       ),
     );
   }
