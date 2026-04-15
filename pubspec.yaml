@@ -45,6 +45,7 @@ dependencies:
   flutter_svg: ^2.2.4
   firebase_core: ^4.6.0
   firebase_auth: ^6.3.0
+  carousel_slider: ^5.1.2
 
 
 dev_dependencies:

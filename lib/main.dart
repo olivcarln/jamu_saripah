@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
+import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
 void main() async {
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
             );
           }
           if (snapshot.hasData) {
-            return const NotificationScreen(); 
+            return const HomeScreen(); 
           }
           return const LoginScreen();
         }
