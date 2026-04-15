@@ -24,7 +24,7 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBar(BuildContext context) {
+  Widget _buildTopBar(context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -47,24 +47,6 @@ class HomeHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-<<<<<<< HEAD
-              icon: const Icon(Icons.notifications, color: Colors.white),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NotificationScreen()),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.shopping_cart, color: Colors.white),
-              onPressed: () {
-                // Navigasi ke keranjang nanti di sini
-              },
-            ),
-          ],
-        ),
-=======
               icon: Icon(Icons.notifications, color: Colors.white),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
@@ -78,7 +60,6 @@ class HomeHeader extends StatelessWidget {
             ),
           ],
         )
->>>>>>> 95ec7f187c1d05560bc5391c610b074ae43a40a9
       ],
     );
   }
@@ -106,7 +87,7 @@ class HomeHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -115,23 +96,21 @@ class HomeHeader extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Gambar Koin di Background Kanan (Pakai SVG sesuai library)
           Positioned(
-            right: -5,
-            top: -20,
-            child: SvgPicture.asset(
-              'assets/coins.svg', // Pastikan namanya persis di pubspec.yaml
-              width: 80,
-            ),
+            right: -10,
+            top: -10,
+            child: SvgPicture.asset('assets/coins.svg', width: 120),
           ),
 
-          // Konten Teks di dalam Card
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFDF5E6),
                   borderRadius: BorderRadius.circular(20),
@@ -160,17 +139,19 @@ class HomeHeader extends StatelessWidget {
                   ],
                 ),
               ),
+
               const SizedBox(height: 12),
               const Divider(height: 1, color: Colors.black12),
               const SizedBox(height: 12),
+
+          
               Row(
                 children: const [
-                  Expanded(
-                    child: Text(
-                      "Redeem your points for exciting rewards",
-                      style: TextStyle(fontSize: 11, color: Colors.black54),
-                    ),
+                  Text(
+                    "Redeem your points for exciting rewards",
+                    style: TextStyle(fontSize: 11, color: Colors.black54),
                   ),
+                  SizedBox(width: 4),
                   Icon(Icons.arrow_forward, size: 12, color: Colors.black54),
                 ],
               ),

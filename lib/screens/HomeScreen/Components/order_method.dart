@@ -15,31 +15,38 @@ class OrderMethod extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Hi $userName, Ready to Order?",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              "Hi $userName, Ready to Order?",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
-          SizedBox(height: 15),
-          Row(
-            children: [
-              _buildMethodCard(
-                title: "Pick Up",
-                subtitle: "Ambil sendiri pesananmu di outlet terdekat.",
-                imagePath: "assets/pickup.png",
-                onTap: onPickUpTap,
-              ),
-               SizedBox(width: 15),
-              _buildMethodCard(
-                title: "Delivery",
-                subtitle: "Jamu segar akan kami antar ke depan pintumu.",
-                imagePath: "assets/delivery.png",
-                onTap: onDeliveryTap,
-              ),
-            ],
+          const SizedBox(height: 15),
+          
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                _buildMethodCard(
+                  title: "Pickup", // Lu bisa ganti jadi "Pick Up"
+                  subtitle: "Pesan sekarang untuk dinikmati nanti.",
+                  imagePath: "assets/pickup.png",
+                  onTap: onPickUpTap,
+                ),
+                const SizedBox(width: 15),
+                _buildMethodCard(
+                  title: "Delivery",
+                  subtitle: "Kami antar jamu segar ke pintumu.",
+                  imagePath: "assets/delivery.png",
+                  onTap: onDeliveryTap,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -56,34 +63,58 @@ class OrderMethod extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 135,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            image: DecorationImage(
-              image: AssetImage(imagePath),
-              fit: BoxFit.cover,
-            ),
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-          child: Padding(
-            padding: EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Stack(
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF5E6D45),
-                  ),
+                // 1. GAMBAR (Ini patokan sizenya)
+                Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  fit: BoxFit.contain, 
                 ),
-                 SizedBox(height: 4),
-                SizedBox(
-                  width: 85, 
-                  child: Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 9, color: Colors.black54),
-                    maxLines: 4,
+                
+                // 2. TEKS (Nempel di atas gambar)
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          // Efek pudar estetik sesuai contoh lu
+                          color: const Color(0xFF5E6D45).withValues(alpha: 0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      SizedBox(
+                        width: 85, // Biar teks gak nabrak ilustrasi orangnya
+                        child: Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: Colors.black.withValues(alpha: 0.4),
+                            height: 1.2,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

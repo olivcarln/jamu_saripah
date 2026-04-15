@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/common/widgets/bottom_nav_bar.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'Components/home_header.dart';
-import 'Components/order_method.dart'; // Nama komponen sesuai request kamu
+import 'Components/order_method.dart'; 
 import 'Components/home_recommended.dart';
 
 
@@ -13,46 +14,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // 1. DATA DINAMIS (Bisa diambil dari Database nantinya)
   String userName = "Naiput";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // 2. BOTTOM NAVIGATION BAR (Warna Hijau Tema)
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor:  Color(0xFF7B8D5E),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
+      bottomNavigationBar: BottomNav( 
         currentIndex: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.confirmation_number_outlined),
-            label: "Vouchers",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_outlined),
-            label: "Your order",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Account",
-          ),
-        ],
+        onTap: (index) { },
       ),
-
-      // 3. BODY DENGAN SCROLL
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // BAGIAN ATAS (Header & Point Card)
             Stack(
               clipBehavior: Clip.none,
               children: [
-                // --- GANTI CONTAINER HIJAU POLOS DENGAN INI ---
                 Container(
                   height: 240,
                   decoration: const BoxDecoration(
@@ -64,43 +41,56 @@ class _HomeScreenState extends State<HomeScreen> {
                       image: AssetImage(
                         'assets/banner.png',
                       ), 
-                      fit: BoxFit
-                          .cover, // Biar gambarnya nge-pas menutupi area atas
+                      fit: BoxFit.cover, 
                     ),
                   ),
                 ),
-
-                // Header (isinya Location & Search bar) tetap di atasnya
                 const HomeHeader(),
               ],
             ),
-            // JARAK ANTARA POINT CARD KE PROMO
-            const SizedBox(height: 85),
-
-            // KOMPONEN BANNER PROMO (Flash Sale)
-            const PromoBanner(),
-
             const SizedBox(height: 25),
-
-            // KOMPONEN ORDER METHOD (Pick Up & Delivery)
+            const PromoBanner(),
+            const SizedBox(height: 25),
             OrderMethod(
               userName: userName,
               onPickUpTap: () {
-                print("Action: Membuka Map Outlet untuk Pick Up");
-                // Tambahkan navigasi ke halaman Pick Up di sini
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(title: const Text("Pick Up")),
+                      body: const Center(
+                        child: Placeholder(
+                          fallbackHeight: 250,
+                          fallbackWidth: 250,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
               },
               onDeliveryTap: () {
-                print("Action: Membuka Form Alamat untuk Delivery");
-                // Tambahkan navigasi ke halaman Delivery di sini
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(title: const Text("Delivery")),
+                      body: const Center(
+                        child: Placeholder(
+                          fallbackHeight: 250,
+                          fallbackWidth: 250,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
-
             const SizedBox(height: 25),
-
-            // KOMPONEN RECOMMENDED (Grid Jamu)
             const HomeRecommended(),
-
-            const SizedBox(height: 20), // Padding bawah extra
+            const SizedBox(height: 20), 
           ],
         ),
       ),

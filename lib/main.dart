@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart';
-import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -9,20 +9,16 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-
-  String selectedFilter = "Relevance"; // simpan filter
+  String selectedFilter = "Relevance"; // Simpan filter
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-
       appBar: AppBar(
-<<<<<<< HEAD
-=======
-        iconTheme: IconThemeData(color: Colors.white),
->>>>>>> 95ec7f187c1d05560bc5391c610b074ae43a40a9
-        title: Text(
+        // Pakai tambahan dari Echa biar icon back-nya putih
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
           "Pemberitahuan",
           style: TextStyle(
             fontSize: 20,
@@ -30,18 +26,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Color(0xFF7E8959),
+        backgroundColor: const Color(0xFF7E8959),
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.tune, color: Colors.white),
+            icon: const Icon(Icons.tune, color: Colors.white),
             onPressed: () {
               openFilterSheet(context);
             },
           )
         ],
       ),
-
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -49,29 +44,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Image.asset(
               'assets/animation_notification.png',
               height: 200,
-              color: Color(0xFF7E8959),
+              color: const Color(0xFF7E8959),
             ),
-
-            SizedBox(height: 20),
-
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               "Belum Ada Pemberitahuan",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
               ),
             ),
-
-      
           ],
         ),
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
-        backgroundColor: Color(0xFF7E8959),
+        backgroundColor: const Color(0xFF7E8959),
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
@@ -87,7 +77,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(20),
         ),
