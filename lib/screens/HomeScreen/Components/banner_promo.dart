@@ -8,23 +8,23 @@ class PromoBanner extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+       Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             "Promo Menarik!",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-        const SizedBox(height: 15),
+        SizedBox(height: 15),
 
         Container(
           height: 160,
-          margin: const EdgeInsets.symmetric(horizontal: 20),
+          margin: EdgeInsets.symmetric(horizontal: 20),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFF7B8D5E),
+            color:  Color(0xFF7B8D5E),
             borderRadius: BorderRadius.circular(20),
-            image: const DecorationImage(
+            image: DecorationImage(
               image: AssetImage('assets/promo_banner.png'),
               fit: BoxFit.cover,
               opacity: 0.15,
@@ -33,7 +33,7 @@ class PromoBanner extends StatelessWidget {
 
           child: Row(
             children: [
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
 
               // 👈 gambar kiri
               Expanded(
@@ -48,7 +48,7 @@ class PromoBanner extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
+                  padding:EdgeInsets.symmetric(
                     vertical: 10, // 👈 DIKECILIN BIAR GA OVERFLOW
                     horizontal: 10,
                   ),
@@ -58,13 +58,13 @@ class PromoBanner extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                             horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFB24D4D),
+                          color:  Color(0xFFB24D4D),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text(
+                        child: Text(
                           "Flash Sale!",
                           style: TextStyle(
                             color: Colors.white,
@@ -74,9 +74,9 @@ class PromoBanner extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 6),
+                       SizedBox(height: 6),
 
-                      const Text(
+                      Text(
                         "Dapatkan Spesial Promo\nCuman Hari ini!",
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -87,9 +87,9 @@ class PromoBanner extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 4),
+                       SizedBox(height: 4),
 
-                      const Text(
+                      Text(
                         "Promo Spesial Hingga 20%",
                         style: TextStyle(
                           color: Color(0xFFE8D28E),
@@ -98,16 +98,16 @@ class PromoBanner extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
 
                       Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                             horizontal: 12, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF634E34),
+                          color:  Color(0xFF634E34),
                           borderRadius: BorderRadius.circular(15),
                         ),
-                        child: const Text(
+                        child: Text(
                           "Order Now",
                           style: TextStyle(
                             color: Colors.white,
@@ -124,18 +124,18 @@ class PromoBanner extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 12),
+       SizedBox(height: 12),
 
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(5, (index) {
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3),
+              margin: EdgeInsets.symmetric(horizontal: 3),
               width: index == 0 ? 12 : 8,
               height: 8,
               decoration: BoxDecoration(
                 color: index == 0
-                    ? const Color(0xFF634E34)
+                    ? Color(0xFF634E34)
                     : Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(4),
               ),

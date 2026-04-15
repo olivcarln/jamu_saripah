@@ -10,7 +10,7 @@ class OrderHistoryScreen extends StatelessWidget {
 
       appBar: AppBar(
         title: Text(
-          "Pemberitahuan",
+          "Order History",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -33,7 +33,7 @@ class OrderHistoryScreen extends StatelessWidget {
           children: [
 
             Image.asset(
-              'assets/animation_notification.png',
+              'assets/orderhistory.svg',
               height: 200,
               color: Color(0xFF7E8959),
             ),
@@ -41,7 +41,7 @@ class OrderHistoryScreen extends StatelessWidget {
             SizedBox(height: 20),
 
             Text(
-              "Belum Ada Pemberitahuan",
+              "Belum Ada History Pemesanan",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
