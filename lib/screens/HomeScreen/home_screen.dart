@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/common/widgets/bottom_nav_bar.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'Components/home_header.dart';
 import 'Components/order_method.dart'; 
@@ -20,10 +19,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-bottomNavigationBar: BottomNav( 
-  currentIndex: 0,
-  onTap: (index) { },
-),
       body: SingleChildScrollView(
         child: Column(
           children: [
