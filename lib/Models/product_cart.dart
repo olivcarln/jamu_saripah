@@ -13,40 +13,105 @@ class Product {
 }
 
 List<Product> allProducts = [
+  // 250 ML
   Product(
-    name: "Kunyit Asam",
-    price: "Rp 15.000",
+    name: "Wedang Jahe",
+    price: "Rp 11.776",
     size: "250 ml",
-    image: 'assets/product(1).png'
+    image: 'assets/product(1).png',
   ),
   Product(
     name: "Beras Kencur",
-    price: "Rp 12.000",
+    price: "Rp 11.776",
     size: "250 ml",
-    image: 'assets/product(1).png'
+    image: 'assets/product(1).png',
   ),
   Product(
-    name: "Temulawak",
-    price: "Rp 18.000",
-    size: "500 ml",
-    image: 'assets/product(1).png'
-  ),
-  Product(
-    name: "Gula Asam",
-    price: "Rp 10.000",
+    name: "Kunyit Asem",
+    price: "Rp 11.776",
     size: "250 ml",
-    image: 'assets/product(1).png'
+    image: 'assets/product(1).png',
   ),
   Product(
-    name: "Jahe Merah",
-    price: "Rp 20.000",
-    size: "250 ml",
-    image: 'assets/product(1).png'
+    name: "Paket Mix 5 Botol",
+    price: "Rp 62.100",
+    size: "250 ml x 5",
+    image: 'assets/product(1).png',
+  ),
+
+  // 350 ML
+  Product(
+    name: "Wedang Jahe",
+    price: "Rp 18.800",
+    size: "350 ml",
+    image: 'assets/product(1).png',
   ),
   Product(
-    name: "Sari Rapet",
-    price: "Rp 25.000",
-    size: "150 ml",
-  image: 'assets/product(1).png'
+    name: "Beras Kencur",
+    price: "Rp 18.800",
+    size: "350 ml",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Kunyit Asem",
+    price: "Rp 18.800",
+    size: "350 ml",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Paket 3 Botol Wedang Jahe",
+    price: "Rp 56.000",
+    size: "350 ml x 3",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Paket 3 Botol Beras Kencur",
+    price: "Rp 56.000",
+    size: "350 ml x 3",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Paket 3 Botol Kunyit Asem",
+    price: "Rp 56.000",
+    size: "350 ml x 3",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Paket Mix 5 Botol",
+    price: "Rp 94.000",
+    size: "350 ml x 5",
+    image: 'assets/product(1).png',
+  ),
+
+  // 1000 ML / 1 LITER
+  Product(
+    name: "Wedang Jahe",
+    price: "Rp 49.680",
+    size: "1000 ml",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Beras Kencur",
+    price: "Rp 49.680",
+    size: "1000 ml",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Kunyit Asem",
+    price: "Rp 49.680",
+    size: "1000 ml",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Paket 2 Botol Wedang Jahe",
+    price: "Rp 98.900",
+    size: "1000 ml x 2",
+    image: 'assets/product(1).png',
+  ),
+  Product(
+    name: "Paket 2 Botol Kunyit Asem",
+    price: "Rp 98.900",
+    size: "1000 ml x 2",
+    image: 'assets/product(1).png',
   ),
 ];
