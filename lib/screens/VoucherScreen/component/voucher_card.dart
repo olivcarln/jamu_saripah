@@ -24,7 +24,7 @@ class VoucherCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF8D6E63), Color(0xFF689F38)], // Cokelat ke Hijau
+          colors: [Color(0xFF8D6E63), Color(0xFF7E8959)], // Cokelat ke Hijau
         ),
       ),
       child: Stack(

@@ -3,8 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
-import 'package:jamu_saripah/screens/AccountScreen/account_screen.dart';
-import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart';
+import 'package:jamu_saripah/screens/main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,8 +42,8 @@ class MyApp extends StatelessWidget {
               ),
             );
           }
-          if (snapshot.hasData) {
-            return const HomeScreen(); 
+          if (snapshot.hasData) { 
+            return const MainScreen(); 
           }
           return const LoginScreen();
         }

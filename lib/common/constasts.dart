@@ -6,6 +6,7 @@ class AppColors {
     static const Color textGrey = Color.fromARGB(255, 117, 117, 117);
   static const Color white = Colors.white;
   static const Color black = Colors.black87;
+  static const Color brown = Colors.brown;
 }
 
 class AppSpacing {
