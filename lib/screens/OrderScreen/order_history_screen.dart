@@ -10,7 +10,7 @@ class OrderHistoryScreen extends StatelessWidget {
 
       appBar: AppBar(
         title: Text(
-          "Pemberitahuan",
+          "Order History",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -33,7 +33,7 @@ class OrderHistoryScreen extends StatelessWidget {
           children: [
 
             Image.asset(
-              'assets/animation_notification.png',
+              'assets/orderhistory.svg',
               height: 200,
               color: Color(0xFF7E8959),
             ),
@@ -41,7 +41,7 @@ class OrderHistoryScreen extends StatelessWidget {
             SizedBox(height: 20),
 
             Text(
-              "Belum Ada Pemberitahuan",
+              "Belum Ada History Pemesanan",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
@@ -49,33 +49,6 @@ class OrderHistoryScreen extends StatelessWidget {
             )
           ],
         ),
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor:Color(0xFF7E8959),
-        type: BottomNavigationBarType.fixed,
-
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_offer),
-            label: "Vouchers",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag),
-            label: "Your order",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Account",
-          ),
-        ],
       ),
     );
   }

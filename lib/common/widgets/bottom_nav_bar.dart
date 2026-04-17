@@ -14,12 +14,12 @@ class BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color(0xFF7B8D5E), 
+      backgroundColor:  Color(0xFF7B8D5E), 
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.white70,
       currentIndex: currentIndex,
       onTap: onTap,
-      items: const [
+      items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home_filled),
           label: "Home",

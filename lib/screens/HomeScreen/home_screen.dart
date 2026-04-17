@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/common/widgets/bottom_nav_bar.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'Components/home_header.dart';
 import 'Components/order_method.dart'; 
@@ -20,10 +19,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-bottomNavigationBar: BottomNav( 
-  currentIndex: 0,
-  onTap: (index) { },
-),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -41,8 +36,7 @@ bottomNavigationBar: BottomNav(
                       image: AssetImage(
                         'assets/banner.png',
                       ), 
-                      fit: BoxFit
-                          .cover, 
+                      fit: BoxFit.cover, 
                     ),
                   ),
                 ),
@@ -55,12 +49,38 @@ bottomNavigationBar: BottomNav(
             OrderMethod(
               userName: userName,
               onPickUpTap: () {
-                print("Action: Membuka Map Outlet untuk Pick Up");
-                // TODO: Tambahkan navigasi ke halaman Pick Up di sini
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(title: const Text("Pick Up")),
+                      body: const Center(
+                        child: Placeholder(
+                          fallbackHeight: 250,
+                          fallbackWidth: 250,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
               },
               onDeliveryTap: () {
-                print("Action: Membuka Form Alamat untuk Delivery");
-                // TODO: Tambahkan navigasi ke halaman Delivery di sini
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(title: const Text("Delivery")),
+                      body: const Center(
+                        child: Placeholder(
+                          fallbackHeight: 250,
+                          fallbackWidth: 250,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
             const SizedBox(height: 25),
