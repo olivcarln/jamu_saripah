@@ -55,7 +55,7 @@ class HomeHeader extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.shopping_cart, color: Colors.white),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen(cartItems: [],)));
               },
             ),
           ],
