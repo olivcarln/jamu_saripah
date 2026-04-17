@@ -57,6 +57,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ],
         ),
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         selectedItemColor: Colors.white,
@@ -70,6 +71,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Account"),
         ],
       ),
+      
     );
   }
 

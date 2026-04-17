@@ -6,19 +6,18 @@ class VoucherScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Kita pakai Column saja agar bisa langsung ditempel ke body Scaffold utama
     return Column(
       children: [
-        _buildAppBarSimulated(), // AppBar buatan sendiri karena ini di dalam body
+        _buildAppBarSimulated(), 
         _buildSearchBox(),
         _buildTabHeader(),
-        const Divider(height: 1),
+        Divider(height: 1),
         _buildOrderSummary(),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16),
             itemCount: 5,
-            itemBuilder: (context, index) => const VoucherCard(),
+            itemBuilder: (context, index) => VoucherCard(),
           ),
         ),
       ],
@@ -28,9 +27,9 @@ class VoucherScreen extends StatelessWidget {
   // Pengganti AppBar jika tidak ingin pakai AppBar bawaan Scaffold
   Widget _buildAppBarSimulated() {
     return Container(
-      padding: const EdgeInsets.only(top: 50, bottom: 10),
+      padding: EdgeInsets.only(top: 50, bottom: 10),
       alignment: Alignment.center,
-      child: const Text(
+      child: Text(
         'Vouchers',
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
@@ -39,12 +38,12 @@ class VoucherScreen extends StatelessWidget {
 
   Widget _buildSearchBox() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(16.0),
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Dapat kode promo? masukkan disini',
-          prefixIcon: const Icon(Icons.confirmation_number_outlined, color: Colors.green),
-          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          prefixIcon: Icon(Icons.confirmation_number_outlined, color: Colors.green),
+          contentPadding: EdgeInsets.symmetric(vertical: 0),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
         ),
       ),
@@ -52,7 +51,7 @@ class VoucherScreen extends StatelessWidget {
   }
 
   Widget _buildTabHeader() {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
       child: Row(
         children: [
@@ -65,7 +64,7 @@ class VoucherScreen extends StatelessWidget {
   }
 
   Widget _buildOrderSummary() {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.all(16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
