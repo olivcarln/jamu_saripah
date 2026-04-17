@@ -4,6 +4,7 @@ class CartItem {
   final int price;
   final String image;
   bool isChecked;
+  int quantity; // <--- Tambahin ini
 
   CartItem({
     required this.name,
@@ -11,5 +12,6 @@ class CartItem {
     required this.price,
     required this.image,
     this.isChecked = false,
+    this.quantity = 1, // <--- Default beli 1
   });
 }
