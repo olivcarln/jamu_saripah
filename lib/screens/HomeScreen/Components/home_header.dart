@@ -106,8 +106,13 @@ class HomeHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: [BoxShadow(blurRadius: 15, offset: const Offset(0, 8))],
-      ),
+boxShadow: [
+  BoxShadow(
+    color: Colors.black.withValues(alpha: 0.1), // lebih soft
+    blurRadius: 10, // lebih kecil dari 20
+    offset: const Offset(0, 4), // ga terlalu jauh
+  ),
+],   ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
