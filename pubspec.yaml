@@ -90,6 +90,8 @@ flutter:
     - assets/orderhistory.svg
     - assets/cartShopping.svg
     - assets/jamu2.svg
+    - assets/delivery_button.svg
+    - assets/pickup_button.svg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
