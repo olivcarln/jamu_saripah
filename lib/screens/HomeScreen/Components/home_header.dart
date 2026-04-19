@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
@@ -24,13 +25,13 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBar(context) {
+  Widget _buildTopBar(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
+          children: const [
             Text(
               "Location",
               style: TextStyle(color: Colors.white70, fontSize: 10),
@@ -47,19 +48,39 @@ class HomeHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              icon: Icon(Icons.notifications, color: Colors.white),
+              icon: const Icon(Icons.notifications, color: Colors.white),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                );
               },
             ),
             IconButton(
-              icon: Icon(Icons.shopping_cart, color: Colors.white),
+              icon: const Icon(Icons.shopping_cart, color: Colors.white),
+              // Di dalam onPressed icon keranjang di home_header.dart
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CartScreen(
+                      initialItems: [
+                        CartItem(
+                          name: "Beras Kencur Premium",
+                          size: "350 ml",
+                          price: 56000,
+                          image: "assets/jamu-1.png",
+                          isChecked: true,
+                          quantity: 1, // <--- TAMBAHIN INI BIAR GAK NULL
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               },
             ),
           ],
-        )
+        ),
       ],
     );
   }
@@ -85,21 +106,26 @@ class HomeHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+boxShadow: [
+  BoxShadow(
+    color: Colors.black.withValues(alpha: 0.1), // lebih soft
+    blurRadius: 10, // lebih kecil dari 20
+    offset: const Offset(0, 4), // ga terlalu jauh
+  ),
+],   ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
+          // 3. SVG Coins dengan error builder biar nggak crash kalau file ilang
           Positioned(
             right: -10,
             top: -10,
-            child: SvgPicture.asset('assets/coins.svg', width: 120),
+            child: SvgPicture.asset(
+              'assets/coins.svg',
+              width: 120,
+              placeholderBuilder: (context) =>
+                  const SizedBox(width: 120, height: 50),
+            ),
           ),
 
           Column(
@@ -139,12 +165,9 @@ class HomeHeader extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 12),
               const Divider(height: 1, color: Colors.black12),
               const SizedBox(height: 12),
-
-          
               Row(
                 children: const [
                   Text(
