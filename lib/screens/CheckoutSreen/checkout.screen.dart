@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/screens/CheekoutSreen/component/tambah_menu_screen.dart';
-import 'package:jamu_saripah/screens/CheekoutSreen/component/ubahalamat_screen.dart';
-import 'package:jamu_saripah/screens/CheekoutSreen/component/tas_belanja_screen.dart';
-import 'package:jamu_saripah/screens/CheekoutSreen/component/pembayaran_screen.dart'; 
+import 'package:jamu_saripah/screens/CheckoutSreen/component/adding_menu_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutSreen/component/shopping_bag_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutSreen/component/payment_screen.dart'; 
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
-
-// UPDATE IMPORT PATH SESUAI STRUKTUR BARU
 import 'package:jamu_saripah/screens/orderscreen/order_history_screen.dart'; 
 
 class CheckoutScreen extends StatefulWidget {
@@ -30,7 +27,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   ];
 
-  // FORMAT HARGA TITIK
+  // FORMAT HARGA 
   String formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
@@ -75,9 +72,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
 
             if (showSpecialPackage) 
-              TambahMenuScreen(onAddTap: (n, s, p) => setState(() => cartItems.add({'name': n, 'size': s, 'price': p, 'qty': 1}))),
+              AddingMenuScreen(onAddTap: (n, s, p) => setState(() => cartItems.add({'name': n, 'size': s, 'price': p, 'qty': 1}))),
 
-            TasBelanjaScreen(
+            ShoppingBagScreen(
               isSelected: perluTasBelanja,
               harga: hargaTas,
               onChanged: (val) => setState(() => perluTasBelanja = val),
@@ -100,7 +97,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               title: 'Metode Pembayaran',
               subtitle: 'QRIS',
               icon: Icons.account_balance_wallet_outlined,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const PembayaranScreen())),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const PaymentScreen())),
             ),
 
             const Divider(thickness: 8, color: Color(0xFFF1F1F1)),

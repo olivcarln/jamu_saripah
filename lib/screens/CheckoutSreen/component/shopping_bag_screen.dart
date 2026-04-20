@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class TasBelanjaScreen extends StatelessWidget {
+class ShoppingBagScreen extends StatelessWidget {
   final bool isSelected;
   final int harga;
   final ValueChanged<bool> onChanged;
 
-  const TasBelanjaScreen({
+  const ShoppingBagScreen({
     super.key,
     required this.isSelected,
     required this.harga,
@@ -22,7 +22,7 @@ class TasBelanjaScreen extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               // PERBAIKAN: Background dibuat hijau sangat muda (opacity 10-20%)
-              color: const Color(0xFF7E8959).withOpacity(0.1),
+              color: const Color(0xFF7E8959).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

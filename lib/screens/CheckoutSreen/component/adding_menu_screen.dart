@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class TambahMenuScreen extends StatelessWidget {
+class AddingMenuScreen extends StatelessWidget {
   final Function(String, String, int) onAddTap;
 
-  const TambahMenuScreen({super.key, required this.onAddTap});
+  const AddingMenuScreen({super.key, required this.onAddTap});
 
   final List<Map<String, dynamic>> specialMenus = const [
     {'name': '3 botol Beras kencur', 'size': '350 ml', 'price': 56000, 'image': 'assets/product_2.svg'},

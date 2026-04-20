@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-class PembayaranScreen extends StatelessWidget {
-  const PembayaranScreen({super.key});
+class PaymentScreen extends StatelessWidget {
+  const PaymentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO:belom masukin img
+    // TODO: masukan logika untuk menampilkan metode pembayaran yang dipilih dan proses pembayaran
+    // TODO: input image
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

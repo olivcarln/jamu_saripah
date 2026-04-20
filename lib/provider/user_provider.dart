@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider extends ChangeNotifier {
   String _name = "Guest";
-  String _phone = "";
+  final _phone = "";
 
   String get name => _name;
   String get phone => _phone;

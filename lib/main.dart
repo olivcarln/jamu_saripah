@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 
+// TODO: Memastikan semua asset gambar sudah dioptimasi untuk ukuran yang sesuai, agar tidak membebani performa aplikasi
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class UbahAlamatScreen extends StatefulWidget {
-  const UbahAlamatScreen({super.key});
+class ChangeAddressScreen extends StatefulWidget {
+  const ChangeAddressScreen({super.key});
 
   @override
-  State<UbahAlamatScreen> createState() => _UbahAlamatScreenState();
+  State<ChangeAddressScreen> createState() => _ChangeAddressScreenState();
 }
 
-class _UbahAlamatScreenState extends State<UbahAlamatScreen> {
+class _ChangeAddressScreenState extends State<ChangeAddressScreen> {
   // Default value
   String selectedMethod = 'delivery';
 
