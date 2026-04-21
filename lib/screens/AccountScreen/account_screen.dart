@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:jamu_saripah/screens/DetailProfileScreen/detail_profile_screen.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -6,7 +8,7 @@ class AccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -16,139 +18,105 @@ class AccountPage extends StatelessWidget {
               padding: EdgeInsets.all(20),
               child: Text(
                 "Account",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
-
+            SizedBox(height: 10),
             // PROFILE CARD
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6E8B4F),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 30,
-                      backgroundImage: AssetImage('assets/profile.jpg'),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Naiput",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            "+621234567890123",
-                            style: TextStyle(
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios, color: Colors.white),
-                  ],
-                ),
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: InkWell( // Menggunakan InkWell agar ada efek ripple saat diklik
+    onTap: () {
+      // Navigasi ke DetailProfilePage
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DetailProfilePage(),
+        ),
+      );
+    },
+    borderRadius: BorderRadius.circular(16), // Supaya efek klik sesuai bentuk border
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6E8B4F),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.transparent,
+            child: ClipOval(
+              child: SvgPicture.asset(
+                'assets/profile.svg',
+                fit: BoxFit.cover,
+                width: 60,
+                height: 60,
               ),
             ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Naiput", // Nanti ini bisa dioper via constructor jika perlu
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "+621234567890123",
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
+        ],
+      ),
+    ),
+  ),
+),
 
             const SizedBox(height: 20),
 
             // GREY BOX (placeholder)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
 
             // MENU LIST
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
+                decoration: const BoxDecoration(color: Colors.white),
                 child: ListView(
                   children: [
+                    const SizedBox(height: 20),
                     buildMenuItem("Alamat Tersimpan"),
                     buildMenuItem("Pembayaran"),
                     buildMenuItem("Pusat Bantuan"),
                     buildMenuItem("Pengaturan"),
-
-                    const SizedBox(height: 20),
-
                     buildMenuItem("Syarat & Ketentuan"),
                     buildMenuItem("Kebijakan Privasi"),
+                    buildMenuItem("Media Sosial"),
 
-                    const SizedBox(height: 20),
-
-                    // SOCIAL MEDIA
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Media Sosial"),
-                        Row(
-                          children: const [
-                            Icon(Icons.camera_alt, color: Colors.pink),
-                            SizedBox(width: 10),
-                            Icon(Icons.facebook, color: Colors.blue),
-                          ],
-                        )
-                      ],
-                    )
+                    const SizedBox(height: 60),
+                    const Center(
+                      child: Text(
+                        "Version 1.0.0",
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ],
         ),
-      ),
-
-      // BOTTOM NAVBAR
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        selectedItemColor: const Color(0xFF6E8B4F),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.confirmation_num_outlined),
-            label: "Vouchers",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            label: "Your order",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Account",
-          ),
-        ],
       ),
     );
   }

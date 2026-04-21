@@ -15,6 +15,6 @@ class CartProvider extends ChangeNotifier {
 
   void addToCart(CartItem item) {
     _items.add(item);
-    notifyListeners(); // Ini yang bikin halaman lain tau ada barang masuk
+    notifyListeners(); 
   }
 }

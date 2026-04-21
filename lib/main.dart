@@ -2,8 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:jamu_saripah/screens/PickupScreen/pickup_screen.dart';
+import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart';
+import 'package:jamu_saripah/screens/main_screen.dart';
 
+// TODO: Memastikan semua asset gambar sudah dioptimasi untuk ukuran yang sesuai, agar tidak membebani performa aplikasi
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -42,9 +44,9 @@ class MyApp extends StatelessWidget {
             );
           }
           if (snapshot.hasData) { 
-            return const PickupScreen(); 
+            return const HomeScreen(); 
           }
-          return const PickupScreen();
+          return const HomeScreen();
         }
        
       ),
