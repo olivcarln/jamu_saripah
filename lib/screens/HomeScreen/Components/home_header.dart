@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
@@ -58,24 +57,11 @@ class HomeHeader extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.shopping_cart, color: Colors.white),
-              // Di dalam onPressed icon keranjang di home_header.dart
               onPressed: () {
+                // ✅ Manggilnya cukup gini, Nai! Gak usah diajarin bikin class lagi di sini.
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => CartScreen(
-                      initialItems: [
-                        CartItem(
-                          name: "Beras Kencur Premium",
-                          size: "350 ml",
-                          price: 56000,
-                          image: "assets/jamu-1.png",
-                          isChecked: true,
-                          quantity: 1, // <--- TAMBAHIN INI BIAR GAK NULL
-                        ),
-                      ],
-                    ),
-                  ),
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
                 );
               },
             ),
@@ -88,7 +74,7 @@ class HomeHeader extends StatelessWidget {
   Widget _buildSearchBar() {
     return TextField(
       decoration: InputDecoration(
-        hintText: "Search",
+        hintText: "Cari Jamu Favoritmu...",
         prefixIcon: const Icon(Icons.search),
         filled: true,
         fillColor: Colors.white,
@@ -106,17 +92,17 @@ class HomeHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-boxShadow: [
-  BoxShadow(
-    color: Colors.black.withValues(alpha: 0.1), // lebih soft
-    blurRadius: 10, // lebih kecil dari 20
-    offset: const Offset(0, 4), // ga terlalu jauh
-  ),
-],   ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // 3. SVG Coins dengan error builder biar nggak crash kalau file ilang
           Positioned(
             right: -10,
             top: -10,
@@ -127,7 +113,6 @@ boxShadow: [
                   const SizedBox(width: 120, height: 50),
             ),
           ),
-
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,15 +153,9 @@ boxShadow: [
               const SizedBox(height: 12),
               const Divider(height: 1, color: Colors.black12),
               const SizedBox(height: 12),
-              Row(
-                children: const [
-                  Text(
-                    "Redeem your points for exciting rewards",
-                    style: TextStyle(fontSize: 11, color: Colors.black54),
-                  ),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 12, color: Colors.black54),
-                ],
+              const Text(
+                "Redeem your points for exciting rewards",
+                style: TextStyle(fontSize: 11, color: Colors.black54),
               ),
             ],
           ),
