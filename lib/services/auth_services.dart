@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:jamu_saripah/services/profile_services.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -13,9 +14,13 @@ class AuthService {
       password: password,
     );
 
+    // ✅ SET DISPLAY NAME DULU
     if (username != null && username.isNotEmpty) {
       await userCredential.user?.updateDisplayName(username);
     }
+
+    // 🔥 BARU BUAT DATA DI FIRESTORE
+    await ProfileService().createUserIfNotExists();
 
     return userCredential;
   }
@@ -24,10 +29,15 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    return await _auth.signInWithEmailAndPassword(
+    final userCredential = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
+
+    // 🔥 PENTING: handle user lama / belum ada data
+    await ProfileService().createUserIfNotExists();
+
+    return userCredential;
   }
 
   Future<void> logout() async {
