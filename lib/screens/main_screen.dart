@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/common/widgets/bottom_nav_bar.dart';
 import 'package:jamu_saripah/screens/AccountScreen/account_screen.dart';
+import 'package:jamu_saripah/screens/DetailProfileScreen/detail_profile_screen.dart';
 import 'package:jamu_saripah/screens/OrderScreen/order_history_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
 import 'HomeScreen/home_screen.dart';

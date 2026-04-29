@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/common/widgets/bottom_nav_bar.dart';
+import 'package:jamu_saripah/screens/DetailProfileScreen/detail_profile_screen.dart';
 import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart'; 
 import 'package:jamu_saripah/screens/OrderScreen/component/empty_order_state_screen.dart';
 import 'package:jamu_saripah/screens/OrderScreen/component/order_list_item_screen.dart';
@@ -56,7 +57,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const VoucherScreen()));
           } 
           else if (index == 3) {
-             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
+             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AccountPage()));
           }
 
           setState(() {
