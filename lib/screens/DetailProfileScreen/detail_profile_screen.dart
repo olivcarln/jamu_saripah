@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_avatar.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_button.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_textfield.dart';
@@ -121,30 +122,58 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
   }
 
   Future<void> _handleSave() async {
-    setState(() => _isSaving = true);
+  setState(() => _isSaving = true);
 
-    try {
-      if (_imageFile != null) {
-        final url = await _service.uploadImage(_imageFile!);
-        _photoUrl = url;
-      }
-
-      await _service.saveProfile(
-        name: _nameController.text,
-        email: _emailController.text,
-        phone: "",
-        photoUrl: _photoUrl,
-      );
-
-      setState(() {
-        _imageFile = null;
-      });
-    } catch (e) {
-      print("ERROR SAVE: $e");
+  try {
+    if (_imageFile != null) {
+      final url = await _service.uploadImage(_imageFile!);
+      _photoUrl = url;
     }
 
-    setState(() => _isSaving = false);
+    await _service.saveProfile(
+      name: _nameController.text,
+      email: _emailController.text,
+      phone: "",
+      photoUrl: _photoUrl,
+    );
+
+    setState(() {
+      _imageFile = null;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Profil berhasil disimpan ✨"),
+          backgroundColor: AppColors.primaryOlive,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  } catch (e) {
+    print("ERROR SAVE: $e");
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Gagal menyimpan profil"),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
   }
+
+  setState(() => _isSaving = false);
+}
 
   Future<void> _handleLogout() async {
     await FirebaseAuth.instance.signOut();

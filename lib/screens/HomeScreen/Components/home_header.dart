@@ -1,11 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
+
+  Future<String> getCityName() async {
+    // cek permission dulu
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return "Location denied";
+    }
+
+    // ambil posisi
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    // convert ke alamat
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    Placemark place = placemarks.first;
+
+    return "${place.locality ?? "Unknown"}, ${place.country ?? ""}";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,20 +61,42 @@ class HomeHeader extends StatelessWidget {
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
+          children: [
+            const Text(
               "Location",
               style: TextStyle(color: Colors.white70, fontSize: 10),
             ),
-            Text(
-              "Jakarta, Indonesia",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+
+            // 🔥 INI YANG REAL-TIME LOCATION
+            FutureBuilder<String>(
+              future: getCityName(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text(
+                    "Detecting location...",
+                    style: TextStyle(color: Colors.white),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return const Text(
+                    "Location error",
+                    style: TextStyle(color: Colors.white),
+                  );
+                }
+
+                return Text(
+                  snapshot.data ?? "Unknown",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              },
             ),
           ],
         ),
+
         Row(
           children: [
             IconButton(
@@ -52,13 +104,14 @@ class HomeHeader extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationScreen(),
+                  ),
                 );
               },
             ),
             IconButton(
               icon: const Icon(Icons.shopping_cart, color: Colors.white),
-              // Di dalam onPressed icon keranjang di home_header.dart
               onPressed: () {
                 Navigator.push(
                   context,
@@ -71,7 +124,7 @@ class HomeHeader extends StatelessWidget {
                           price: 56000,
                           image: "assets/jamu-1.png",
                           isChecked: true,
-                          quantity: 1, // <--- TAMBAHIN INI BIAR GAK NULL
+                          quantity: 1,
                         ),
                       ],
                     ),
@@ -106,17 +159,17 @@ class HomeHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-boxShadow: [
-  BoxShadow(
-    color: Colors.black.withValues(alpha: 0.1), // lebih soft
-    blurRadius: 10, // lebih kecil dari 20
-    offset: const Offset(0, 4), // ga terlalu jauh
-  ),
-],   ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // 3. SVG Coins dengan error builder biar nggak crash kalau file ilang
           Positioned(
             right: -10,
             top: -10,
@@ -127,7 +180,6 @@ boxShadow: [
                   const SizedBox(width: 120, height: 50),
             ),
           ),
-
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
