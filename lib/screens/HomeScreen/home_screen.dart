@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/screens/DeliveryScreen/delivery_screen.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'Components/home_header.dart';
 import 'Components/order_method.dart'; 
@@ -49,36 +50,18 @@ class _HomeScreenState extends State<HomeScreen> {
             OrderMethod(
               userName: userName,
               onPickUpTap: () {
-                
-                Navigator.push(
+                   Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => Scaffold(
-                      appBar: AppBar(title: const Text("Pick Up")),
-                      body: const Center(
-                        child: Placeholder(
-                          fallbackHeight: 250,
-                          fallbackWidth: 250,
-                        ),
-                      ),
-                    ),
-                  ),
+                 MaterialPageRoute(
+                  builder: (context) => PickupScreen(),
+                 )
                 );
               },
               onDeliveryTap: () {
-                
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Scaffold(
-                      appBar: AppBar(title: const Text("Delivery")),
-                      body: const Center(
-                        child: Placeholder(
-                          fallbackHeight: 250,
-                          fallbackWidth: 250,
-                        ),
-                      ),
-                    ),
+                    builder: (context) => PickupScreen(),
                   ),
                 );
               },
