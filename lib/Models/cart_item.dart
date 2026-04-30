@@ -2,9 +2,9 @@ class CartItem {
   final String name;
   final String image;
   final String size;
-  final int price;
-  int quantity;
-  bool isChecked; // ✅ WAJIB ADA INI
+  final int price;    // ✅ Harus int
+  int quantity;       // ✅ Harus int
+  bool isChecked;
 
   CartItem({
     required this.name,
@@ -12,6 +12,6 @@ class CartItem {
     required this.size,
     required this.price,
     this.quantity = 1,
-    this.isChecked = false, // Default awal gak dicentang
+    this.isChecked = false,
   });
 }

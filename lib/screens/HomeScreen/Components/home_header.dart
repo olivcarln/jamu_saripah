@@ -61,7 +61,7 @@ class HomeHeader extends StatelessWidget {
                 // ✅ Manggilnya cukup gini, Nai! Gak usah diajarin bikin class lagi di sini.
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                  MaterialPageRoute(builder: (context) => const CartScreen(initialItems: [],)),
                 );
               },
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; 
 import 'package:jamu_saripah/Models/product_cart.dart';
-import 'package:jamu_saripah/screens/DetailScreen/detail_screen.dart'; 
+import 'package:jamu_saripah/Screens/DetailScreen/detail_screen.dart'; // ✅ Pastikan path ini benar
 
 class Menus extends StatelessWidget {
   const Menus({super.key});
@@ -19,14 +20,14 @@ class Menus extends StatelessWidget {
           const SizedBox(height: 15),
 
           GridView.builder(
-            shrinkWrap: true, 
-            physics: const NeverScrollableScrollPhysics(), 
-            itemCount: allProducts.length, 
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: allProducts.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, 
+              crossAxisCount: 2,
               crossAxisSpacing: 15,
               mainAxisSpacing: 15,
-              childAspectRatio: 0.75, 
+              childAspectRatio: 0.75,
             ),
             itemBuilder: (context, index) {
               final product = allProducts[index];
@@ -41,7 +42,7 @@ class Menus extends StatelessWidget {
   Widget _buildProductCard(BuildContext context, Product product) {
     return InkWell(
       onTap: () {
-        // NAVIGASI KE DETAIL SCREEN PUNYA LU
+        // ✅ NAVIGASI KE DETAIL SCREEN: Bawa data product
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -56,7 +57,7 @@ class Menus extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -68,7 +69,9 @@ class Menus extends StatelessWidget {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                   image: DecorationImage(
                     image: AssetImage(product.image),
                     fit: BoxFit.cover,
@@ -83,7 +86,10 @@ class Menus extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -92,10 +98,15 @@ class Menus extends StatelessWidget {
                     style: const TextStyle(color: Colors.grey, fontSize: 11),
                   ),
                   const SizedBox(height: 8),
+                  // ✅ TAMPILAN HARGA: Menggunakan format Rupiah dari angka int
                   Text(
-                    product.price,
+                    NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol: 'Rp ',
+                      decimalDigits: 0,
+                    ).format(product.price),
                     style: const TextStyle(
-                      color: Color(0xFF7B8D5E), 
+                      color: Color(0xFF7B8D5E),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
