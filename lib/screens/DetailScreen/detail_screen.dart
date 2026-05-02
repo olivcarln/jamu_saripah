@@ -19,20 +19,56 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   int quantity = 1;
   String selectedSize = "250 ml"; 
-  
-  // Tetap gue biarin sesuai kodingan lu
-  final int pricePerItem = 19500; 
+  String selectedOption = "Beras Kencur Saja"; 
+  int currentPrice = 0; 
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Inisialisasi awal
+    currentPrice = widget.product.price;
+    print("DEBUG: Harga awal dari product: ${widget.product.price}");
+  }
+
+  void updatePrice(String size, String option) {
+    setState(() {
+      selectedSize = size;
+      selectedOption = option;
+
+      if (option.contains("Paket 3")) {
+        currentPrice = 70000; 
+      } else {
+        int basePrice = widget.product.price; 
+        if (size == "350 ml") {
+          currentPrice = basePrice + 5000;
+        } else if (size == "1 Liter") {
+          currentPrice = basePrice + 10000;
+        } else {
+          currentPrice = basePrice;
+        }
+      }
+      print("DEBUG: Harga update jadi: $currentPrice");
+    });
+  }
 
   String formatIDR(int amount) {
+    // ✅ Jika currentPrice masih 0, gunakan harga produk sebagai cadangan
+    int priceToFormat = (amount == 0) ? widget.product.price : amount;
+    
     return NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
-    ).format(amount);
+    ).format(priceToFormat);
   }
 
   @override
   Widget build(BuildContext context) {
+    // ✅ FORCE UPDATE: Jika currentPrice masih 0 saat build, paksa ambil dari widget
+    if (currentPrice == 0 && widget.product.price != 0) {
+      currentPrice = widget.product.price;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -41,6 +77,7 @@ class _DetailScreenState extends State<DetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Bagian Gambar
                 Stack(
                   children: [
                     Image.asset(
@@ -66,7 +103,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment:CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.product.name,
@@ -78,8 +115,9 @@ class _DetailScreenState extends State<DetailScreen> {
                         style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                       const SizedBox(height: 15),
+                      // ✅ Harga utama
                       Text(
-                        formatIDR(widget.product.price),
+                        formatIDR(currentPrice),
                         style: const TextStyle(
                           fontSize: 22, 
                           fontWeight: FontWeight.bold, 
@@ -91,15 +129,17 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
 
                 const Divider(thickness: 10, color: Color(0xFFF5F5F5)),
-                // ✅ Ini yang benerin error onSizeChanged di Screenshot lu
+                
+                // Pastiin komponen ini manggil callback onSizeChanged
                 ProductOptionsSection(
-                  onSizeChanged: (size) => setState(() => selectedSize = size),
+                  onSizeChanged: (size) => updatePrice(size, selectedOption),
                 ),
                 const SizedBox(height: 120), 
               ],
             ),
           ),
 
+          // Bar bawah untuk tambah ke keranjang
           Positioned(
             bottom: 0,
             left: 0,
@@ -112,6 +152,9 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
+    // ✅ Hitung total untuk tombol
+    int totalPrice = (currentPrice == 0 ? widget.product.price : currentPrice) * quantity;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: const BoxDecoration(
@@ -121,6 +164,7 @@ class _DetailScreenState extends State<DetailScreen> {
       child: SafeArea(
         child: Row(
           children: [
+            // Kontrol Quantity
             Container(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
@@ -144,6 +188,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
             const SizedBox(width: 15),
             
+            // Tombol Tambah
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -155,27 +200,32 @@ class _DetailScreenState extends State<DetailScreen> {
                   context.read<CartProvider>().addToCart(
                     CartItem(
                       name: widget.product.name,
-                      price: widget.product.price,
+                      price: currentPrice,
                       quantity: quantity,
                       image: widget.product.image, 
                       size: selectedSize, 
                     ),
                   );
 
-                  // ✅ Ini yang benerin error named parameter di Screenshot lu
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent, 
                     builder: (context) => AddToCartBottomSheet(
-                      product: widget.product,
+                      product: Product(
+                        name: widget.product.name,
+                        price: currentPrice, 
+                        image: widget.product.image,
+                        description: widget.product.description,
+                        size: selectedSize,
+                      ),
                       quantity: quantity,
                       size: selectedSize,
                     ),
                   );
                 },
                 child: Text(
-                  "Tambah - ${formatIDR(widget.product.price * quantity)}",
+                  "Tambah - ${formatIDR(totalPrice)}",
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),

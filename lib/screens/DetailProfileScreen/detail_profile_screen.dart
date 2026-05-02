@@ -8,7 +8,6 @@ import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_avatar.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_button.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_textfield.dart';
-import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart' hide OnboardingScreen;
 import 'package:jamu_saripah/services/profile_services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
