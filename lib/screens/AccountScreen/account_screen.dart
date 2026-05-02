@@ -1,9 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:jamu_saripah/screens/AccountScreen/components/help_center_screen.dart';
+import 'package:jamu_saripah/screens/AccountScreen/components/payment_method_screen.dart';
+import 'package:jamu_saripah/screens/AccountScreen/components/saved_address_screen.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/detail_profile_screen.dart';
 
-class AccountPage extends StatelessWidget {
+class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
+
+  @override
+  State<AccountPage> createState() => _AccountPageState();
+}
+
+class _AccountPageState extends State<AccountPage> {
+  final user = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -21,72 +33,90 @@ class AccountPage extends StatelessWidget {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
+
             // PROFILE CARD
-Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  child: InkWell( // Menggunakan InkWell agar ada efek ripple saat diklik
-    onTap: () {
-      // Navigasi ke DetailProfilePage
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const DetailProfilePage(),
-        ),
-      );
-    },
-    borderRadius: BorderRadius.circular(16), // Supaya efek klik sesuai bentuk border
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF6E8B4F),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.transparent,
-            child: ClipOval(
-              child: SvgPicture.asset(
-                'assets/profile.svg',
-                fit: BoxFit.cover,
-                width: 60,
-                height: 60,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Naiput", // Nanti ini bisa dioper via constructor jika perlu
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DetailProfileScreen(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6E8B4F),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.transparent,
+                        child: ClipOval(
+                          child: SvgPicture.asset(
+                            'assets/profile.svg',
+                            fit: BoxFit.cover,
+                            width: 60,
+                            height: 60,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user?.uid)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) return const SizedBox();
+
+                          final data = snapshot.data!.data() as Map<String, dynamic>?;
+                          final namaUser = data?['name'] ?? 'User';
+
+                          return Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  namaUser,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  "Lihat Profil",
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  "+621234567890123",
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
+              ),
             ),
-          ),
-          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
-        ],
-      ),
-    ),
-  ),
-),
 
             const SizedBox(height: 20),
-
-            // GREY BOX (placeholder)
 
             // MENU LIST
             Expanded(
@@ -96,14 +126,38 @@ Padding(
                 child: ListView(
                   children: [
                     const SizedBox(height: 20),
-                    buildMenuItem("Alamat Tersimpan"),
-                    buildMenuItem("Pembayaran"),
-                    buildMenuItem("Pusat Bantuan"),
+                    buildMenuItem(
+                      "Alamat Tersimpan",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SavedAddress(),
+                          ),
+                        );
+                      },
+                    ),
+                    buildMenuItem("Pembayaran",
+                          onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PaymentMethodScreen(),
+                          ),
+                        );
+                      },),
+                    buildMenuItem("Pusat Bantuan",  onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HelpCenterScreen(),
+                          ),
+                        );
+                      },),
                     buildMenuItem("Pengaturan"),
                     buildMenuItem("Syarat & Ketentuan"),
                     buildMenuItem("Kebijakan Privasi"),
                     buildMenuItem("Media Sosial"),
-
                     const SizedBox(height: 60),
                     const Center(
                       child: Text(
@@ -121,13 +175,14 @@ Padding(
     );
   }
 
-  Widget buildMenuItem(String title) {
+  // Fungsi buildMenuItem yang sudah diperbaiki agar bisa menerima onTap
+  Widget buildMenuItem(String title, {VoidCallback? onTap}) {
     return Column(
       children: [
         ListTile(
           title: Text(title),
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {},
+          onTap: onTap ?? () {}, // Jika onTap kosong, tidak melakukan apa-apa
         ),
         const Divider(),
       ],

@@ -2,17 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart'; // ✅ Pastikan ini ada
-import 'package:jamu_saripah/Provider/cart_provider.dart'; // ✅ Pastikan path bener
-import 'package:jamu_saripah/hooks/auth/login_screen.dart';
-import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
-import 'package:jamu_saripah/screens/main_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+// ✅ Pastikan import ini sesuai dengan struktur folder lu
+import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
+import 'package:jamu_saripah/hooks/auth/login_screen.dart';
+import 'package:jamu_saripah/screens/main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 1. Inisialisasi Firebase (Pake options lu yang tadi)
+  // 1. Inisialisasi Firebase
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: "AIzaSyBymYUiuQeqzolGvFnixdk9-6xGu4ROBRs",
@@ -22,11 +24,12 @@ void main() async {
     ),
   );
 
-  final prefs = await SharedPreferences.getInstance();
+  // 2. Cek status Onboarding
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('showOnboarding') ?? true;
 
   runApp(
-    // ✅ WAJIB DI-WRAP PAKE MULTIPROVIDER BIAR TOMBOL JALAN
+    // ✅ MultiProvider dibungkus di sini biar fitur Cart bisa dipake di seluruh app
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CartProvider()),
@@ -47,6 +50,7 @@ class JamuSaripah extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.montserratTextTheme(),
       ),
+      // ✅ Tentukan mau ke Onboarding atau langsung ke AuthWrapper
       home: showOnboarding 
           ? const OnboardingScreen() 
           : const AuthWrapper(),
@@ -67,9 +71,11 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator(color: Color(0xFF7E8959))),
           );
         }
+        // ✅ Kalau user sudah login, lempar ke MainScreen
         if (snapshot.hasData) {
           return const MainScreen(); 
         }
+        // ✅ Kalau belum login, lempar ke LoginScreen
         return const LoginScreen(); 
       },
     );

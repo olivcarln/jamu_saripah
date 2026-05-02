@@ -39,7 +39,6 @@ dependencies:
   url_launcher: ^6.3.2
   share_plus: ^12.0.2
   cached_network_image: ^3.4.1
-  timeago: ^3.7.1
   flutter_dotenv: ^6.0.0
   google_fonts: ^8.0.2
   flutter_svg: ^2.2.4
@@ -49,7 +48,12 @@ dependencies:
   shared_preferences: ^2.5.5
   intl: ^0.20.2
   provider: ^6.1.5+1
+  firebase_storage: ^13.3.0
+  image_picker: ^1.2.1
+  permission_handler: ^12.0.1
   cloud_firestore: ^6.3.0
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
 
 
 dev_dependencies:
@@ -96,6 +100,7 @@ flutter:
     - assets/jamu2.svg
     - assets/delivery_button.svg
     - assets/pickup_button.svg
+    - assets/address.svg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

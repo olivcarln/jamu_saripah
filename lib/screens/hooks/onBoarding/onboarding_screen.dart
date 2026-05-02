@@ -1,25 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:jamu_saripah/controllers/onboarding_controller.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/hooks/auth/register_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // WAJIB ADA
+import 'package:jamu_saripah/controllers/onboarding_controller.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: OnboardingScreen(),
-    );
-  }
-}
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -43,24 +29,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void startAutoSlide() {
     _timer?.cancel();
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) { // Ubah ke 3 detik biar user sempat baca
       if (!mounted) return;
-
       if (currentIndex < controller.data.length - 1) {
         currentIndex++;
-
         _pageController.animateToPage(
           currentIndex,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
-
         setState(() {});
       } else {
         timer.cancel();
       }
     });
+  }
+
+  // FUNGSI INI UNTUK PINDAH DAN SIMPAN STATUS
+  void _finishOnboarding(Widget targetScreen) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showOnboarding', false); // Supaya gak muncul lagi
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => targetScreen),
+    );
   }
 
   @override
@@ -85,7 +80,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   setState(() {
                     currentIndex = index;
                   });
-
                   _timer?.cancel();
                   startAutoSlide();
                 },
@@ -117,7 +111,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             const SizedBox(height: 20),
 
-            // BUTTON
+            // BUTTON AREA
             if (currentIndex == controller.data.length - 1)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -131,43 +125,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegisterScreen(),
-                          ),
-                        );
-                      },
+                      onPressed: () => _finishOnboarding(const RegisterScreen()), // PINDAH KE DAFTAR
                       child: const Text(
                         "Daftar",
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 10),
-                  Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    const Text("Sudah punya akun? "),
-    GestureDetector(
-      onTap: () {
-        // Navigasi ke LoginScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
-      },
-      child: const Text(
-        "Masuk disini",
-        style: TextStyle(
-          color: Color(0xFF7A7A3C),
-          fontWeight: FontWeight.bold,
-          decoration: TextDecoration.underline,
-        ),
-      ),
-    ),
-  ],
-),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Sudah punya akun? "),
+                        GestureDetector(
+                          onTap: () => _finishOnboarding(const LoginScreen()), // PINDAH KE LOGIN
+                          child: const Text(
+                            "Masuk disini",
+                            style: TextStyle(
+                              color: Color(0xFF7A7A3C),
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

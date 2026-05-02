@@ -1,10 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
+
+  Future<String> getCityName() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return "Location denied";
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    Placemark place = placemarks.first;
+    return "${place.locality ?? "Unknown"}, ${place.country ?? ""}";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,17 +54,19 @@ class HomeHeader extends StatelessWidget {
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              "Location",
-              style: TextStyle(color: Colors.white70, fontSize: 10),
-            ),
-            Text(
-              "Jakarta, Indonesia",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+          children: [
+            const Text("Location", style: TextStyle(color: Colors.white70, fontSize: 10)),
+            FutureBuilder<String>(
+              future: getCityName(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text("Detecting location...", style: TextStyle(color: Colors.white));
+                }
+                return Text(
+                  snapshot.data ?? "Unknown",
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                );
+              },
             ),
           ],
         ),
@@ -49,19 +75,16 @@ class HomeHeader extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.notifications, color: Colors.white),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NotificationScreen()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
               },
             ),
             IconButton(
               icon: const Icon(Icons.shopping_cart, color: Colors.white),
               onPressed: () {
-                // ✅ Manggilnya cukup gini, Nai! Gak usah diajarin bikin class lagi di sini.
+                // ✅ Navigasi diperbaiki menjadi satu route saja
                 Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CartScreen(initialItems: [],)),
+                  context, 
+                  MaterialPageRoute(builder: (context) => const CartScreen(initialItems: []))
                 );
               },
             ),
@@ -78,10 +101,7 @@ class HomeHeader extends StatelessWidget {
         prefixIcon: const Icon(Icons.search),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
       ),
     );
   }
@@ -92,71 +112,22 @@ class HomeHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            right: -10,
-            top: -10,
-            child: SvgPicture.asset(
-              'assets/coins.svg',
-              width: 120,
-              placeholderBuilder: (context) =>
-                  const SizedBox(width: 120, height: 50),
-            ),
+            right: -10, top: -10,
+            child: SvgPicture.asset('assets/coins.svg', width: 120),
           ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFDF5E6),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFD4AF37),
-                    width: 0.5,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(
-                      Icons.monetization_on,
-                      color: Color(0xFFD4AF37),
-                      size: 18,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      "100 Points",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Colors.black12),
-              const SizedBox(height: 12),
-              const Text(
-                "Redeem your points for exciting rewards",
-                style: TextStyle(fontSize: 11, color: Colors.black54),
-              ),
+              Text("100 Points", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              SizedBox(height: 12),
+              Divider(height: 1, color: Colors.black12),
+              SizedBox(height: 12),
+              Text("Redeem your points for exciting rewards", style: TextStyle(fontSize: 11, color: Colors.black54)),
             ],
           ),
         ],

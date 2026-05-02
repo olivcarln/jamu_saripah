@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/common/widgets/bottom_nav_bar.dart';
-import 'package:jamu_saripah/screens/HomeScreen/home_screen.dart'; 
 import 'package:jamu_saripah/screens/OrderScreen/component/empty_order_state_screen.dart';
 import 'package:jamu_saripah/screens/OrderScreen/component/order_list_item_screen.dart';
-
-import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
-import 'package:jamu_saripah/screens/AccountScreen/account_screen.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -42,28 +37,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           ? const EmptyOrderStateScreen() 
           : OrderListStateScreen(orders: _myOrders),
           
-      bottomNavigationBar: BottomNav(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          // Jika klik ikon yang sama, tidak perlu pindah
-          if (index == _currentIndex) return;
-
-          // LOGIKA NAVIGASI PINDAH HALAMAN
-          if (index == 0) {
-             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-          } 
-          else if (index == 1) {
-             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const VoucherScreen()));
-          } 
-          else if (index == 3) {
-             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
-          }
-
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
+     
     );
   }
 }

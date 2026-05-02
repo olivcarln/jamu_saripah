@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/Screens/HomeScreen/Components/menus.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
@@ -12,7 +13,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String userName = "Naiput";
+
+String userName = FirebaseAuth.instance.currentUser?.displayName ?? "User";
 
   @override
   Widget build(BuildContext context) {
