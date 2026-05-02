@@ -2,14 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:jamu_saripah/Provider/languange_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// IMPORT FILE PROJECT:
-import 'firebase_options.dart'; 
+// ✅ Pastikan import ini sesuai dengan struktur folder lu
+import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
-import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 
 void main() async {
@@ -17,17 +16,24 @@ void main() async {
   
   // 1. Inisialisasi Firebase
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyBymYUiuQeqzolGvFnixdk9-6xGu4ROBRs",
+      appId: "1:523756741499:android:da218b19466f56d584d3de",
+      messagingSenderId: "523756741499",
+      projectId: "jamu-saripah-78774",
+    ),
   );
 
   // 2. Cek status Onboarding
-  final prefs = await SharedPreferences.getInstance();
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('showOnboarding') ?? true;
 
-  // 3. Jalankan App dengan Provider
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => LanguageProvider(),
+    // ✅ MultiProvider dibungkus di sini biar fitur Cart bisa dipake di seluruh app
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
       child: JamuSaripah(showOnboarding: showOnboarding),
     ),
   );
@@ -39,24 +45,12 @@ class JamuSaripah extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Mendengarkan perubahan bahasa secara global
-    final languageProvider = Provider.of<LanguageProvider>(context);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Jamu Saripah',
-      
-      // Mengatur bahasa aplikasi secara dinamis
-      locale: languageProvider.currentLocale, 
-
       theme: ThemeData(
         textTheme: GoogleFonts.montserratTextTheme(),
-        // Warna primer Jamu Saripah
-        primaryColor: const Color(0xFF8DA05E), 
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF8DA05E)),
       ),
-      
-      // LOGIKA NAVIGASI UTAMA
+      // ✅ Tentukan mau ke Onboarding atau langsung ke AuthWrapper
       home: showOnboarding 
           ? const OnboardingScreen() 
           : const AuthWrapper(),
@@ -74,17 +68,15 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(color: Color(0xFF8DA05E)),
-            ),
+            body: Center(child: CircularProgressIndicator(color: Color(0xFF7E8959))),
           );
         }
-        
+        // ✅ Kalau user sudah login, lempar ke MainScreen
         if (snapshot.hasData) {
           return const MainScreen(); 
         }
-        
-        return const LoginScreen();
+        // ✅ Kalau belum login, lempar ke LoginScreen
+        return const LoginScreen(); 
       },
     );
   }

@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:jamu_saripah/Models/product_cart.dart'; // ✅ WAJIB: Biar kenal tipe data Product
 
-class AddToCartBottomSheet extends StatefulWidget { // Ubah jadi StatefulWidget
-  const AddToCartBottomSheet({super.key});
+class AddToCartBottomSheet extends StatefulWidget {
+  // ✅ 1. TAMBAHIN INI: Biar DetailScreen bisa ngirim data ke sini
+  final Product product;
+  final int quantity;
+  final String size;
+
+  const AddToCartBottomSheet({
+    super.key,
+    required this.product, // ✅ Sekarang parameter ini "Defined"
+    required this.quantity,
+    required this.size,
+  });
 
   @override
   State<AddToCartBottomSheet> createState() => _AddToCartBottomSheetState();
 }
 
 class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
-  // Simpan state ukuran yang dipilih di sini
-  String selectedSize = "350 ml"; 
+  // ✅ 2. Inisialisasi state pake data awal yang dikirim dari DetailScreen
+  late String selectedSize;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedSize = widget.size; // Pake size yang dipilih user di screen sebelumnya
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +42,15 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle Bar atas
           Container(
             width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
           ),
-
-          // ... (bagian Banner Poin sama kayak sebelumnya) ...
           
-          const Text("Lengkapi Belanjamu", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF7E8959))),
+          const Text(
+            "Lengkapi Belanjamu", 
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF7E8959))
+          ),
           const SizedBox(height: 20),
 
           // Kartu Item
@@ -43,15 +59,17 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
             decoration: BoxDecoration(border: Border.all(color: Colors.grey[200]!), borderRadius: BorderRadius.circular(15)),
             child: Row(
               children: [
-                SvgPicture.asset('assets/images/beras_kencur.svg', width: 50, height: 50),
+                // ✅ Pake gambar dinamis dari product
+                Image.asset(widget.product.image, width: 50, height: 50),
                 const SizedBox(width: 15),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Jamu Beras Kencur", style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text("350 ml", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      Text("Berhasil masuk ke Keranjang!", style: TextStyle(color: Colors.green, fontSize: 12)),
+                      // ✅ Pake nama dinamis dari product
+                      Text(widget.product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(selectedSize, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      const Text("Berhasil masuk ke Keranjang!", style: TextStyle(color: Colors.green, fontSize: 12)),
                     ],
                   ),
                 )
@@ -69,7 +87,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
           ),
           const SizedBox(height: 10),
 
-          // BAGIAN UKURAN YANG BISA DIKLIK
           Row(
             children: [
               _buildSizeOption("250 ml"),
@@ -92,11 +109,14 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () => Navigator.pop(context),
-              child: Text("Masukan Keranjang - ${formatCurrency.format(19500)}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: Text(
+                // ✅ Kalkulasi harga dinamis (widget.product.price * widget.quantity)
+                "Masukan Keranjang - ${formatCurrency.format(widget.product.price * widget.quantity)}", 
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+              ),
             ),
           ),
           const SizedBox(height: 10),
-          // Tombol Lanjut Belanja
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
@@ -115,14 +135,13 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
     );
   }
 
-  // Widget baru yang punya InkWell biar bisa dideteksi kliknya
   Widget _buildSizeOption(String label) {
-    bool isSelected = selectedSize == label; // Cek apakah ini yang lagi dipilih
+    bool isSelected = selectedSize == label;
 
     return InkWell(
       onTap: () {
         setState(() {
-          selectedSize = label; // Update pilihan
+          selectedSize = label;
         });
       },
       borderRadius: BorderRadius.circular(15),

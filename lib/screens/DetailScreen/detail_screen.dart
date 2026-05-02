@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
+import 'package:jamu_saripah/Models/cart_item.dart';
+import 'package:jamu_saripah/Models/product_cart.dart'; 
 import 'package:provider/provider.dart'; 
 import 'package:jamu_saripah/Provider/cart_provider.dart';
 import 'components/product_options_section.dart';
 import 'components/add_to_cart_bottom_sheet.dart';
 
 class DetailScreen extends StatefulWidget {
-  const DetailScreen({super.key});
+  final Product product; 
+
+  const DetailScreen({super.key, required this.product});
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
@@ -15,9 +18,11 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   int quantity = 1;
-  final int pricePerItem = 19500;
+  String selectedSize = "250 ml"; 
+  
+  // Tetap gue biarin sesuai kodingan lu
+  final int pricePerItem = 19500; 
 
-  // Fungsi format mata uang yang bener (pake package intl)
   String formatIDR(int amount) {
     return NumberFormat.currency(
       locale: 'id_ID',
@@ -36,11 +41,10 @@ class _DetailScreenState extends State<DetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Gambar SVG
                 Stack(
                   children: [
-                    SvgPicture.asset(
-                      'assets/jamu_3.svg',
+                    Image.asset(
+                      widget.product.image,
                       width: double.infinity,
                       height: 450,
                       fit: BoxFit.cover,
@@ -62,20 +66,20 @@ class _DetailScreenState extends State<DetailScreen> {
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Jamu Beras Kencur",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      Text(
+                        widget.product.name,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        "Jamu beras kencur alami yang menyegarkan, membantu meningkatkan stamina dan menjaga tubuh tetap bugar.",
+                        widget.product.description,
                         style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                       const SizedBox(height: 15),
                       Text(
-                        formatIDR(pricePerItem),
+                        formatIDR(widget.product.price),
                         style: const TextStyle(
                           fontSize: 22, 
                           fontWeight: FontWeight.bold, 
@@ -87,13 +91,15 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
 
                 const Divider(thickness: 10, color: Color(0xFFF5F5F5)),
-                const ProductOptionsSection(),
+                // ✅ Ini yang benerin error onSizeChanged di Screenshot lu
+                ProductOptionsSection(
+                  onSizeChanged: (size) => setState(() => selectedSize = size),
+                ),
                 const SizedBox(height: 120), 
               ],
             ),
           ),
 
-          // Tombol di bawah
           Positioned(
             bottom: 0,
             left: 0,
@@ -115,7 +121,6 @@ class _DetailScreenState extends State<DetailScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            // Stepper Jumlah
             Container(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
@@ -139,7 +144,6 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
             const SizedBox(width: 15),
             
-            // Tombol Tambah ke Keranjang
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -148,26 +152,30 @@ class _DetailScreenState extends State<DetailScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
-                  // Kirim data ke CartProvider
                   context.read<CartProvider>().addToCart(
                     CartItem(
-                      name: "Jamu Beras Kencur",
-                      price: pricePerItem,
+                      name: widget.product.name,
+                      price: widget.product.price,
                       quantity: quantity,
-                      image: 'assets/jamu_3.svg',
+                      image: widget.product.image, 
+                      size: selectedSize, 
                     ),
                   );
 
-                  // Munculin Bottom Sheet
+                  // ✅ Ini yang benerin error named parameter di Screenshot lu
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent, 
-                    builder: (context) => const AddToCartBottomSheet(),
+                    builder: (context) => AddToCartBottomSheet(
+                      product: widget.product,
+                      quantity: quantity,
+                      size: selectedSize,
+                    ),
                   );
                 },
                 child: Text(
-                  "Tambah - ${formatIDR(pricePerItem * quantity)}",
+                  "Tambah - ${formatIDR(widget.product.price * quantity)}",
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
