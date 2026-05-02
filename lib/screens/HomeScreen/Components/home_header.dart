@@ -3,14 +3,23 @@ import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
-class HomeHeader extends StatelessWidget {
+class HomeHeader extends StatefulWidget {
   const HomeHeader({super.key});
 
+  @override
+  State<HomeHeader> createState() => _HomeHeaderState();
+}
+
+class _HomeHeaderState extends State<HomeHeader> {
+  String selectedPrice = "Harga Tertinggi";
+  String selectedCategory = "250 ML";
+  String selectedType = "Beras Kencur";
+
   Future<String> getCityName() async {
-    // cek permission dulu
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
@@ -21,12 +30,10 @@ class HomeHeader extends StatelessWidget {
       return "Location denied";
     }
 
-    // ambil posisi
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    // convert ke alamat
     List<Placemark> placemarks = await placemarkFromCoordinates(
       position.latitude,
       position.longitude,
@@ -46,7 +53,7 @@ class HomeHeader extends StatelessWidget {
           children: [
             _buildTopBar(context),
             const SizedBox(height: 20),
-            _buildSearchBar(),
+            _buildSearchBar(context),
             const SizedBox(height: 30),
             _buildPointCard(),
           ],
@@ -66,21 +73,12 @@ class HomeHeader extends StatelessWidget {
               "Location",
               style: TextStyle(color: Colors.white70, fontSize: 10),
             ),
-
-            // 🔥 INI YANG REAL-TIME LOCATION
             FutureBuilder<String>(
               future: getCityName(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Text(
                     "Detecting location...",
-                    style: TextStyle(color: Colors.white),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return const Text(
-                    "Location error",
                     style: TextStyle(color: Colors.white),
                   );
                 }
@@ -96,7 +94,6 @@ class HomeHeader extends StatelessWidget {
             ),
           ],
         ),
-
         Row(
           children: [
             IconButton(
@@ -138,17 +135,155 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
     return TextField(
       decoration: InputDecoration(
         hintText: "Search",
+        hintStyle: const TextStyle(color: Colors.grey),
         prefixIcon: const Icon(Icons.search),
+        suffixIcon: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: () => _showFilter(context),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.primaryOlive.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Icon(Icons.tune, size: 20, color: AppColors.primaryOlive),
+            ),
+          ),
+        ),
         filled: true,
         fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
         ),
+      ),
+    );
+  }
+
+  void _showFilter(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  const Center(
+                    child: Text(
+                      "Filter",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  _buildExpandableSection(
+                    title: "Harga",
+                    groupValue: selectedPrice,
+                    options: const ["Harga Tertinggi", "Harga Terendah"],
+                    onChanged: (val) =>
+                        setModalState(() => selectedPrice = val),
+                  ),
+
+                  _buildExpandableSection(
+                    title: "Kategori",
+                    groupValue: selectedCategory,
+                    options: const ["250 ML", "350 ML", "1000 ML"],
+                    onChanged: (val) =>
+                        setModalState(() => selectedCategory = val),
+                  ),
+
+                  _buildExpandableSection(
+                    title: "Jenis Jamu",
+                    groupValue: selectedType,
+                    options: const [
+                      "Beras Kencur",
+                      "Kunyit Asem",
+                      "Wedang Jahe"
+                    ],
+                    onChanged: (val) =>
+                        setModalState(() => selectedType = val),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryOlive,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {});
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Apply Filter",
+                        style: TextStyle(fontSize: 16, color: AppColors.white)),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildExpandableSection({
+    required String title,
+    required String groupValue,
+    required List<String> options,
+    required Function(String) onChanged,
+  }) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        iconColor: AppColors.primaryOlive,
+        collapsedIconColor: Colors.black54,
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        children: options.map((option) {
+          return RadioListTile(
+            contentPadding: EdgeInsets.zero,
+            activeColor: AppColors.primaryOlive,
+            title: Text(option),
+            value: option,
+            groupValue: groupValue,
+            onChanged: (value) => onChanged(value as String),
+          );
+        }).toList(),
       ),
     );
   }
@@ -176,19 +311,14 @@ class HomeHeader extends StatelessWidget {
             child: SvgPicture.asset(
               'assets/coins.svg',
               width: 120,
-              placeholderBuilder: (context) =>
-                  const SizedBox(width: 120, height: 50),
             ),
           ),
           Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFDF5E6),
                   borderRadius: BorderRadius.circular(20),
@@ -200,19 +330,12 @@ class HomeHeader extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    Icon(
-                      Icons.monetization_on,
-                      color: Color(0xFFD4AF37),
-                      size: 18,
-                    ),
+                    Icon(Icons.monetization_on,
+                        color: Color(0xFFD4AF37), size: 18),
                     SizedBox(width: 6),
                     Text(
                       "100 Points",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -227,7 +350,7 @@ class HomeHeader extends StatelessWidget {
                     style: TextStyle(fontSize: 11, color: Colors.black54),
                   ),
                   SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 12, color: Colors.black54),
+                  Icon(Icons.arrow_forward, size: 12),
                 ],
               ),
             ],
