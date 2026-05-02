@@ -22,7 +22,7 @@ class TermsConditionsScreen extends StatelessWidget {
         title: Text(
           'Syarat & Ketentuan',
           style: TextStyle(
-            color: primaryColor,
+            color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w400,
           ),

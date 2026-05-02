@@ -12,7 +12,7 @@ class HelpCenterScreen extends StatelessWidget {
         title: const Text("Pusat Bantuan"),
         centerTitle: true,
         backgroundColor: Colors.white,
-        foregroundColor: AppColors.primaryOlive,
+        foregroundColor:Colors.black,
         elevation: 0,
       ),
       body: ListView(
