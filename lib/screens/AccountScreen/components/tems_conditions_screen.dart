@@ -99,7 +99,7 @@ class TermsConditionsScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey.withOpacity(0.2), width: 0.5),
+          bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 0.5),
         ),
       ),
       child: Theme(
