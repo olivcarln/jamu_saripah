@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/screens/VoucherScreen/component/voucher_card.dart';
+import 'package:jamu_saripah/screens/VouchersScreen/component/voucher_card.dart';
 
 class VoucherScreen extends StatelessWidget {
   const VoucherScreen({super.key});
