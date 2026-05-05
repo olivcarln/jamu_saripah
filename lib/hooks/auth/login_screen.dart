@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Tambahkan ini
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/admin_screen/admin_main_screen.dart';
 import 'package:jamu_saripah/hooks/auth/register_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 
-// TODO: Remember me functionality 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -28,22 +29,42 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      // 1. Login ke Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
+      // 2. Ambil data role dari Firestore
+      String uid = userCredential.user!.uid;
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
       if (!mounted) return;
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-        (route) => false,
-      );
+      // 3. Pengecekan Role
+      if (userDoc.exists && userDoc['role'] == 'admin') {
+        // Jika Admin
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminMainScreen()),
+          (route) => false,
+        );
+      } else {
+        // Jika User Biasa atau data role tidak ada
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+          (route) => false,
+        );
+      }
+
     } on FirebaseAuthException catch (e) {
       _showSnackBar(_handleFirebaseError(e));
     } catch (e) {
-      _showSnackBar("Terjadi kesalahan tidak terduga");
+      _showSnackBar("Terjadi kesalahan: ${e.toString()}");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -109,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const Text(
-                      "lanjutkan perjalanan sehatmu bersama kami",
+                      "Lanjutkan perjalanan sehatmu bersama kami",
                     ),
                     const SizedBox(height: 30),
                     _buildTextField(
@@ -158,8 +179,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         onPressed: _isLoading ? null : _handleLogin,
                         child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text(
                                 "Masuk",
@@ -220,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
         prefixIcon: Icon(icon),
         hintText: hint,
         filled: true,
-        fillColor: const Color(0xFFF5F5F5), // Gunakan const warna statis
+        fillColor: const Color(0xFFF5F5F5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
