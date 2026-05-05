@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
@@ -21,11 +20,9 @@ class _HomeHeaderState extends State<HomeHeader> {
 
   Future<String> getCityName() async {
     LocationPermission permission = await Geolocator.checkPermission();
-
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-
     if (permission == LocationPermission.deniedForever) {
       return "Location denied";
     }
@@ -40,7 +37,6 @@ class _HomeHeaderState extends State<HomeHeader> {
     );
 
     Placemark place = placemarks.first;
-
     return "${place.locality ?? "Unknown"}, ${place.country ?? ""}";
   }
 
@@ -69,26 +65,16 @@ class _HomeHeaderState extends State<HomeHeader> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Location",
-              style: TextStyle(color: Colors.white70, fontSize: 10),
-            ),
+            const Text("Location", style: TextStyle(color: Colors.white70, fontSize: 10)),
             FutureBuilder<String>(
               future: getCityName(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Text(
-                    "Detecting location...",
-                    style: TextStyle(color: Colors.white),
-                  );
+                  return const Text("Detecting location...", style: TextStyle(color: Colors.white));
                 }
-
                 return Text(
                   snapshot.data ?? "Unknown",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 );
               },
             ),
@@ -99,33 +85,16 @@ class _HomeHeaderState extends State<HomeHeader> {
             IconButton(
               icon: const Icon(Icons.notifications, color: Colors.white),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const NotificationScreen(),
-                  ),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
               },
             ),
             IconButton(
               icon: const Icon(Icons.shopping_cart, color: Colors.white),
               onPressed: () {
+                // ✅ Navigasi diperbaiki menjadi satu route saja
                 Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CartScreen(
-                      initialItems: [
-                        CartItem(
-                          name: "Beras Kencur Premium",
-                          size: "350 ml",
-                          price: 56000,
-                          image: "assets/jamu-1.png",
-                          isChecked: true,
-                          quantity: 1,
-                        ),
-                      ],
-                    ),
-                  ),
+                  context, 
+                  MaterialPageRoute(builder: (context) => const CartScreen(initialItems: []))
                 );
               },
             ),
@@ -138,8 +107,7 @@ class _HomeHeaderState extends State<HomeHeader> {
   Widget _buildSearchBar(BuildContext context) {
     return TextField(
       decoration: InputDecoration(
-        hintText: "Search",
-        hintStyle: const TextStyle(color: Colors.grey),
+        hintText: "Cari Jamu Favoritmu...",
         prefixIcon: const Icon(Icons.search),
         suffixIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
@@ -157,11 +125,7 @@ class _HomeHeaderState extends State<HomeHeader> {
         ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 0),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
       ),
     );
   }
@@ -294,65 +258,22 @@ class _HomeHeaderState extends State<HomeHeader> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            right: -10,
-            top: -10,
-            child: SvgPicture.asset(
-              'assets/coins.svg',
-              width: 120,
-            ),
+            right: -10, top: -10,
+            child: SvgPicture.asset('assets/coins.svg', width: 120),
           ),
-          Column(
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFDF5E6),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFD4AF37),
-                    width: 0.5,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.monetization_on,
-                        color: Color(0xFFD4AF37), size: 18),
-                    SizedBox(width: 6),
-                    Text(
-                      "100 Points",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Colors.black12),
-              const SizedBox(height: 12),
-              Row(
-                children: const [
-                  Text(
-                    "Redeem your points for exciting rewards",
-                    style: TextStyle(fontSize: 11, color: Colors.black54),
-                  ),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 12),
-                ],
-              ),
+              Text("100 Points", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              SizedBox(height: 12),
+              Divider(height: 1, color: Colors.black12),
+              SizedBox(height: 12),
+              Text("Redeem your points for exciting rewards", style: TextStyle(fontSize: 11, color: Colors.black54)),
             ],
           ),
         ],

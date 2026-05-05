@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ProductOptionsSection extends StatefulWidget {
-  const ProductOptionsSection({super.key});
+  // ✅ TAMBAHIN INI: Biar bisa ngirim data ke DetailScreen
+  final Function(String)? onSizeChanged;
+
+  const ProductOptionsSection({super.key, this.onSizeChanged});
 
   @override
   State<ProductOptionsSection> createState() => _ProductOptionsSectionState();
@@ -48,10 +51,8 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
             title: const Text("Beras Kencur Saja"),
             trailing: Radio<int>(
               value: 1,
-              // ignore: deprecated_member_use
               groupValue: selectedOption,
               activeColor: const Color(0xFF7E8959),
-              // ignore: deprecated_member_use
               onChanged: (val) {
                 setState(() {
                   selectedOption = val!;
@@ -66,10 +67,8 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
             title: const Text("Paket 3 Botol Beras Kencur"),
             trailing: Radio<int>(
               value: 2,
-              // ignore: deprecated_member_use
               groupValue: selectedOption,
               activeColor: const Color(0xFF7E8959),
-              // ignore: deprecated_member_use
               onChanged: (val) {
                 setState(() {
                   selectedOption = val!;
@@ -91,6 +90,10 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
         setState(() {
           selectedSize = label;
         });
+        // ✅ PANGGIL INI: Biar DetailScreen tau ukurannya ganti
+        if (widget.onSizeChanged != null) {
+          widget.onSizeChanged!(label);
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

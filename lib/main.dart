@@ -2,16 +2,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
-import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-// Sesuaikan path-nya
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 1. Inisialisasi Firebase
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: "AIzaSyBymYUiuQeqzolGvFnixdk9-6xGu4ROBRs",
@@ -21,11 +22,17 @@ void main() async {
     ),
   );
 
-  // 2. Cek apakah sudah pernah onboarding
-  final prefs = await SharedPreferences.getInstance();
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('showOnboarding') ?? true;
 
-  runApp(JamuSaripah(showOnboarding: showOnboarding));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: JamuSaripah(showOnboarding: showOnboarding),
+    ),
+  );
 }
 
 class JamuSaripah extends StatelessWidget {
@@ -37,9 +44,10 @@ class JamuSaripah extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        textTheme: GoogleFonts.montserratTextTheme(),
+        textTheme: GoogleFonts.montserratTextTheme(
+          Theme.of(context).textTheme,
+        ),
       ),
-      // LOGIKA UTAMA
       home: showOnboarding 
           ? const OnboardingScreen() 
           : const AuthWrapper(),
@@ -47,7 +55,6 @@ class JamuSaripah extends StatelessWidget {
   }
 }
 
-// Widget terpisah untuk mengecek status Login Firebase
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -58,15 +65,15 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Color(0xFF7E8959))),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF8DA05E)), // Warna Olive Manual
+            ),
           );
         }
-        
         if (snapshot.hasData) {
-          return const MainScreen(); // Jika sudah login
+          return const MainScreen(); 
         }
-        
-        return const LoginScreen(); // Jika belum login
+        return const LoginScreen(); 
       },
     );
   }

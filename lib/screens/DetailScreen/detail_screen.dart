@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
+import 'package:jamu_saripah/Models/cart_item.dart';
+import 'package:jamu_saripah/Models/product_cart.dart'; 
 import 'package:provider/provider.dart'; 
 import 'package:jamu_saripah/Provider/cart_provider.dart';
 import 'components/product_options_section.dart';
 import 'components/add_to_cart_bottom_sheet.dart';
 
 class DetailScreen extends StatefulWidget {
-  const DetailScreen({super.key});
+  final Product product; 
+
+  const DetailScreen({super.key, required this.product});
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
@@ -15,19 +18,57 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   int quantity = 1;
-  final int pricePerItem = 19500;
+  String selectedSize = "250 ml"; 
+  String selectedOption = "Beras Kencur Saja"; 
+  int currentPrice = 0; 
 
-  // Fungsi format mata uang yang bener (pake package intl)
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Inisialisasi awal
+    currentPrice = widget.product.price;
+    print("DEBUG: Harga awal dari product: ${widget.product.price}");
+  }
+
+  void updatePrice(String size, String option) {
+    setState(() {
+      selectedSize = size;
+      selectedOption = option;
+
+      if (option.contains("Paket 3")) {
+        currentPrice = 70000; 
+      } else {
+        int basePrice = widget.product.price; 
+        if (size == "350 ml") {
+          currentPrice = basePrice + 5000;
+        } else if (size == "1 Liter") {
+          currentPrice = basePrice + 10000;
+        } else {
+          currentPrice = basePrice;
+        }
+      }
+      print("DEBUG: Harga update jadi: $currentPrice");
+    });
+  }
+
   String formatIDR(int amount) {
+    // ✅ Jika currentPrice masih 0, gunakan harga produk sebagai cadangan
+    int priceToFormat = (amount == 0) ? widget.product.price : amount;
+    
     return NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
-    ).format(amount);
+    ).format(priceToFormat);
   }
 
   @override
   Widget build(BuildContext context) {
+    // ✅ FORCE UPDATE: Jika currentPrice masih 0 saat build, paksa ambil dari widget
+    if (currentPrice == 0 && widget.product.price != 0) {
+      currentPrice = widget.product.price;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -36,11 +77,11 @@ class _DetailScreenState extends State<DetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Gambar SVG
+                // Bagian Gambar
                 Stack(
                   children: [
-                    SvgPicture.asset(
-                      'assets/jamu_3.svg',
+                    Image.asset(
+                      widget.product.image,
                       width: double.infinity,
                       height: 450,
                       fit: BoxFit.cover,
@@ -64,18 +105,19 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Jamu Beras Kencur",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      Text(
+                        widget.product.name,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        "Jamu beras kencur alami yang menyegarkan, membantu meningkatkan stamina dan menjaga tubuh tetap bugar.",
+                        widget.product.description,
                         style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                       const SizedBox(height: 15),
+                      // ✅ Harga utama
                       Text(
-                        formatIDR(pricePerItem),
+                        formatIDR(currentPrice),
                         style: const TextStyle(
                           fontSize: 22, 
                           fontWeight: FontWeight.bold, 
@@ -87,13 +129,17 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
 
                 const Divider(thickness: 10, color: Color(0xFFF5F5F5)),
-                const ProductOptionsSection(),
+                
+                // Pastiin komponen ini manggil callback onSizeChanged
+                ProductOptionsSection(
+                  onSizeChanged: (size) => updatePrice(size, selectedOption),
+                ),
                 const SizedBox(height: 120), 
               ],
             ),
           ),
 
-          // Tombol di bawah
+          // Bar bawah untuk tambah ke keranjang
           Positioned(
             bottom: 0,
             left: 0,
@@ -106,6 +152,9 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
+    // ✅ Hitung total untuk tombol
+    int totalPrice = (currentPrice == 0 ? widget.product.price : currentPrice) * quantity;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: const BoxDecoration(
@@ -115,7 +164,7 @@ class _DetailScreenState extends State<DetailScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            // Stepper Jumlah
+            // Kontrol Quantity
             Container(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
@@ -139,7 +188,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
             const SizedBox(width: 15),
             
-            // Tombol Tambah ke Keranjang
+            // Tombol Tambah
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -148,26 +197,35 @@ class _DetailScreenState extends State<DetailScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
-                  // Kirim data ke CartProvider
                   context.read<CartProvider>().addToCart(
                     CartItem(
-                      name: "Jamu Beras Kencur",
-                      price: pricePerItem,
+                      name: widget.product.name,
+                      price: currentPrice,
                       quantity: quantity,
-                      image: 'assets/jamu_3.svg',
+                      image: widget.product.image, 
+                      size: selectedSize, 
                     ),
                   );
 
-                  // Munculin Bottom Sheet
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent, 
-                    builder: (context) => const AddToCartBottomSheet(),
+                    builder: (context) => AddToCartBottomSheet(
+                      product: Product(
+                        name: widget.product.name,
+                        price: currentPrice, 
+                        image: widget.product.image,
+                        description: widget.product.description,
+                        size: selectedSize,
+                      ),
+                      quantity: quantity,
+                      size: selectedSize,
+                    ),
                   );
                 },
                 child: Text(
-                  "Tambah - ${formatIDR(pricePerItem * quantity)}",
+                  "Tambah - ${formatIDR(totalPrice)}",
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),

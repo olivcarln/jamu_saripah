@@ -1,13 +1,14 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:jamu_saripah/common/constasts.dart';
+import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_avatar.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_button.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_textfield.dart';
-import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/services/profile_services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -157,10 +158,11 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
   } catch (e) {
     print("ERROR SAVE: $e");
 
+    // ❌ ERROR SNACKBAR
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text("Gagal menyimpan profil"),
+          content: const Text("Gagal menyimpan profil "),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

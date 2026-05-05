@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
+import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
  
 void main() {
   runApp(const MyApp());
