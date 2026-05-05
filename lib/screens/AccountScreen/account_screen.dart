@@ -192,10 +192,7 @@ class _AccountPageState extends State<AccountPage> {
                     buildMenuItem("Media Sosial"),
                     const SizedBox(height: 60),
                     const Center(
-                      child: Text(
-                        "Version 1.0.0",
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
+                      child: Text("Version 1.0.0", style: TextStyle(color: Colors.grey, fontSize: 12)),
                     ),
                   ],
                 ),
