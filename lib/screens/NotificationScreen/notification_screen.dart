@@ -26,7 +26,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: const Color(0xFF7E8959),
+        backgroundColor:Color(0xFF7E8959),
         elevation: 0,
         actions: [
           IconButton(
@@ -58,20 +58,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor: const Color(0xFF7E8959),
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: "Vouchers"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: "Your order"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Account"),
-        ],
-      ),
-      
     );
   }
 

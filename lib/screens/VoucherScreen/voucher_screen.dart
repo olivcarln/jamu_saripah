@@ -6,21 +6,24 @@ class VoucherScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildAppBarSimulated(), 
-        _buildSearchBox(),
-        _buildTabHeader(),
-        Divider(height: 1),
-        _buildOrderSummary(),
-        Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            itemCount: 5,
-            itemBuilder: (context, index) => VoucherCard(),
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildAppBarSimulated(), 
+          _buildSearchBox(),
+          _buildTabHeader(),
+          Divider(height: 1),
+          _buildOrderSummary(),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 5,
+              itemBuilder: (context, index) => VoucherCard(),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -31,24 +34,46 @@ class VoucherScreen extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         'Vouchers',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildSearchBox() {
-    return Padding(
-      padding: EdgeInsets.all(16.0),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Dapat kode promo? masukkan disini',
-          prefixIcon: Icon(Icons.confirmation_number_outlined, color: Colors.green),
-          contentPadding: EdgeInsets.symmetric(vertical: 0),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+ Widget _buildSearchBox() {
+  return Padding(
+    padding: EdgeInsets.all(20),
+    child: TextField(
+      decoration: InputDecoration(
+        hintText: 'Dapat kode promo? masukkan disini',
+        hintStyle: TextStyle(
+          color: Color(0xFF7B8D5E)
+        ),
+        prefixIcon: Padding(
+          padding: EdgeInsets.only(left: 13),
+          child: Icon(Icons.confirmation_number_outlined, color: Color(0xFF7B8D5E)),
+        ),
+        contentPadding: EdgeInsets.symmetric(vertical: 0),
+
+        // ketika border tidak fokus
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            color: Color(0xFF7B8D5E),
+            width: 2,
+          ),
+        ),
+     // ketika border fokus
+          focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: BorderSide(
+          color: Color(0xFF7B8D5E), // warna pas focus
+          width: 2.5, // lebih tebal
         ),
       ),
-    );
-  }
+      ),
+    ),
+  );
+}
 
   Widget _buildTabHeader() {
     return Padding(
