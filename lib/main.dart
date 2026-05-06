@@ -38,18 +38,25 @@ void main() async {
 
 class JamuSaripah extends StatelessWidget {
   final bool showOnboarding;
+
   const JamuSaripah({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+
+      /// 🔥 INI YANG DIPINDAH KE SINI
+      routes: {
+        '/login': (context) => const LoginScreen(),
+      },
+
       theme: ThemeData(
         textTheme: GoogleFonts.montserratTextTheme(
           Theme.of(context).textTheme,
         ),
       ),
-      // Jika onboarding sudah lewat, masuk ke AuthWrapper
+
       home: showOnboarding 
           ? const OnboardingScreen() 
           : const AuthWrapper(),
@@ -65,47 +72,55 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // Cek apakah koneksi masih dalam proses inisialisasi
+
+        /// ⏳ Loading awal
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Color(0xFF8DA05E))),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF8DA05E)),
+            ),
           );
         }
 
-        // Jika snapshot aktif tapi datanya null, barulah ke Login
-        if (snapshot.connectionState == ConnectionState.active && !snapshot.hasData) {
+        /// ❌ Belum login
+        if (!snapshot.hasData) {
           return const LoginScreen();
         }
 
-        // Jika ada data user (Berhasil Login)
-        if (snapshot.hasData && snapshot.data != null) {
-          final String uid = snapshot.data!.uid;
+        /// ✅ Sudah login
+        final String uid = snapshot.data!.uid;
 
-          return FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
-            builder: (context, roleSnapshot) {
-              if (roleSnapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator(color: Color(0xFF8DA05E))),
-                );
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .get(),
+          builder: (context, roleSnapshot) {
+
+            /// ⏳ Loading role
+            if (roleSnapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(color: Color(0xFF8DA05E)),
+                ),
+              );
+            }
+
+            /// ✅ Cek role user
+            if (roleSnapshot.hasData && roleSnapshot.data!.exists) {
+              final data =
+                  roleSnapshot.data!.data() as Map<String, dynamic>;
+
+              final String role = data['role'] ?? 'user';
+
+              if (role == 'admin') {
+                return const AdminMainScreen();
               }
+            }
 
-              if (roleSnapshot.hasData && roleSnapshot.data!.exists) {
-                final data = roleSnapshot.data!.data() as Map<String, dynamic>;
-                final String role = data['role'] ?? 'user';
-
-                if (role == 'admin') {
-                  return const AdminMainScreen();
-                }
-              }
-              return const MainScreen();
-            },
-          );
-        }
-
-        // Default: Tampilkan loading selagi menunggu kepastian status
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator(color: Color(0xFF8DA05E))),
+            /// Default user biasa
+            return const MainScreen();
+          },
         );
       },
     );

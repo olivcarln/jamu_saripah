@@ -4,7 +4,7 @@ class Product {
   final String size; 
   final String image;
   final String description;
-  final int stock; // ✅ Field ini menyimpan data angka stok
+  final int stock;
 
   Product({
     required this.name, 
@@ -12,7 +12,7 @@ class Product {
     required this.size, 
     required this.image, 
     required this.description, 
-    required this.stock, // ✅ Wajib diisi di list produk
+    required this.stock, 
   });
 }
 

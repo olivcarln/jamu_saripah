@@ -1,4 +1,5 @@
 import 'dart:convert'; // WAJIB untuk decode Base64
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; 
 import 'package:jamu_saripah/Models/product_cart.dart';
@@ -20,21 +21,49 @@ class Menus extends StatelessWidget {
           ),
           const SizedBox(height: 15),
 
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: allProducts.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
-              childAspectRatio: 0.75,
-            ),
-            itemBuilder: (context, index) {
-              final product = allProducts[index];
-              return _buildProductCard(context, product);
-            },
-          ),
+StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('products')
+      .orderBy('createdAt', descending: true)
+      .snapshots(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return const Center(child: Text("Belum ada produk"));
+    }
+
+    final products = snapshot.data!.docs;
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: products.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 15,
+        childAspectRatio: 0.75,
+      ),
+      itemBuilder: (context, index) {
+        final data = products[index].data() as Map<String, dynamic>;
+
+        final product = Product(
+          name: data['name'] ?? '',
+          price: data['price'] ?? 0,
+          size: "Botol", 
+          image: data['imageUrl'] ?? '',
+          description: data['description'] ?? '',
+          stock: data['stock'] ?? 0,
+        );
+
+        return _buildProductCard(context, product);
+      },
+    );
+  },
+)
         ],
       ),
     );
