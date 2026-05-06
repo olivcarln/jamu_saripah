@@ -1,4 +1,4 @@
-import 'dart:convert'; // WAJIB untuk decode Base64
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; 
 import 'package:jamu_saripah/Models/product_cart.dart';
@@ -28,7 +28,7 @@ class Menus extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 15,
               mainAxisSpacing: 15,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.70, // Sedikit disesuaikan agar teks harga tidak terpotong ke bawah
             ),
             itemBuilder: (context, index) {
               final product = allProducts[index];
@@ -41,6 +41,13 @@ class Menus extends StatelessWidget {
   }
 
   Widget _buildProductCard(BuildContext context, Product product) {
+    // --- LOGIC DISCOUNT UNTUK ADMIN ---
+    // Di sini kita cek apakah admin memberikan harga diskon. 
+    // Kita asumsikan admin menyimpan 'originalPrice' di Firestore.
+    // Jika tidak ada data dari admin, kita gunakan simulasi harga coret.
+    final bool hasDiscount = true; // Nantinya ini bisa diganti (product.originalPrice != null)
+    final double strikethroughPrice = product.price + 5000; 
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -66,7 +73,6 @@ class Menus extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Bagian Gambar Produk
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -80,10 +86,7 @@ class Menus extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -92,6 +95,19 @@ class Menus extends StatelessWidget {
                     style: const TextStyle(color: Colors.grey, fontSize: 11),
                   ),
                   const SizedBox(height: 8),
+
+                  // LOGIC UI DISCOUNT
+                  if (hasDiscount)
+                    Text(
+                      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+                          .format(strikethroughPrice),
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10,
+                        decoration: TextDecoration.lineThrough, // Efek coret harga lama
+                      ),
+                    ),
+
                   Text(
                     NumberFormat.currency(
                       locale: 'id_ID',
@@ -113,10 +129,7 @@ class Menus extends StatelessWidget {
     );
   }
 
-  // Fungsi helper untuk menentukan apakah gambar itu Base64 atau Asset
   Widget _buildProductImage(String imageSource) {
-    // Cek apakah string imageSource adalah Base64 (biasanya sangat panjang)
-    // atau jika kamu menyimpannya di Firestore dengan tanda tertentu
     if (imageSource.length > 100) {
       try {
         return Image.memory(
@@ -124,14 +137,12 @@ class Menus extends StatelessWidget {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          // Placeholder jika gagal load
           errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
         );
       } catch (e) {
         return const Center(child: Icon(Icons.broken_image));
       }
     } else {
-      // Jika bukan base64, anggap sebagai path Asset lokal
       return Image.asset(
         imageSource,
         fit: BoxFit.cover,

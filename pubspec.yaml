@@ -102,6 +102,15 @@ flutter:
     - assets/delivery_button.svg
     - assets/pickup_button.svg
     - assets/address.svg
+    - assets/wedang_jahe.svg
+    - assets/Beras Kencur 1.svg
+    - assets/Beras Kencur 250ML.svg
+    - assets/Kunyit Asem 250ML.svg
+    - assets/mix-1.svg
+    - assets/mix-2.svg
+    - assets/mix-3.svg
+    - assets/WedangJahe-250ML.svg
+    - assets/Kunyit Asem 100ML.svg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
