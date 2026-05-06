@@ -2,11 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 
-class HomeHeader extends StatelessWidget {
+class HomeHeader extends StatefulWidget {
   const HomeHeader({super.key});
+
+  @override
+  State<HomeHeader> createState() => _HomeHeaderState();
+}
+
+class _HomeHeaderState extends State<HomeHeader> {
+  String selectedPrice = "Harga Tertinggi";
+  String selectedCategory = "250 ML";
+  String selectedType = "Beras Kencur";
 
   Future<String> getCityName() async {
     // Pastikan service GPS menyala
@@ -54,7 +64,7 @@ class HomeHeader extends StatelessWidget {
           children: [
             _buildTopBar(context),
             const SizedBox(height: 20),
-            _buildSearchBar(),
+            _buildSearchBar(context),
             const SizedBox(height: 30),
             _buildPointCard(),
           ],
@@ -109,14 +119,150 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
     return TextField(
       decoration: InputDecoration(
         hintText: "Cari Jamu Favoritmu...",
         prefixIcon: const Icon(Icons.search),
+        suffixIcon: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: () => _showFilter(context),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.primaryOlive.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Icon(Icons.tune, size: 20, color: AppColors.primaryOlive),
+            ),
+          ),
+        ),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+      ),
+    );
+  }
+
+  void _showFilter(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  const Center(
+                    child: Text(
+                      "Filter",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  _buildExpandableSection(
+                    title: "Harga",
+                    groupValue: selectedPrice,
+                    options: const ["Harga Tertinggi", "Harga Terendah"],
+                    onChanged: (val) =>
+                        setModalState(() => selectedPrice = val),
+                  ),
+
+                  _buildExpandableSection(
+                    title: "Kategori",
+                    groupValue: selectedCategory,
+                    options: const ["250 ML", "350 ML", "1000 ML"],
+                    onChanged: (val) =>
+                        setModalState(() => selectedCategory = val),
+                  ),
+
+                  _buildExpandableSection(
+                    title: "Jenis Jamu",
+                    groupValue: selectedType,
+                    options: const [
+                      "Beras Kencur",
+                      "Kunyit Asem",
+                      "Wedang Jahe"
+                    ],
+                    onChanged: (val) =>
+                        setModalState(() => selectedType = val),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryOlive,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {});
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Apply Filter",
+                        style: TextStyle(fontSize: 16, color: AppColors.white)),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildExpandableSection({
+    required String title,
+    required String groupValue,
+    required List<String> options,
+    required Function(String) onChanged,
+  }) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        iconColor: AppColors.primaryOlive,
+        collapsedIconColor: Colors.black54,
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        children: options.map((option) {
+          return RadioListTile(
+            contentPadding: EdgeInsets.zero,
+            activeColor: AppColors.primaryOlive,
+            title: Text(option),
+            value: option,
+            groupValue: groupValue,
+            onChanged: (value) => onChanged(value as String),
+          );
+        }).toList(),
       ),
     );
   }

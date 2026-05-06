@@ -1,28 +1,28 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// Import file sakti hasil konfigurasi tadi
-import 'firebase_options.dart'; 
-
 import 'package:jamu_saripah/Provider/cart_provider.dart';
 import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
+import 'package:jamu_saripah/admin_screen/admin_main_screen.dart'; 
 
 void main() async {
-  // Wajib dipanggil sebelum inisialisasi apapun
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Menyalakan Firebase menggunakan konfigurasi otomatis
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyBymYUiuQeqzolGvFnixdk9-6xGu4ROBRs",
+      appId: "1:523756741499:android:da218b19466f56d584d3de",
+      messagingSenderId: "523756741499",
+      projectId: "jamu-saripah-78774",
+    ),
   );
 
-  // Mengambil status onboarding dari memori hp
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('showOnboarding') ?? true;
 
@@ -43,15 +43,13 @@ class JamuSaripah extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Jamu Saripah',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Mengatur font Montserrat sebagai standar aplikasi
         textTheme: GoogleFonts.montserratTextTheme(
           Theme.of(context).textTheme,
         ),
       ),
-      // Alur: Onboarding -> AuthWrapper (Login/Main)
+      // Jika onboarding sudah lewat, masuk ke AuthWrapper
       home: showOnboarding 
           ? const OnboardingScreen() 
           : const AuthWrapper(),
@@ -64,26 +62,51 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // StreamBuilder ini gunanya nge-cek: user sudah login atau belum?
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // Jika status login sedang dicek, tampilkan loading
+        // Cek apakah koneksi masih dalam proses inisialisasi
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(color: Color(0xFF8DA05E)), 
-            ),
+            body: Center(child: CircularProgressIndicator(color: Color(0xFF8DA05E))),
           );
         }
-        
-        // Jika user sudah login (ada datanya), masuk ke Main Screen
-        if (snapshot.hasData) {
-          return const MainScreen(); 
+
+        // Jika snapshot aktif tapi datanya null, barulah ke Login
+        if (snapshot.connectionState == ConnectionState.active && !snapshot.hasData) {
+          return const LoginScreen();
         }
-        
-        // Jika user belum login, lempar ke halaman Login
-        return const LoginScreen(); 
+
+        // Jika ada data user (Berhasil Login)
+        if (snapshot.hasData && snapshot.data != null) {
+          final String uid = snapshot.data!.uid;
+
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
+            builder: (context, roleSnapshot) {
+              if (roleSnapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator(color: Color(0xFF8DA05E))),
+                );
+              }
+
+              if (roleSnapshot.hasData && roleSnapshot.data!.exists) {
+                final data = roleSnapshot.data!.data() as Map<String, dynamic>;
+                final String role = data['role'] ?? 'user';
+
+                if (role == 'admin') {
+                  return const AdminMainScreen();
+                }
+              }
+              return const MainScreen();
+            },
+          );
+        }
+
+        // Default: Tampilkan loading selagi menunggu kepastian status
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator(color: Color(0xFF8DA05E))),
+        );
       },
     );
   }

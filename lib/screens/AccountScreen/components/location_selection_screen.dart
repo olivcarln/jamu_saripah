@@ -44,26 +44,25 @@ class LocationSelectionScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: InkWell(
               onTap: () {
-                // Logika ketika lokasi dipilih
-                Navigator.pop(context, "Washington DC"); 
+                Navigator.pop(context, "Jakarta Selatan"); 
               },
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFF6E8B4F).withOpacity(0.5)),
+                  border: Border.all(color: const Color(0xFF6E8B4F).withValues(alpha: 0.5)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Washington DC",
+                      "Jakarta Selatan",
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "jl.Lapangan bola No.8 RT.7/RW.1, KB.semangka, Kec. Kb.",
+                      "Jl. Kemang Raya No.10, RT.5/RW.1, Bangka, Kec. Mampang Prapatan",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
