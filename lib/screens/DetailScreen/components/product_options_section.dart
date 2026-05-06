@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class ProductOptionsSection extends StatefulWidget {
-  // ✅ TAMBAHIN INI: Biar bisa ngirim data ke DetailScreen
   final Function(String)? onSizeChanged;
 
   const ProductOptionsSection({super.key, this.onSizeChanged});
@@ -11,9 +10,8 @@ class ProductOptionsSection extends StatefulWidget {
 }
 
 class _ProductOptionsSectionState extends State<ProductOptionsSection> {
-  // Variabel buat nyimpen pilihan user
-  String selectedSize = "350 ml"; // Default ukuran
-  int selectedOption = 1;         // Default pilihan paket
+  String selectedSize = "350 ml"; 
+  int selectedOption = 1;        
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +79,6 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
     );
   }
 
-  // Widget Button Ukuran yang bisa berubah warna
   Widget _buildSizeOption(String label) {
     bool isSelected = selectedSize == label;
     
@@ -90,7 +87,6 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
         setState(() {
           selectedSize = label;
         });
-        // ✅ PANGGIL INI: Biar DetailScreen tau ukurannya ganti
         if (widget.onSizeChanged != null) {
           widget.onSizeChanged!(label);
         }

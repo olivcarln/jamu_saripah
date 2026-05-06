@@ -25,7 +25,6 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ Inisialisasi awal
     currentPrice = widget.product.price;
     print("DEBUG: Harga awal dari product: ${widget.product.price}");
   }
@@ -52,7 +51,6 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   String formatIDR(int amount) {
-    // ✅ Jika currentPrice masih 0, gunakan harga produk sebagai cadangan
     int priceToFormat = (amount == 0) ? widget.product.price : amount;
     
     return NumberFormat.currency(
@@ -64,7 +62,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ FORCE UPDATE: Jika currentPrice masih 0 saat build, paksa ambil dari widget
     if (currentPrice == 0 && widget.product.price != 0) {
       currentPrice = widget.product.price;
     }
@@ -130,7 +127,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
                 const Divider(thickness: 10, color: Color(0xFFF5F5F5)),
                 
-                // Pastiin komponen ini manggil callback onSizeChanged
                 ProductOptionsSection(
                   onSizeChanged: (size) => updatePrice(size, selectedOption),
                 ),
@@ -152,7 +148,6 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
-    // ✅ Hitung total untuk tombol
     int totalPrice = (currentPrice == 0 ? widget.product.price : currentPrice) * quantity;
 
     return Container(
@@ -164,7 +159,6 @@ class _DetailScreenState extends State<DetailScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            // Kontrol Quantity
             Container(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
@@ -188,7 +182,6 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
             const SizedBox(width: 15),
             
-            // Tombol Tambah
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
