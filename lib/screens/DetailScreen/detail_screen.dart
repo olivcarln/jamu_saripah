@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
-import 'package:jamu_saripah/Models/product_cart.dart'; 
+import 'package:jamu_saripah/Models/product_cart.dart';
+import 'package:jamu_saripah/common/constasts.dart'; 
 import 'package:provider/provider.dart'; 
 import 'package:jamu_saripah/Provider/cart_provider.dart';
 import 'components/product_options_section.dart';
@@ -25,9 +26,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ Inisialisasi awal
     currentPrice = widget.product.price;
-    print("DEBUG: Harga awal dari product: ${widget.product.price}");
   }
 
   void updatePrice(String size, String option) {
@@ -47,14 +46,11 @@ class _DetailScreenState extends State<DetailScreen> {
           currentPrice = basePrice;
         }
       }
-      print("DEBUG: Harga update jadi: $currentPrice");
     });
   }
 
   String formatIDR(int amount) {
-    // ✅ Jika currentPrice masih 0, gunakan harga produk sebagai cadangan
     int priceToFormat = (amount == 0) ? widget.product.price : amount;
-    
     return NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -64,10 +60,14 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ FORCE UPDATE: Jika currentPrice masih 0 saat build, paksa ambil dari widget
     if (currentPrice == 0 && widget.product.price != 0) {
       currentPrice = widget.product.price;
     }
+
+    // ✅ Logic Warna Stok: Merah jika < 5, Olive jika >= 5
+    bool isLowStock = widget.product.stock < 5;
+    Color badgeBgColor = isLowStock ? const Color(0xFFFDE8E8) : AppColors.primaryOlive;
+    Color badgeTextColor = isLowStock ? const Color(0xFFC53030) : AppColors.white;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -105,17 +105,35 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.product.name,
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        widget.product.description,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      // Nama Produk & Badge Stok
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.product.name,
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: badgeBgColor,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              "Sisa ${widget.product.stock} stok",
+                              style: TextStyle(
+                                color: badgeTextColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 15),
-                      // ✅ Harga utama
+                      // Harga
                       Text(
                         formatIDR(currentPrice),
                         style: const TextStyle(
@@ -124,13 +142,30 @@ class _DetailScreenState extends State<DetailScreen> {
                           color: Color(0xFF7E8959)
                         ),
                       ),
+                      
+                      const SizedBox(height: 25),
+                      const Text(
+                        "Tentang Jamu Ini",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      // Deskripsi dari Model
+                      Text(
+                        widget.product.description.isEmpty 
+                          ? "Racikan jamu tradisional ini dibuat dengan bahan alami pilihan tanpa pengawet." 
+                          : widget.product.description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          height: 1.6,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ],
                   ),
                 ),
 
                 const Divider(thickness: 10, color: Color(0xFFF5F5F5)),
                 
-                // Pastiin komponen ini manggil callback onSizeChanged
                 ProductOptionsSection(
                   onSizeChanged: (size) => updatePrice(size, selectedOption),
                 ),
@@ -139,7 +174,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
 
-          // Bar bawah untuk tambah ke keranjang
+          // Tombol Bottom Bar
           Positioned(
             bottom: 0,
             left: 0,
@@ -152,7 +187,6 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
-    // ✅ Hitung total untuk tombol
     int totalPrice = (currentPrice == 0 ? widget.product.price : currentPrice) * quantity;
 
     return Container(
@@ -164,7 +198,6 @@ class _DetailScreenState extends State<DetailScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            // Kontrol Quantity
             Container(
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey[300]!),
@@ -188,7 +221,6 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
             const SizedBox(width: 15),
             
-            // Tombol Tambah
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -202,8 +234,8 @@ class _DetailScreenState extends State<DetailScreen> {
                       name: widget.product.name,
                       price: currentPrice,
                       quantity: quantity,
-                      image: widget.product.image, 
-                      size: selectedSize, 
+                      image: widget.product.image,
+                      size: selectedSize,
                     ),
                   );
 
@@ -214,10 +246,11 @@ class _DetailScreenState extends State<DetailScreen> {
                     builder: (context) => AddToCartBottomSheet(
                       product: Product(
                         name: widget.product.name,
-                        price: currentPrice, 
+                        price: currentPrice,
                         image: widget.product.image,
                         description: widget.product.description,
                         size: selectedSize,
+                        stock: widget.product.stock,
                       ),
                       quantity: quantity,
                       size: selectedSize,

@@ -29,7 +29,7 @@ class TermsConditionsScreen extends StatelessWidget {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Colors.grey.withOpacity(0.2), height: 1.0),
+          child: Container(color: Colors.grey.withValues(alpha: 0.2), height: 1.0),
         ),
       ),
       body: Column(

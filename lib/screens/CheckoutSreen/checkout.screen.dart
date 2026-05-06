@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/adding_menu_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/payment_screen.dart';
@@ -7,7 +8,14 @@ import 'package:jamu_saripah/screens/orderscreen/order_history_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/select_method_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  const CheckoutScreen({super.key});
+  final int? totalPrice;
+  final int? selectedCount;
+
+  const CheckoutScreen({
+    super.key, 
+    this.totalPrice, 
+    this.selectedCount,
+  });
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -19,14 +27,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool perluTasBelanja = false;
   int hargaTas = 3000;
 
-  final List<Map<String, dynamic>> cartItems = [
-    {
-      'name': 'Jamu Beras Kencur',
-      'size': '350 ml',
-      'price': 19500,
-      'qty': 1,
-    }
-  ];
+  late List<Map<String, dynamic>> cartItems;
+
+  @override
+  void initState() {
+    super.initState();
+    cartItems = [
+      {
+        'name': 'Total Pesanan (${widget.selectedCount ?? 0} Item)',
+        'size': 'Item dari Keranjang',
+        'price': widget.totalPrice ?? 0,
+        'qty': 1,
+      }
+    ];
+  }
 
   String formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
@@ -68,7 +82,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const Text('Detail Pesanan',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   const SizedBox(height: 10),
-                  ...cartItems.map((item) => _buildCartItem(item)),
+                  // Menampilkan list produk dengan fitur slide to delete
+                  if (cartItems.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text("Belum ada pesanan", style: TextStyle(color: Colors.grey)),
+                    )
+                  else
+                    ...cartItems.map((item) => _buildCartItem(item)),
                   const Divider(),
                   _buildAddMoreButton(),
                 ],
@@ -117,12 +138,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration:
-                const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: Icon(
-              currentMethod == 'Delivery'
-                  ? Icons.local_shipping
-                  : Icons.person_pin_circle,
+              currentMethod == 'Delivery' ? Icons.local_shipping : Icons.person_pin_circle,
               color: const Color(0xFF7E8959),
               size: 24,
             ),
@@ -132,19 +150,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  currentMethod,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF7E8959),
-                      fontSize: 16),
-                ),
-                Text(
-                  currentMethod == 'Delivery'
-                      ? 'Tinggal pesan, kami yang antar'
-                      : 'Datang, ambil, beres!',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
+                Text(currentMethod, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF7E8959), fontSize: 16)),
+                Text(currentMethod == 'Delivery' ? 'Tinggal pesan, kami yang antar' : 'Datang, ambil, beres!', style: const TextStyle(color: Colors.grey, fontSize: 12)),
               ],
             ),
           ),
@@ -152,25 +159,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             height: 30,
             child: OutlinedButton(
               onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const SelectMethodScreen()),
-                );
-                if (result != null && result is String) {
-                  setState(() {
-                    currentMethod = result;
-                  });
-                }
+                final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const SelectMethodScreen()));
+                if (result != null && result is String) setState(() => currentMethod = result);
               },
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.grey),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-              ),
-              child: const Text('Ubah',
-                  style: TextStyle(color: Colors.black, fontSize: 12)),
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.grey), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), padding: const EdgeInsets.symmetric(horizontal: 15)),
+              child: const Text('Ubah', style: TextStyle(color: Colors.black, fontSize: 12)),
             ),
           ),
         ],
@@ -179,44 +172,44 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildLocationInfo() {
-    return const ListTile(
-      leading: Icon(Icons.home_outlined, color: Color(0xFF7E8959)),
-      title: Text('Anggrek Cakra', style: TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text('1.4 km dari lokasimu'),
+    bool isDelivery = currentMethod == 'Delivery';
+    return ListTile(
+      leading: Icon(
+        isDelivery ? Icons.location_on_outlined : Icons.home_outlined, 
+        color: const Color(0xFF7E8959)
+      ),
+      title: Text(
+        isDelivery ? 'Rumah - Jatiasih' : 'Jamu Saripah - Anggrek Cakra', 
+        style: const TextStyle(fontWeight: FontWeight.bold)
+      ),
+      subtitle: Text(
+        isDelivery 
+            ? 'Jl. Melati No. 12, Bekasi (Alamat Kamu)' 
+            : '1.4 km dari lokasimu (Alamat Toko)'
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+      onTap: () {},
     );
   }
 
-  Widget _buildClickableSection(
-      {required String title,
-      required String subtitle,
-      required IconData icon,
-      required VoidCallback onTap}) {
+  Widget _buildClickableSection({required String title, required String subtitle, required IconData icon, required VoidCallback onTap}) {
     return ListTile(
       onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration:
-            BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-        child: Icon(icon, color: const Color(0xFF7E8959), size: 22),
-      ),
-      title: Text(title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-      subtitle:
-          Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+      leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle), child: Icon(icon, color: const Color(0xFF7E8959), size: 22)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black54),
     );
   }
 
   Widget _buildRincianSection() {
-    int subtotal = cartItems.fold(
-        0, (sum, item) => sum + (item['price'] * item['qty'] as int));
+    int subtotal = cartItems.fold(0, (sum, item) => sum + (item['price'] * item['qty'] as int));
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Rincian Pembayaran',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text('Rincian Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 12),
           _rowHarga('Harga', subtotal),
           if (perluTasBelanja) _rowHarga('Tas Belanja', hargaTas),
@@ -224,25 +217,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total Pembayaran',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text('Rp ${formatHarga(calculateTotal())}',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Total Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('Rp ${formatHarga(calculateTotal())}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ],
           ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-                color: const Color(0xFFF9FCF3),
-                borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: const Color(0xFFF9FCF3), borderRadius: BorderRadius.circular(8)),
             child: const Row(
               children: [
                 Icon(Icons.stars, color: Color(0xFF7E8959), size: 18),
                 SizedBox(width: 8),
-                Text('Kamu berpotensi mendapatkan 4 Jamu Poin',
-                    style: TextStyle(fontSize: 12, color: Colors.black54)),
+                Text('Kamu berpotensi mendapatkan 4 Jamu Poin', style: TextStyle(fontSize: 12, color: Colors.black54)),
               ],
             ),
           ),
@@ -268,23 +255,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const OrderHistoryScreen()));
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF7E8959),
-          minimumSize: const Size(double.infinity, 54),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        ),
-        child: const Text('Pesan Sekarang',
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16)),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderHistoryScreen())),
+        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7E8959), minimumSize: const Size(double.infinity, 54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
+        child: const Text('Pesan Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
       ),
     );
   }
@@ -293,25 +266,77 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('Ada tambahan lagi?',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('Ada tambahan lagi?', style: TextStyle(fontWeight: FontWeight.bold)),
         OutlinedButton(
           onPressed: () => setState(() => showSpecialPackage = !showSpecialPackage),
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Color(0xFF7E8959)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ).copyWith(
+            backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              if (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) return const Color(0xFF7E8959);
+              return Colors.transparent;
+            }),
+            foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              if (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) return Colors.white;
+              return const Color(0xFF7E8959);
+            }),
+          ),
           child: const Text('Tambah'),
         )
       ],
     );
   }
 
-  Widget _buildCartItem(Map<String, dynamic> item) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(item['name'],
-          style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(item['size']),
-      trailing: Text('Rp ${formatHarga(item['price'])}',
-          style: const TextStyle(
-              fontWeight: FontWeight.bold, color: Color(0xFF7E8959))),
+Widget _buildCartItem(Map<String, dynamic> item) {
+    return Dismissible(
+      key: UniqueKey(),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        color: (AppColors.brown),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      // LOGIKA KONFIRMASI JIKA TINGGAL 1 ITEM
+      confirmDismiss: (direction) async {
+        if (cartItems.length <= 1) {
+          return await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Hapus Pesanan?"),
+                content: const Text("Ini adalah pesanan terakhirmu. Yakin ingin menghapusnya?"),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+        return true; // Jika lebih dari 1, langsung hapus tanpa tanya
+      },
+      onDismissed: (direction) {
+        setState(() {
+          cartItems.remove(item);
+        });
+      },
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(item['size']),
+        trailing: Text(
+          'Rp ${formatHarga(item['price'])}', 
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF7E8959))
+        ),
+      ),
     );
   }
 }

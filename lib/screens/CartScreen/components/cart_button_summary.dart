@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/Screens/CheckoutSreen/checkout.screen.dart';
 
 class CartButtonSummary extends StatelessWidget {
   final int totalPrice;
@@ -19,7 +20,6 @@ class CartButtonSummary extends StatelessWidget {
     for (int i = str.length - 1; i >= 0; i--) {
       res = str[i] + res;
       count++;
-      // ignore: prefer_interpolation_to_compose_strings
       if (count % 3 == 0 && i != 0) res = "." + res;
     }
     return "Rp $res";
@@ -33,10 +33,10 @@ class CartButtonSummary extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05), 
-            blurRadius: 10, 
-            offset: const Offset(0, -5)
-          )
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: SafeArea(
@@ -48,32 +48,52 @@ class CartButtonSummary extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Total ($selectedCount Item)", 
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)
+                  "Total ($selectedCount Item)",
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 Text(
-                  _formatRupiah(totalPrice), 
+                  _formatRupiah(totalPrice),
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold, 
-                    fontSize: 20, 
-                    color: Color(0xFF7E8959)
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Color(0xFF7E8959),
                   ),
                 ),
               ],
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                // Biar warnanya tetep cokelat meskipun belum ada yang dipilih
                 backgroundColor: const Color(0xFF634E34),
-                disabledBackgroundColor: const Color(0xFF634E34).withValues(alpha: 0.5),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                disabledBackgroundColor: const Color(
+                  0xFF634E34,
+                ).withValues(alpha: 0.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              // GANTI DI SINI: Langsung panggil onCheckout tanpa kondisi
-              onPressed: onCheckout, 
+              // GANTI DI SINI: Navigasi langsung ke CheckoutScreen
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutScreen(
+                      // KAMU KURANG DUA BARIS INI:
+                      totalPrice: totalPrice,
+                      selectedCount: selectedCount,
+                    ),
+                  ),
+                );
+              },
               child: const Text(
-                "Lanjut", 
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                "Lanjut",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

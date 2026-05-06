@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/controllers/onboarding_controller.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/hooks/auth/register_screen.dart';
@@ -73,7 +74,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       body: SafeArea(
+        
         child: Column(
           children: [
             Expanded(
@@ -108,7 +111,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   decoration: BoxDecoration(
                     color: currentIndex == index
                         ? const Color(0xFF7A7A3C)
-                        : const Color(0xFFB77B5C),
+                        : const Color.fromARGB(255, 166, 163, 162),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),

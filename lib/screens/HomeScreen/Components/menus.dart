@@ -1,7 +1,8 @@
+import 'dart:convert'; // WAJIB untuk decode Base64
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; 
 import 'package:jamu_saripah/Models/product_cart.dart';
-import 'package:jamu_saripah/Screens/DetailScreen/detail_screen.dart'; // ✅ Pastikan path ini benar
+import 'package:jamu_saripah/Screens/DetailScreen/detail_screen.dart';
 
 class Menus extends StatelessWidget {
   const Menus({super.key});
@@ -42,7 +43,6 @@ class Menus extends StatelessWidget {
   Widget _buildProductCard(BuildContext context, Product product) {
     return InkWell(
       onTap: () {
-        // ✅ NAVIGASI KE DETAIL SCREEN: Bawa data product
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -66,17 +66,11 @@ class Menus extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Bagian Gambar Produk
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(product.image),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                child: _buildProductImage(product.image),
               ),
             ),
             Padding(
@@ -98,7 +92,6 @@ class Menus extends StatelessWidget {
                     style: const TextStyle(color: Colors.grey, fontSize: 11),
                   ),
                   const SizedBox(height: 8),
-                  // ✅ TAMPILAN HARGA: Menggunakan format Rupiah dari angka int
                   Text(
                     NumberFormat.currency(
                       locale: 'id_ID',
@@ -118,5 +111,33 @@ class Menus extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Fungsi helper untuk menentukan apakah gambar itu Base64 atau Asset
+  Widget _buildProductImage(String imageSource) {
+    // Cek apakah string imageSource adalah Base64 (biasanya sangat panjang)
+    // atau jika kamu menyimpannya di Firestore dengan tanda tertentu
+    if (imageSource.length > 100) {
+      try {
+        return Image.memory(
+          base64Decode(imageSource),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          // Placeholder jika gagal load
+          errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
+        );
+      } catch (e) {
+        return const Center(child: Icon(Icons.broken_image));
+      }
+    } else {
+      // Jika bukan base64, anggap sebagai path Asset lokal
+      return Image.asset(
+        imageSource,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    }
   }
 }

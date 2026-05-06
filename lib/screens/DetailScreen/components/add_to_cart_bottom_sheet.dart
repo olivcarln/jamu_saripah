@@ -29,9 +29,7 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
     _calculatePrice(widget.size);
   }
 
-  // ✅ DUMMY PRICE LOGIC (Sesuai Paket & Ukuran)
   void _calculatePrice(String size) {
-    // Kita cek apakah nama produknya mengandung kata "Paket"
     bool isPaket = widget.product.name.contains("Paket");
 
     if (isPaket) {
@@ -44,7 +42,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
         currentPrice = 70000; // Sesuai screenshot lu!
       }
     } else {
-      // Harga kalau beli satuan (Bukan Paket)
       int basePrice = widget.product.price;
       if (size == "350 ml") {
         currentPrice = basePrice + 5000;
