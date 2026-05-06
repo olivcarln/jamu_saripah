@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/SettingsScreen/components/notifications_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {

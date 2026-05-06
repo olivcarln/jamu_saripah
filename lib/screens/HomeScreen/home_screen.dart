@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/Screens/HomeScreen/Components/menus.dart';
-import 'package:jamu_saripah/screens/DeliveryScreen/delivery_screen.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'Components/home_header.dart';
 import 'Components/order_method.dart'; 
@@ -48,7 +47,6 @@ String userName = FirebaseAuth.instance.currentUser?.displayName ?? "User";
             const SizedBox(height: 25),
 
             OrderMethod(
-              userName: userName,
               onPickUpTap: () {
                 
                 Navigator.push(

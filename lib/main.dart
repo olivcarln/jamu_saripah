@@ -5,23 +5,24 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Import file sakti hasil konfigurasi tadi
+import 'firebase_options.dart'; 
+
 import 'package:jamu_saripah/Provider/cart_provider.dart';
 import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 
 void main() async {
+  // Wajib dipanggil sebelum inisialisasi apapun
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Menyalakan Firebase menggunakan konfigurasi otomatis
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyBymYUiuQeqzolGvFnixdk9-6xGu4ROBRs",
-      appId: "1:523756741499:android:da218b19466f56d584d3de",
-      messagingSenderId: "523756741499",
-      projectId: "jamu-saripah-78774",
-    ),
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Mengambil status onboarding dari memori hp
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('showOnboarding') ?? true;
 
@@ -42,12 +43,15 @@ class JamuSaripah extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Jamu Saripah',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        // Mengatur font Montserrat sebagai standar aplikasi
         textTheme: GoogleFonts.montserratTextTheme(
           Theme.of(context).textTheme,
         ),
       ),
+      // Alur: Onboarding -> AuthWrapper (Login/Main)
       home: showOnboarding 
           ? const OnboardingScreen() 
           : const AuthWrapper(),
@@ -60,19 +64,25 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // StreamBuilder ini gunanya nge-cek: user sudah login atau belum?
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        // Jika status login sedang dicek, tampilkan loading
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(color: Color(0xFF8DA05E)), // Warna Olive Manual
+              child: CircularProgressIndicator(color: Color(0xFF8DA05E)), 
             ),
           );
         }
+        
+        // Jika user sudah login (ada datanya), masuk ke Main Screen
         if (snapshot.hasData) {
           return const MainScreen(); 
         }
+        
+        // Jika user belum login, lempar ke halaman Login
         return const LoginScreen(); 
       },
     );

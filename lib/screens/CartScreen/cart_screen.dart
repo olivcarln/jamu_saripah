@@ -28,7 +28,7 @@ class _CartScreenState extends State<CartScreen> {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           title: const Text("Hapus Keranjang?", style: TextStyle(fontWeight: FontWeight.bold)),
-          content: const Text("Yakin mau hapus semua isi keranjang lu?"),
+          content: const Text("Yakin mau hapus semua isi keranjang?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),

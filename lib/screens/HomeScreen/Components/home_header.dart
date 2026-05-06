@@ -9,16 +9,25 @@ class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
 
   Future<String> getCityName() async {
+    // Pastikan service GPS menyala
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return "GPS Mati";
+    }
+
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return "Izin Ditolak";
     }
+    
     if (permission == LocationPermission.deniedForever) {
       return "Location denied";
     }
 
+    // Ambil posisi presisi tinggi detik ini
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      desiredAccuracy: LocationAccuracy.best, // Pakai 'best' untuk akurasi maksimal
     );
 
     List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -26,8 +35,14 @@ class HomeHeader extends StatelessWidget {
       position.longitude,
     );
 
-    Placemark place = placemarks.first;
-    return "${place.locality ?? "Unknown"}, ${place.country ?? ""}";
+    if (placemarks.isNotEmpty) {
+      Placemark place = placemarks.first;
+      // Di Indonesia: subAdministrativeArea biasanya berisi "Kota Bekasi" atau "Kabupaten Bekasi"
+      String city = place.subAdministrativeArea ?? place.locality ?? "Unknown";
+      return "$city, Indonesia";
+    }
+    
+    return "Unknown";
   }
 
   @override

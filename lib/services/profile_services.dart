@@ -1,7 +1,7 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileService {
   final _auth = FirebaseAuth.instance;
@@ -10,74 +10,12 @@ class ProfileService {
 
   User? get currentUser => _auth.currentUser;
 
-  // 🔥 GET USER DATA
-  Future<Map<String, dynamic>?> getUserData() async {
-    final user = currentUser;
-    if (user == null) return null;
-
-    final doc =
-        await _firestore.collection('users').doc(user.uid).get();
-
-    return doc.data();
-  }
-
-  // 🔥 UPLOAD IMAGE (NON NULL)
-  Future<String> uploadImage(File file) async {
-    final user = currentUser;
-    if (user == null) throw Exception("User not logged in");
-
-    final ref = _storage
-        .ref()
-        .child('profile_pictures/${user.uid}.jpg');
-
-    await ref.putFile(file);
-
-    final url = await ref.getDownloadURL();
-
-    // update ke auth juga (optional tapi bagus)
-    await user.updatePhotoURL(url);
-
-    return url;
-  }
-
-  // 🔥 SAVE PROFILE (ANTI NULL OVERWRITE)
-  Future<void> saveProfile({
-    required String name,
-    required String email,
-    required String phone,
-    String? photoUrl,
-  }) async {
-    final user = currentUser;
-    if (user == null) return;
-
-    await user.updateDisplayName(name);
-
-    final data = {
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
-
-    // ✅ hanya update kalau ada
-    if (photoUrl != null && photoUrl.isNotEmpty) {
-      data['photoUrl'] = photoUrl;
-    }
-
-    await _firestore
-        .collection('users')
-        .doc(user.uid)
-        .set(data, SetOptions(merge: true));
-  }
-
-  // 🔥 CREATE USER
+  // Fungsi untuk buat dokumen user pertama kali agar punya createdAt
   Future<void> createUserIfNotExists() async {
     final user = currentUser;
     if (user == null) return;
 
-    final docRef =
-        _firestore.collection('users').doc(user.uid);
-
+    final docRef = _firestore.collection('users').doc(user.uid);
     final doc = await docRef.get();
 
     if (!doc.exists) {
@@ -91,7 +29,33 @@ class ProfileService {
     }
   }
 
-  Future<void> logout() async {
-    await _auth.signOut();
+  // Fungsi upload foto ke Firebase Storage
+  Future<String> uploadImage(File file) async {
+    final uid = currentUser!.uid;
+    final ref = _storage.ref().child('profile_pictures/$uid.jpg');
+    await ref.putFile(file);
+    return await ref.getDownloadURL();
+  }
+
+  // Fungsi simpan perubahan profil ke Firestore
+  Future<void> saveProfile({
+    required String name,
+    required String email,
+    required String phone,
+    String? photoUrl,
+  }) async {
+    final uid = currentUser!.uid;
+    final data = {
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      data['photoUrl'] = photoUrl;
+    }
+
+    await _firestore.collection('users').doc(uid).set(data, SetOptions(merge: true));
   }
 }

@@ -29,7 +29,7 @@ class TermsConditionsScreen extends StatelessWidget {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Colors.grey.withOpacity(0.2), height: 1.0),
+          child: Container(color: Colors.grey.withValues(alpha: 0.2), height: 1.0),
         ),
       ),
       body: Column(
@@ -99,7 +99,7 @@ class TermsConditionsScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey.withOpacity(0.2), width: 0.5),
+          bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 0.5),
         ),
       ),
       child: Theme(
