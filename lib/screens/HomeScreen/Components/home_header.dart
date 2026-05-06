@@ -258,7 +258,7 @@ class _HomeHeaderState extends State<HomeHeader> {
             contentPadding: EdgeInsets.zero,
             activeColor: AppColors.primaryOlive,
             title: Text(option),
-            value: option,
+            value: options,
             groupValue: groupValue,
             onChanged: (value) => onChanged(value as String),
           );
