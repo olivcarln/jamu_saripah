@@ -2,8 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/admin_screen/components/add_product_screen.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
 
+
+// TODO: Logic Voucher dan Pesanan akan dibuat di update berikutnya, fokus ke CRUD produk dulu yaa
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
 
@@ -38,9 +41,9 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                 );
               } catch (e) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Gagal menghapus: $e")),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Gagal menghapus: $e")));
               }
             },
             child: const Text("Hapus", style: TextStyle(color: Colors.red)),
@@ -54,28 +57,32 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Jamu Saripah",
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Admin Jamu Saripah",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF7E8959),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-       IconButton(
-  icon: const Icon(Icons.logout),
-  onPressed: () async {
-    await FirebaseAuth.instance.signOut();
-    
-    if (!mounted) return;
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Berhasil keluar")),
-    );
+              if (!mounted) return;
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-      (route) => false,
-    );
-  },
-),
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("Berhasil keluar")));
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const OnboardingScreen(),
+                ),
+                (route) => false,
+              );
+            },
+          ),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -86,7 +93,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF7E8959)));
+              child: CircularProgressIndicator(color: Color(0xFF7E8959)),
+            );
           }
 
           if (snapshot.hasError) {
@@ -107,7 +115,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Row Statistik Dinamis
                 Row(
                   children: [
                     _buildStatCard("Produk", productCount, Colors.blue),
@@ -142,7 +149,8 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(8),
                           leading: ClipRRect(
@@ -154,30 +162,53 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
-                                width: 55,
-                                height: 55,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.broken_image),
-                              ),
+                                    width: 55,
+                                    height: 55,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.broken_image),
+                                  ),
                             ),
                           ),
                           title: Text(
                             data['name'] ?? 'Tanpa Nama',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          subtitle: Text("Rp ${data['price']} | Diskon: ${data['discount']}%"),
+                          subtitle: Text(
+                            "Rp ${data['price']} | Diskon: ${data['discount']}%",
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: AppColors.primaryOlive,
+                                ),
                                 onPressed: () {
-                                  // Navigasi ke Edit (Opsional: Bisa pakai AddProductScreen dengan lempar data)
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => AddProductScreen(
+                                        id: docId,
+                                        data: data,
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteProduct(docId, data['name']),
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const AddProductScreen(),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -214,12 +245,15 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
         ),
         child: Column(
           children: [
-            Text(title,
-                style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 5),
-            Text(value,
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),

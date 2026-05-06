@@ -18,7 +18,7 @@ class _PickupScreenState extends State<PickupScreen> {
       context,
       MaterialPageRoute(builder: (context) => screen),
     );
-  }
+  } 
 
   @override
   Widget build(BuildContext context) {

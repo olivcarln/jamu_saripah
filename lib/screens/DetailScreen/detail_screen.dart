@@ -63,8 +63,6 @@ class _DetailScreenState extends State<DetailScreen> {
     if (currentPrice == 0 && widget.product.price != 0) {
       currentPrice = widget.product.price;
     }
-
-    // ✅ Logic Warna Stok: Merah jika < 5, Olive jika >= 5
     bool isLowStock = widget.product.stock < 5;
     Color badgeBgColor = isLowStock ? const Color(0xFFFDE8E8) : AppColors.primaryOlive;
     Color badgeTextColor = isLowStock ? const Color(0xFFC53030) : AppColors.white;
@@ -77,7 +75,6 @@ class _DetailScreenState extends State<DetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Bagian Gambar
                 Stack(
                   children: [
                     Image.asset(

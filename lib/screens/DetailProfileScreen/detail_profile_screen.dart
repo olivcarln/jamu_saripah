@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // Tambahkan ini
+import 'package:firebase_auth/firebase_auth.dart'; // 🔥 Tambahan
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/components/profile_avatar.dart';
@@ -24,6 +25,7 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+
   File? _imageFile;
   String? _photoUrl;
   DateTime? _createdAt;
@@ -37,6 +39,7 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
   void _initRealtime() {
     final user = _service.currentUser;
     final uid = user?.uid;
+
     if (uid == null) return;
 
     FirebaseFirestore.instance
@@ -48,16 +51,22 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
         setState(() {
           if (doc.exists) {
             final data = doc.data();
-            _nameController.text = data?['name'] ?? user?.displayName ?? '';
-            _emailController.text = data?['email'] ?? user?.email ?? '';
+
+            _nameController.text =
+                data?['name'] ?? user?.displayName ?? '';
+            _emailController.text =
+                data?['email'] ?? user?.email ?? '';
             _photoUrl = data?['photoUrl'];
+
             if (data?['createdAt'] != null) {
-              _createdAt = (data!['createdAt'] as Timestamp).toDate();
+              _createdAt =
+                  (data!['createdAt'] as Timestamp).toDate();
             }
           } else {
             _nameController.text = user?.displayName ?? '';
             _emailController.text = user?.email ?? '';
           }
+
           _isLoading = false;
         });
       }
@@ -65,15 +74,26 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
   }
 
   String _formatDate(DateTime date) {
-    const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+    const months = [
+      "Januari","Februari","Maret","April","Mei","Juni",
+      "Juli","Agustus","September","Oktober","November","Desember"
+    ];
+
     return "${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}";
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    if (source == ImageSource.camera) await Permission.camera.request();
-    else await Permission.photos.request();
+    if (source == ImageSource.camera) {
+      await Permission.camera.request();
+    } else {
+      await Permission.photos.request();
+    }
 
-    final picked = await _picker.pickImage(source: source, imageQuality: 50);
+    final picked = await _picker.pickImage(
+      source: source,
+      imageQuality: 50,
+    );
+
     if (picked != null) {
       setState(() => _imageFile = File(picked.path));
     }
@@ -82,103 +102,223 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
   void _showPicker() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => Wrap(
         children: [
-          ListTile(leading: const Icon(Icons.camera_alt), title: const Text("Kamera"), onTap: () { Navigator.pop(context); _pickImage(ImageSource.camera); }),
-          ListTile(leading: const Icon(Icons.photo_library), title: const Text("Galeri"), onTap: () { Navigator.pop(context); _pickImage(ImageSource.gallery); }),
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text("Kamera"),
+            onTap: () {
+              Navigator.pop(context);
+              _pickImage(ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: const Text("Galeri"),
+            onTap: () {
+              Navigator.pop(context);
+              _pickImage(ImageSource.gallery);
+            },
+          ),
         ],
       ),
     );
   }
 
-  // --- LOGIC PENYIMPANAN YANG SUDAH DISINKRONKAN ---
+  /// 🔥 SAVE PROFILE
   Future<void> _handleSave() async {
     final user = _service.currentUser;
     if (user == null) return;
 
     setState(() => _isSaving = true);
+
     try {
-      // 1. Upload foto ke Firebase Storage jika ada file baru dipilih
       if (_imageFile != null) {
         final ref = FirebaseStorage.instance
             .ref()
             .child('profile_images')
             .child('${user.uid}.jpg');
-        
+
         await ref.putFile(_imageFile!);
         _photoUrl = await ref.getDownloadURL();
       }
 
-      // 2. Simpan semua data ke Firestore
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set({
         'name': _nameController.text,
         'email': _emailController.text,
         'photoUrl': _photoUrl,
         'updatedAt': FieldValue.serverTimestamp(),
-        // Jika data baru, tambahkan createdAt
-        if (_createdAt == null) 'createdAt': FieldValue.serverTimestamp(),
+        if (_createdAt == null)
+          'createdAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       setState(() => _imageFile = null);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Profil berhasil disimpan ✨"), 
-            backgroundColor: Color(0xFF7B8B5C), 
-            behavior: SnackBarBehavior.floating
+            content: Text("Profil berhasil disimpan ✨"),
+            backgroundColor: Color(0xFF7B8B5C),
           ),
         );
       }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Gagal simpan profil"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+
+    setState(() => _isSaving = false);
+  }
+
+  /// 🔥 LOGOUT
+  Future<void> _handleLogout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Gagal simpan profil"), 
-            backgroundColor: Colors.red, 
-            behavior: SnackBarBehavior.floating
-          ),
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (route) => false,
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Gagal logout"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-    setState(() => _isSaving = false);
+  }
+
+  /// 🔥 CONFIRM LOGOUT
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Kamu yakin mau logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _handleLogout();
+            },
+            child: const Text(
+              "Logout",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF6E864C)), onPressed: () => Navigator.pop(context)),
-        title: const Text('Akun Saya', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 22)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios,
+              color: Color(0xFF6E864C)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Akun Saya',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
         centerTitle: true,
       ),
+
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 10),
                 child: Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                      decoration: BoxDecoration(color: const Color(0xFFDDE3D1), borderRadius: BorderRadius.circular(20)),
-                      child: Text(_createdAt != null ? 'Member sejak: ${_formatDate(_createdAt!)}' : 'Member sejak: -', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDDE3D1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _createdAt != null
+                            ? 'Member sejak: ${_formatDate(_createdAt!)}'
+                            : 'Member sejak: -',
+                      ),
                     ),
+
                     const SizedBox(height: 30),
-                    // Menampilkan avatar dari file lokal atau URL Firestore
-                    ProfileAvatar(imageFile: _imageFile, photoUrl: _photoUrl, onTap: _showPicker),
-                    const SizedBox(height: 12),
-                    const Text("Lengkapi data dirimu sekarang dan dapatkan\nvoucher menarik di hari spesialmu.", textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF6E864C), fontSize: 14, height: 1.6, fontWeight: FontWeight.w500)),
+
+                    ProfileAvatar(
+                      imageFile: _imageFile,
+                      photoUrl: _photoUrl,
+                      onTap: _showPicker,
+                    ),
+
                     const SizedBox(height: 30),
-                    ProfileTextField(controller: _nameController, hint: "Nama pengguna"),
+
+                    ProfileTextField(
+                      controller: _nameController,
+                      hint: "Nama pengguna",
+                    ),
+
                     const SizedBox(height: 14),
-                    ProfileTextField(controller: _emailController, hint: "Email", enabled: false),
-                    const SizedBox(height: 80),
-                    ProfileButton(text: _isSaving ? "Menyimpan..." : "Simpan!", onPressed: _isSaving ? null : _handleSave),
+
+                    ProfileTextField(
+                      controller: _emailController,
+                      hint: "Email",
+                      enabled: false,
+                    ),
+
+                    const SizedBox(height: 60),
+
+                    ProfileButton(
+                      text: _isSaving ? "Menyimpan..." : "Simpan!",
+                      onPressed:
+                          _isSaving ? null : _handleSave,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextButton(
+                      onPressed: _confirmLogout,
+                      child: const Text(
+                        "Logout",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
