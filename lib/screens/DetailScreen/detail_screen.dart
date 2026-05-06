@@ -22,9 +22,6 @@ class _DetailScreenState extends State<DetailScreen> {
   String selectedSize = "250 ml"; 
   String selectedOption = "Beras Kencur Saja"; 
   int currentPrice = 0; 
-  
-  // ✅ Variabel stok (saat ini dummy 4 agar terlihat merah)
-  int remainingStock = 10;
 
   @override
   void initState() {
@@ -67,9 +64,10 @@ class _DetailScreenState extends State<DetailScreen> {
       currentPrice = widget.product.price;
     }
 
-    // ✅ Logic warna: merah jika < 5, olive jika >= 5
-    Color badgeBgColor = remainingStock < 5 ? const Color(0xFFFDE8E8) : AppColors.primaryOlive;
-    Color badgeTextColor = remainingStock < 5 ? const Color(0xFFC53030) : AppColors.white;
+    // ✅ Logic Warna Stok: Merah jika < 5, Olive jika >= 5
+    bool isLowStock = widget.product.stock < 5;
+    Color badgeBgColor = isLowStock ? const Color(0xFFFDE8E8) : AppColors.primaryOlive;
+    Color badgeTextColor = isLowStock ? const Color(0xFFC53030) : AppColors.white;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -79,6 +77,7 @@ class _DetailScreenState extends State<DetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Bagian Gambar
                 Stack(
                   children: [
                     Image.asset(
@@ -106,6 +105,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Nama Produk & Badge Stok
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -115,7 +115,6 @@ class _DetailScreenState extends State<DetailScreen> {
                               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          // ✅ Badge dengan radius melengkung dan warna dinamis
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
@@ -123,7 +122,7 @@ class _DetailScreenState extends State<DetailScreen> {
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: Text(
-                              "Sisa $remainingStock stok",
+                              "Sisa ${widget.product.stock} stok",
                               style: TextStyle(
                                 color: badgeTextColor,
                                 fontWeight: FontWeight.bold,
@@ -134,6 +133,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 15),
+                      // Harga
                       Text(
                         formatIDR(currentPrice),
                         style: const TextStyle(
@@ -149,9 +149,10 @@ class _DetailScreenState extends State<DetailScreen> {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 10),
+                      // Deskripsi dari Model
                       Text(
                         widget.product.description.isEmpty 
-                          ? "Racikan jamu tradisional ini dibuat dengan bahan alami pilihan tanpa pengawet untuk menjaga kesegaran alami setiap hari." 
+                          ? "Racikan jamu tradisional ini dibuat dengan bahan alami pilihan tanpa pengawet." 
                           : widget.product.description,
                         style: const TextStyle(
                           fontSize: 14,
@@ -173,6 +174,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
 
+          // Tombol Bottom Bar
           Positioned(
             bottom: 0,
             left: 0,
@@ -247,7 +249,8 @@ class _DetailScreenState extends State<DetailScreen> {
                         price: currentPrice,
                         image: widget.product.image,
                         description: widget.product.description,
-                        size: selectedSize, stock: widget.product.stock,
+                        size: selectedSize,
+                        stock: widget.product.stock,
                       ),
                       quantity: quantity,
                       size: selectedSize,

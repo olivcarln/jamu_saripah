@@ -1,6 +1,6 @@
+import 'dart:convert'; 
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -21,7 +21,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
 
-  // Fungsi untuk memunculkan pilihan sumber gambar (Kamera atau Galeri)
   void _showImageSourceOptions() {
     showModalBottomSheet(
       context: context,
@@ -53,11 +52,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  // Fungsi internal untuk eksekusi pengambilan gambar
   Future<void> _pickImage(ImageSource source) async {
     final XFile? selected = await _picker.pickImage(
       source: source,
-      imageQuality: 70, // Kompres agar upload ke storage lebih ringan
+      imageQuality: 50, // Kompres lebih kecil karena Firestore punya limit 1MB per dokumen
     );
     if (selected != null) {
       setState(() {
@@ -78,29 +76,24 @@ class _AddProductScreenState extends State<AddProductScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Upload Gambar ke Firebase Storage
-      String fileName = 'products/${DateTime.now().millisecondsSinceEpoch}.png';
-      TaskSnapshot snapshot = await FirebaseStorage.instance
-          .ref()
-          .child(fileName)
-          .putFile(_imageFile!);
-      
-      String imageUrl = await snapshot.ref.getDownloadURL();
+      // 1. PROSES BASE64: Ubah File gambar menjadi teks String
+      List<int> imageBytes = await _imageFile!.readAsBytes();
+      String base64Image = base64Encode(imageBytes);
 
-      // 2. Simpan Data ke Firestore
+      // 2. Simpan Data LANGSUNG ke Firestore (Tanpa Storage)
       await FirebaseFirestore.instance.collection('products').add({
         'name': _nameController.text.trim(),
         'price': int.parse(_priceController.text.trim()),
         'discount': _discountController.text.isEmpty 
             ? 0 
             : int.parse(_discountController.text.trim()),
-        'imageUrl': imageUrl,
+        'imageUrl': base64Image, // Isinya sekarang teks panjang Base64
         'createdAt': FieldValue.serverTimestamp(),
       });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Produk jamu berhasil ditambahkan!")),
+        const SnackBar(content: Text("Produk jamu berhasil disimpan!")),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -116,7 +109,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tambah Produk Jamu", style: TextStyle(color: Colors.white)),
+        title: const Text("Tambah Produk (Base64)", style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF7E8959),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -133,7 +126,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   const SizedBox(height: 10),
                   
                   GestureDetector(
-                    onTap: _showImageSourceOptions, // Panggil modal pilihan
+                    onTap: _showImageSourceOptions,
                     child: Container(
                       height: 180,
                       width: double.infinity,
@@ -158,20 +151,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
                   _buildLabel("Nama Jamu"),
                   _buildTextField(_nameController, "Contoh: Kunyit Asam Segar", Icons.medication_liquid),
                   const SizedBox(height: 16),
-
                   _buildLabel("Harga (Rp)"),
                   _buildTextField(_priceController, "Contoh: 15000", Icons.money, isNumber: true),
                   const SizedBox(height: 16),
-
                   _buildLabel("Diskon (%)"),
                   _buildTextField(_discountController, "0", Icons.percent, isNumber: true, isRequired: false),
-
                   const SizedBox(height: 40),
-
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -188,7 +176,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
             ),
           ),
-          
           if (_isLoading)
             Container(
               color: Colors.black26,
