@@ -14,8 +14,8 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  // Index 2 sesuai urutan "Your order" di widget BottomNav
-  int _currentIndex = 2; 
+  // Index 3 sesuai urutan "Your order" di widget BottomNav
+  int _currentIndex = 2;
 
   // Simulasi data order
   final List _myOrders = ["Order 1", "Order 2"]; 
@@ -23,18 +23,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Color(0xFFF5F5F5),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text(
           "Order History", 
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF6B8E4E),
+        backgroundColor: Color(0xFF6B8E4E),
         elevation: 0,
       ),
       body: _myOrders.isEmpty 

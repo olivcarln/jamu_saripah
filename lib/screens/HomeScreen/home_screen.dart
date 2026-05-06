@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jamu_saripah/Screens/HomeScreen/Components/menus.dart';
 import 'package:jamu_saripah/screens/DeliveryScreen/delivery_screen.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
+import 'package:jamu_saripah/screens/PickupScreen/pickup_screen.dart';
 import 'Components/home_header.dart';
 import 'Components/order_method.dart'; 
 
@@ -50,36 +51,18 @@ String userName = FirebaseAuth.instance.currentUser?.displayName ?? "User";
             OrderMethod(
               userName: userName,
               onPickUpTap: () {
-                
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Scaffold(
-                      appBar: AppBar(title: const Text("Pick Up")),
-                      body: const Center(
-                        child: Placeholder(
-                          fallbackHeight: 250,
-                          fallbackWidth: 250,
-                        ),
-                      ),
-                    ),
+                    builder: (context) => PickupScreen(),
                   ),
                 );
               },
               onDeliveryTap: () {
-                
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Scaffold(
-                      appBar: AppBar(title: const Text("Delivery")),
-                      body: const Center(
-                        child: Placeholder(
-                          fallbackHeight: 250,
-                          fallbackWidth: 250,
-                        ),
-                      ),
-                    ),
+                    builder: (context) => DeliveryScreen(),
                   ),
                 );
               },
