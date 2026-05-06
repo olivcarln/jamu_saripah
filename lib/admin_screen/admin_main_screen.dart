@@ -62,19 +62,14 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
        IconButton(
   icon: const Icon(Icons.logout),
   onPressed: () async {
-    // 1. Proses Sign Out
     await FirebaseAuth.instance.signOut();
     
-    // 2. Cek apakah widget masih ada di layar
     if (!mounted) return;
 
-    // 3. Tampilkan pesan (Opsional)
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Berhasil keluar")),
     );
 
-    // 4. PAKSA PINDAH KE LOGIN (Penting!)
-    // Ini memastikan stack navigasi dibersihkan dan balik ke halaman awal
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const OnboardingScreen()),
       (route) => false,
@@ -128,7 +123,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // List Produk Real-time
                 if (docs.isEmpty)
                   const Center(
                     child: Padding(

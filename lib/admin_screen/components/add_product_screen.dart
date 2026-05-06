@@ -21,9 +21,44 @@ class _AddProductScreenState extends State<AddProductScreen> {
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
 
-  // Fungsi ambil gambar dari galeri
-  Future<void> _pickImage() async {
-    final XFile? selected = await _picker.pickImage(source: ImageSource.gallery);
+  // Fungsi untuk memunculkan pilihan sumber gambar (Kamera atau Galeri)
+  void _showImageSourceOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Color(0xFF7E8959)),
+              title: const Text('Ambil dari Kamera'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Color(0xFF7E8959)),
+              title: const Text('Ambil dari Galeri'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Fungsi internal untuk eksekusi pengambilan gambar
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? selected = await _picker.pickImage(
+      source: source,
+      imageQuality: 70, // Kompres agar upload ke storage lebih ringan
+    );
     if (selected != null) {
       setState(() {
         _imageFile = File(selected.path);
@@ -31,12 +66,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
-  // Fungsi utama: Upload foto & Simpan data ke Firestore
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
     if (_imageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pilih foto produk terlebih dahulu!")),
+        const SnackBar(content: Text("Pilih atau ambil foto produk terlebih dahulu!")),
       );
       return;
     }
@@ -44,17 +78,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Upload Foto ke Firebase Storage
+      // 1. Upload Gambar ke Firebase Storage
       String fileName = 'products/${DateTime.now().millisecondsSinceEpoch}.png';
       TaskSnapshot snapshot = await FirebaseStorage.instance
           .ref()
           .child(fileName)
           .putFile(_imageFile!);
       
-      // 2. Ambil URL foto yang sudah diupload
       String imageUrl = await snapshot.ref.getDownloadURL();
 
-      // 3. Simpan data ke Cloud Firestore
+      // 2. Simpan Data ke Firestore
       await FirebaseFirestore.instance.collection('products').add({
         'name': _nameController.text.trim(),
         'price': int.parse(_priceController.text.trim()),
@@ -67,12 +100,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Produk berhasil ditambahkan!")),
+        const SnackBar(content: Text("Produk jamu berhasil ditambahkan!")),
       );
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Terjadi kesalahan: $e")),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -99,9 +132,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   const Text("Foto Produk", style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   
-                  // Kotak Upload Foto
                   GestureDetector(
-                    onTap: _pickImage,
+                    onTap: _showImageSourceOptions, // Panggil modal pilihan
                     child: Container(
                       height: 180,
                       width: double.infinity,
@@ -119,7 +151,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               children: [
                                 Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
                                 SizedBox(height: 8),
-                                Text("Klik untuk upload foto", style: TextStyle(color: Colors.grey)),
+                                Text("Klik untuk ambil foto", style: TextStyle(color: Colors.grey)),
                               ],
                             )
                           : null,
@@ -149,9 +181,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       ),
                       onPressed: _isLoading ? null : _saveProduct,
-                      child: _isLoading 
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Simpan Produk", style: TextStyle(color: Colors.white, fontSize: 16)),
+                      child: const Text("Simpan Produk", style: TextStyle(color: Colors.white, fontSize: 16)),
                     ),
                   ),
                 ],
@@ -159,7 +189,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
           ),
           
-          // Overlay loading agar layar tidak bisa diklik saat proses
           if (_isLoading)
             Container(
               color: Colors.black26,
