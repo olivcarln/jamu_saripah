@@ -54,6 +54,7 @@ dependencies:
   cloud_firestore: ^6.3.0
   geolocator: ^14.0.2
   geocoding: ^4.0.0
+  firebase_app_check: ^0.4.3
 
 
 

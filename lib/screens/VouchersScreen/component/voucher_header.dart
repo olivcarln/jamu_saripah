@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/screens/VouchersScreen/payday_screen.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 
 class VoucherHeader extends StatefulWidget {
   final bool isVoucherActive;
@@ -18,136 +18,99 @@ class VoucherHeader extends StatefulWidget {
 }
 
 class _VoucherHeaderState extends State<VoucherHeader> {
-  bool isVoucherHovered = false;
-  bool isPaydayHovered = false;
-
-  final primaryColor = const Color(0xFF6E864C);
-  final hoverColor = const Color(0xFF6D4C41);
+  // Warna disesuaikan dengan tema Jamu Saripah di gambar
+  final primaryColor = const Color(0xFF6E864C); 
+  final textColor = Colors.black87;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
-padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 0),      decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
-      ),
+      color: Colors.white, // Background putih bersih sesuai gambar
+      padding: const EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// TITLE
+          /// TITLE "Vouchers" (Bold & Center)
           Center(
             child: Text(
               "Vouchers",
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: primaryColor,
+                color: AppColors.primaryOlive,
+                letterSpacing: 0.5,
               ),
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
 
-          /// INPUT PROMO
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: primaryColor, width: 1.5),
+          /// INPUT PROMO BOX
+     Container(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), // Padding vertikal dikurangi biar pas
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(30),
+    border: Border.all(color: primaryColor.withOpacity(0.5), width: 1.5),
+  ),
+  child: Row(
+    children: [
+      Icon(Icons.local_offer_outlined, color: primaryColor, size: 24),
+      const SizedBox(width: 12),
+      Expanded(
+        child: TextField(
+          // Tambahkan controller di sini kalau mau ambil datanya nanti
+          // controller: promoController, 
+          decoration: InputDecoration(
+            hintText: "Dapat kode promo? masukkan disini",
+            hintStyle: TextStyle(
+              color: primaryColor.withOpacity(0.6),
+              fontSize: 15,
             ),
-            child: Row(
+            border: InputBorder.none, // Menghilangkan garis bawah bawaan TextField
+            isDense: true, // Membuat tinggi TextField lebih ramping
+          ),
+          style: TextStyle(
+            color: primaryColor,
+            fontSize: 15,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+          
+          const SizedBox(height: 25),
+
+          /// TAB MENU (Vouchers)
+          GestureDetector(
+            onTap: widget.onVoucherTap,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.local_offer, color: primaryColor, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "Dapat kode promo? Masukkan di sini",
-                    style: TextStyle(
-                      color: primaryColor.withValues(alpha: 0.8),
-                      fontSize: 14,
-                    ),
+                Text(
+                  "Vouchers",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryOlive, // Warna coklat sesuai gambar
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Garis bawah (Underline)
+                Container(
+                  height: 3,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryOlive,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
-
-          /// TAB MENU
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Ini akan mendorong "Payday!" ke pojok kanan
-            children: [
-              _buildTab(
-                title: "Vouchers",
-                isHovered: isVoucherHovered,
-                isActive: widget.isVoucherActive,
-                onHover: (value) =>
-                    setState(() => isVoucherHovered = value),
-                onTap: widget.onVoucherTap ?? () {}
-                
-              ),
-
-              const SizedBox(width: 20),
-
-              _buildTab(
-          
-                title: "Payday!",
-                isHovered: isPaydayHovered,
-                isActive: !widget.isVoucherActive,
-                onHover: (value) =>
-                    setState(() => isPaydayHovered = value),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const PaydayScreen()),
-                  );
-                },
-              ),
-            ],
-          ),
+          const SizedBox(height: 10),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTab({
-    required String title,
-    required bool isHovered,
-    required bool isActive,
-    required Function(bool) onHover,
-    required VoidCallback onTap,
-  }) {
-    return MouseRegion(
-      onEnter: (_) => onHover(true),
-      onExit: (_) => onHover(false),
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isActive || isHovered
-                    ? primaryColor
-                    : Colors.transparent,
-                width: 2,
-              ),
-            ),
-          ),
-          child: Text(
-            title,
-            style: TextStyle(
-              color: isActive || isHovered
-                  ? hoverColor
-                  : primaryColor,
-              fontSize: 16,
-              fontWeight:
-                  isActive ? FontWeight.bold : FontWeight.w500,
-            ),
-          ),
-        ),
       ),
     );
   }
