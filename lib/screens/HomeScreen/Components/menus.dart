@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; 
+// flutter_svg tetap di-import tidak apa-apa jika file lain masih pakai, 
+// tapi di widget ini kita akan fokus ke Image.asset
+import 'package:flutter_svg/flutter_svg.dart'; 
 import 'package:jamu_saripah/Models/product_cart.dart';
 import 'package:jamu_saripah/Screens/DetailScreen/detail_screen.dart';
 
@@ -28,7 +31,7 @@ class Menus extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 15,
               mainAxisSpacing: 15,
-              childAspectRatio: 0.70, // Sedikit disesuaikan agar teks harga tidak terpotong ke bawah
+              childAspectRatio: 0.70, 
             ),
             itemBuilder: (context, index) {
               final product = allProducts[index];
@@ -41,12 +44,7 @@ class Menus extends StatelessWidget {
   }
 
   Widget _buildProductCard(BuildContext context, Product product) {
-    // --- LOGIC DISCOUNT UNTUK ADMIN ---
-    // Di sini kita cek apakah admin memberikan harga diskon. 
-    // Kita asumsikan admin menyimpan 'originalPrice' di Firestore.
-    // Jika tidak ada data dari admin, kita gunakan simulasi harga coret.
-    final bool hasDiscount = true; // Nantinya ini bisa diganti (product.originalPrice != null)
-    final double strikethroughPrice = product.price + 5000; 
+    final double originalPrice = product.price + 5000; 
 
     return InkWell(
       onTap: () {
@@ -96,17 +94,15 @@ class Menus extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // LOGIC UI DISCOUNT
-                  if (hasDiscount)
-                    Text(
-                      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
-                          .format(strikethroughPrice),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 10,
-                        decoration: TextDecoration.lineThrough, // Efek coret harga lama
-                      ),
+                  Text(
+                    NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+                        .format(originalPrice),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                      decoration: TextDecoration.lineThrough,
                     ),
+                  ),
 
                   Text(
                     NumberFormat.currency(
@@ -129,25 +125,46 @@ class Menus extends StatelessWidget {
     );
   }
 
+  // LOGIKA DISESUAIKAN UNTUK PNG
   Widget _buildProductImage(String imageSource) {
-    if (imageSource.length > 100) {
+    // 1. Cek jika data Base64 dari Admin (String panjang)
+    if (imageSource.length > 100) { 
       try {
         return Image.memory(
           base64Decode(imageSource),
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
+          errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
         );
       } catch (e) {
-        return const Center(child: Icon(Icons.broken_image));
+        return const Center(child: Icon(Icons.broken_image, color: Colors.grey));
       }
-    } else {
+    } 
+    
+    // 2. Default untuk PNG/JPG lokal (Asset biasa)
+    else { 
       return Image.asset(
         imageSource,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
+        // Karena PNG loadingnya cepat, kita pakai frameBuilder untuk transisi halus
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded) return child;
+          return AnimatedOpacity(
+            opacity: frame == null ? 0 : 1,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOut,
+            child: child,
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[100],
+            child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+          );
+        },
       );
     }
   }

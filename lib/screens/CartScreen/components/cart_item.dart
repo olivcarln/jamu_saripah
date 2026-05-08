@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Tambah ini
 import 'package:jamu_saripah/Models/cart_item.dart';
 
 class CartItemWidget extends StatelessWidget {
@@ -15,6 +16,30 @@ class CartItemWidget extends StatelessWidget {
     required this.onToggle,
   });
 
+  // Helper agar bisa baca SVG tanpa merusak layout
+  Widget _buildProductImage(String imageSource) {
+    if (imageSource.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        imageSource,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Image.asset(
+        imageSource,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const SizedBox(
+          width: 70,
+          height: 70,
+          child: Icon(Icons.broken_image, color: Colors.grey),
+        ),
+      );
+    }
+  }
+
   // Fungsi format rupiah lokal biar nggak error
   String _formatRupiah(int amount) {
     String strAmount = amount.toString();
@@ -23,7 +48,6 @@ class CartItemWidget extends StatelessWidget {
     for (int i = strAmount.length - 1; i >= 0; i--) {
       result = strAmount[i] + result;
       count++;
-      // ignore: prefer_interpolation_to_compose_strings
       if (count % 3 == 0 && i != 0) result = "." + result;
     }
     return "Rp $result";
@@ -48,7 +72,7 @@ class CartItemWidget extends StatelessWidget {
         children: [
           // CHECKBOX
           GestureDetector(
-            onTap: onToggle, // Panggil fungsi dari luar
+            onTap: onToggle,
             child: Icon(
               item.isChecked ? Icons.check_box : Icons.check_box_outline_blank,
               color: const Color(0xFF7E8959),
@@ -58,7 +82,7 @@ class CartItemWidget extends StatelessWidget {
           // GAMBAR PRODUK
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.asset(item.image, width: 70, height: 70, fit: BoxFit.cover),
+            child: _buildProductImage(item.image), // Ganti ke helper
           ),
           const SizedBox(width: 12),
           // DETAIL TEKS
@@ -105,7 +129,6 @@ class CartItemWidget extends StatelessWidget {
     );
   }
 
-  // Tombol kecil buat + dan -
   Widget _buildQtyBtn(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,

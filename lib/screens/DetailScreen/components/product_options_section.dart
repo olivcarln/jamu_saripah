@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
 class ProductOptionsSection extends StatefulWidget {
+  final String productName; // Tambahkan parameter nama produk agar dinamis
   final Function(String)? onSizeChanged;
 
-  const ProductOptionsSection({super.key, this.onSizeChanged});
+  const ProductOptionsSection({
+    super.key, 
+    required this.productName, // Wajib diisi agar teks radio berubah
+    this.onSizeChanged
+  });
 
   @override
   State<ProductOptionsSection> createState() => _ProductOptionsSectionState();
@@ -26,7 +31,7 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
           ),
           const SizedBox(height: 15),
           
-          // Row Ukuran
+          // Row Ukuran (UI Tetap Sama)
           Row(
             children: [
               _buildSizeOption("250 ml"),
@@ -43,10 +48,10 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
           ),
 
-          // Opsi Radio 1
+          // Opsi Radio 1 - Mengikuti Nama Produk
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text("Beras Kencur Saja"),
+            title: Text("${widget.productName} Saja"), // Teks berubah otomatis
             trailing: Radio<int>(
               value: 1,
               groupValue: selectedOption,
@@ -59,10 +64,10 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
             ),
           ),
 
-          // Opsi Radio 2
+          // Opsi Radio 2 - Mengikuti Nama Produk
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text("Paket 3 Botol Beras Kencur"),
+            title: Text("Paket 3 Botol ${widget.productName}"), // Teks berubah otomatis
             trailing: Radio<int>(
               value: 2,
               groupValue: selectedOption,
@@ -79,6 +84,7 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
     );
   }
 
+  // Widget Button Ukuran (UI Tetap Sama)
   Widget _buildSizeOption(String label) {
     bool isSelected = selectedSize == label;
     
