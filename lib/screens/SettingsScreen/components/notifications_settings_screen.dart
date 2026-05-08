@@ -184,7 +184,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         value: value,
-        activeColor: AppColors.primaryOlive,
+        activeThumbColor: AppColors.primaryOlive,
         onChanged: onChanged,
       ),
     );

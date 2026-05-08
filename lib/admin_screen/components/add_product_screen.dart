@@ -18,6 +18,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
+  final _discountController = TextEditingController();
   final _descController = TextEditingController();
 
   final _picker = ImagePicker();
@@ -34,12 +35,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     if (widget.data != null) {
       _nameController.text = widget.data!['name'] ?? '';
+
       _priceController.text =
           (widget.data!['price'] ?? '').toString();
+
       _stockController.text =
           (widget.data!['stock'] ?? '').toString();
+
+      _discountController.text =
+          (widget.data!['discount'] ?? '').toString();
+
       _descController.text =
           widget.data!['description'] ?? '';
+
       _imageUrl = widget.data!['imageUrl'];
     }
   }
@@ -66,15 +74,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
         .child('$productId.jpg');
 
     await ref.putFile(_imageFile!);
+
     return await ref.getDownloadURL();
   }
 
   Future<void> _saveProduct() async {
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
-        _stockController.text.isEmpty) {
+        _stockController.text.isEmpty ||
+        _discountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Isi semua field dulu ya")),
+        const SnackBar(
+          content: Text("Isi semua field dulu ya"),
+        ),
       );
       return;
     }
@@ -94,6 +106,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         'name': _nameController.text,
         'price': int.tryParse(_priceController.text) ?? 0,
         'stock': int.tryParse(_stockController.text) ?? 0,
+        'discount': int.tryParse(_discountController.text) ?? 0,
         'description': _descController.text,
         'imageUrl': imageUrl,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -106,7 +119,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal simpan produk")),
+        const SnackBar(
+          content: Text("Gagal simpan produk"),
+        ),
       );
     }
 
@@ -117,31 +132,48 @@ class _AddProductScreenState extends State<AddProductScreen> {
     if (_imageFile != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: Image.file(_imageFile!, fit: BoxFit.cover),
+        child: Image.file(
+          _imageFile!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
       );
     } else if (_imageUrl != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: Image.network(_imageUrl!, fit: BoxFit.cover),
+        child: Image.network(
+          _imageUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
       );
     } else {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          Icon(Icons.camera_alt, size: 40, color: Colors.grey),
+          Icon(
+            Icons.camera_alt,
+            size: 40,
+            color: Colors.grey,
+          ),
           SizedBox(height: 8),
-          Text("Tambah Foto",
-              style: TextStyle(color: Colors.grey)),
+          Text(
+            "Tambah Foto",
+            style: TextStyle(color: Colors.grey),
+          ),
         ],
       );
     }
   }
 
-  Widget _inputField(
-      {required TextEditingController controller,
-      required String label,
-      int maxLines = 1,
-      TextInputType type = TextInputType.text}) {
+  Widget _inputField({
+    required TextEditingController controller,
+    required String label,
+    int maxLines = 1,
+    TextInputType type = TextInputType.text,
+  }) {
     return TextField(
       controller: controller,
       keyboardType: type,
@@ -163,7 +195,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _nameController.dispose();
     _priceController.dispose();
     _stockController.dispose();
+    _discountController.dispose();
     _descController.dispose();
+
     super.dispose();
   }
 
@@ -172,7 +206,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
       appBar: AppBar(
-        title: Text(isEdit ? "Edit Produk" : "Tambah Produk"),
+        title: Text(
+          isEdit ? "Edit Produk" : "Tambah Produk",
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.black,
@@ -181,7 +217,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            /// 🔥 IMAGE CARD
+            /// IMAGE CARD
             GestureDetector(
               onTap: _pickImage,
               child: Container(
@@ -191,13 +227,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   color: const Color(0xFFE5EAD9),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Center(child: _buildImagePreview()),
+                child: Center(
+                  child: _buildImagePreview(),
+                ),
               ),
             ),
 
             const SizedBox(height: 25),
 
-            /// 🔥 FORM CARD
+            /// FORM CARD
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -207,7 +245,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   BoxShadow(
                     blurRadius: 12,
                     color: Colors.black.withOpacity(0.05),
-                  )
+                  ),
                 ],
               ),
               child: Column(
@@ -216,6 +254,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     controller: _nameController,
                     label: "Nama Produk",
                   ),
+
                   const SizedBox(height: 15),
 
                   _inputField(
@@ -223,6 +262,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     label: "Harga",
                     type: TextInputType.number,
                   ),
+
+                  const SizedBox(height: 15),
+
+                  _inputField(
+                    controller: _discountController,
+                    label: "Diskon (%)",
+                    type: TextInputType.number,
+                  ),
+
                   const SizedBox(height: 15),
 
                   _inputField(
@@ -230,6 +278,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     label: "Stok",
                     type: TextInputType.number,
                   ),
+
                   const SizedBox(height: 15),
 
                   _inputField(
@@ -243,16 +292,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
             const SizedBox(height: 30),
 
-            /// 🔥 BUTTON
+            /// BUTTON
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveProduct,
+                onPressed:
+                    _isLoading ? null : _saveProduct,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7B8B5C),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius:
+                        BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
@@ -262,7 +313,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           ? "Update Produk"
                           : "Tambah Produk"),
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
