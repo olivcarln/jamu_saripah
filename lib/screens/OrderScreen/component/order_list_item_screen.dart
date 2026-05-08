@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/common/constasts.dart';
 // Sesuaikan import di bawah ini dengan nama project kamu
 import 'package:jamu_saripah/screens/CheckoutSreen/checkout.screen.dart';
 
@@ -31,7 +32,7 @@ class OrderListStateScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF6B8E4E),
+                        color:AppColors.primaryOlive,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -68,7 +69,7 @@ class OrderListStateScreen extends StatelessWidget {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6B8E4E),
+                              backgroundColor: AppColors.primaryOlive,
                               elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                             ),

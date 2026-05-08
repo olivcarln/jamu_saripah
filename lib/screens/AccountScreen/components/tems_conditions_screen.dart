@@ -24,7 +24,7 @@ class TermsConditionsScreen extends StatelessWidget {
           style: TextStyle(
             color: Colors.black,
             fontSize: 18,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.bold,
           ),
         ),
         bottom: PreferredSize(

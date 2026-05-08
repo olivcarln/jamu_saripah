@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Tambahkan ini
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/admin_screen/admin_main_screen.dart';
 import 'package:jamu_saripah/hooks/auth/register_screen.dart';
+// Tambahkan import ini
+import 'package:jamu_saripah/hooks/auth/forgot_password_screen.dart'; 
 import 'package:jamu_saripah/screens/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -150,22 +152,47 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 10),
+                    
+                    // BAGIAN YANG DIUBAH: Menambahkan tombol Forgot Password
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Ingat saya",
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        Row(
+                          children: [
+                            const Text(
+                              "Ingat saya",
+                              style: TextStyle(color: Colors.grey, fontSize: 14),
+                            ),
+                            Checkbox(
+                              value: _rememberMe,
+                              activeColor: const Color(0xFF7E8959),
+                              onChanged: (value) {
+                                setState(() => _rememberMe = value ?? false);
+                              },
+                            ),
+                          ],
                         ),
-                        Checkbox(
-                          value: _rememberMe,
-                          activeColor: const Color(0xFF7E8959),
-                          onChanged: (value) {
-                            setState(() => _rememberMe = value ?? false);
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ForgotPasswordScreen(),
+                              ),
+                            );
                           },
+                          child: const Text(
+                            "Lupa kata sandi?",
+                            style: TextStyle(
+                              color: Color(0xFF7E8959),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
                       ],
                     ),
+                    
                     const SizedBox(height: 80),
                     SizedBox(
                       width: double.infinity,

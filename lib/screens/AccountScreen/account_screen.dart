@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:jamu_saripah/screens/AccountScreen/components/help_center_screen.dart';
 import 'package:jamu_saripah/screens/AccountScreen/components/payment_method_screen.dart';
 import 'package:jamu_saripah/screens/AccountScreen/components/privacy_police_screen.dart';
@@ -19,6 +21,23 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   final user = FirebaseAuth.instance.currentUser;
+
+  // --- LOGIC: BUKA INSTAGRAM ---
+  Future<void> _launchInstagram() async {
+    const String url = "https://www.instagram.com/jamusaripah?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
+    final Uri uri = Uri.parse(url);
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $url');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Tidak dapat membuka Instagram"), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +61,7 @@ class _AccountPageState extends State<AccountPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DetailProfileScreen(),
-                    ),
-                  );
-                },
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DetailProfileScreen())),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.all(16),
@@ -63,56 +75,29 @@ class _AccountPageState extends State<AccountPage> {
                         radius: 30,
                         backgroundColor: Colors.transparent,
                         child: ClipOval(
-                          child: SvgPicture.asset(
-                            'assets/profile.svg',
-                            fit: BoxFit.cover,
-                            width: 60,
-                            height: 60,
-                          ),
+                          child: SvgPicture.asset('assets/profile.svg', fit: BoxFit.cover, width: 60, height: 60),
                         ),
                       ),
                       const SizedBox(width: 12),
                       StreamBuilder<DocumentSnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(user?.uid)
-                            .snapshots(),
+                        stream: FirebaseFirestore.instance.collection('users').doc(user?.uid).snapshots(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) return const SizedBox();
-
                           final data = snapshot.data!.data() as Map<String, dynamic>?;
                           final namaUser = data?['name'] ?? 'User';
-
                           return Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  namaUser,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                Text(namaUser, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 4),
-                                const Text(
-                                  "Lihat Profil",
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
+                                const Text("Lihat Profil", style: TextStyle(color: Colors.white70, fontSize: 14)),
                               ],
                             ),
                           );
                         },
                       ),
-                      const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.white,
-                        size: 18,
-                      ),
+                      const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
                     ],
                   ),
                 ),
@@ -129,71 +114,22 @@ class _AccountPageState extends State<AccountPage> {
                 child: ListView(
                   children: [
                     const SizedBox(height: 20),
-                    buildMenuItem(
-                      "Alamat Tersimpan",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SavedAddress(),
-                          ),
-                        );
-                      },
-                    ),
-                    buildMenuItem("Pembayaran",
-                          onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PaymentMethodScreen(),
-                          ),
-                        );
-                      },),
-                    buildMenuItem("Pusat Bantuan",  onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HelpCenterScreen(),
-                          ),
-                        );
-                      },),
-                    buildMenuItem("Pengaturan",
-                    onTap: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(
-                          builder: (context) => SettingsScreen()
-                          ),
-                        );
-                    },
-                    ),
-                    buildMenuItem(
-                      "Syarat & Ketentuan",
-                      onTap: (){
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TermsConditionsScreen()
-                            )
-                            );
-                      },
-                      ),
-                    buildMenuItem("Kebijakan Privasi",
-                    onTap: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(
-                          builder :(context) => PrivacyPolicyScreen()
-                          )
-                        );
-                    },
+                    buildMenuItem("Alamat Tersimpan", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SavedAddress()))),
+                    buildMenuItem("Pembayaran", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentMethodScreen()))),
+                    buildMenuItem("Pusat Bantuan", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpCenterScreen()))),
+                    buildMenuItem("Pengaturan", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()))),
+                    buildMenuItem("Syarat & Ketentuan", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TermsConditionsScreen()))),
+                    buildMenuItem("Kebijakan Privasi", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()))),
                     
+                    // --- MENU MEDIA SOSIAL DENGAN LOGO INSTAGRAM ---
+                    buildMenuItem(
+                      "Media Sosial",
+                      onTap: _launchInstagram,
+                      isInstagram: true, // Trigger logo Instagram
                     ),
-                    buildMenuItem("Media Sosial"),
+                    
                     const SizedBox(height: 60),
-                    const Center(
-                      child: Text("Version 1.0.0", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    ),
+                    const Center(child: Text("Version 1.0.0", style: TextStyle(color: Colors.grey, fontSize: 12))),
                   ],
                 ),
               ),
@@ -204,14 +140,23 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  // Fungsi buildMenuItem yang sudah diperbaiki agar bisa menerima onTap
-  Widget buildMenuItem(String title, {VoidCallback? onTap}) {
+  // --- REUSABLE MENU ITEM ---
+  Widget buildMenuItem(String title, {VoidCallback? onTap, bool isInstagram = false}) {
     return Column(
       children: [
         ListTile(
           title: Text(title),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: onTap ?? () {}, // Jika onTap kosong, tidak melakukan apa-apa
+          trailing: isInstagram
+              ? Container(
+                  padding: const EdgeInsets.all(2),
+                  child: Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/600px-Instagram_icon.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                )
+              : const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          onTap: onTap,
         ),
         const Divider(),
       ],
