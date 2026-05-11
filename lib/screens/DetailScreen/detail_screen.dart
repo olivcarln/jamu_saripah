@@ -1,5 +1,7 @@
+import 'dart:convert'; // Tambahkan untuk decode Base64
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Tambahkan library SVG
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/Models/product_cart.dart';
 import 'package:jamu_saripah/common/constasts.dart'; 
@@ -58,6 +60,40 @@ class _DetailScreenState extends State<DetailScreen> {
     ).format(priceToFormat);
   }
 
+  // --- HELPER UNTUK MENDETEKSI FORMAT GAMBAR ---
+  Widget _buildProductImage(String imageSource) {
+    if (imageSource.length > 100) {
+      try {
+        return Image.memory(
+          base64Decode(imageSource),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: 450,
+        );
+      } catch (e) {
+        return const SizedBox(height: 450, child: Icon(Icons.broken_image));
+      }
+    } else if (imageSource.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        imageSource,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 450,
+        placeholderBuilder: (context) => const SizedBox(
+          height: 450, 
+          child: Center(child: CircularProgressIndicator())
+        ),
+      );
+    } else {
+      return Image.asset(
+        imageSource,
+        width: double.infinity,
+        height: 450,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (currentPrice == 0 && widget.product.price != 0) {
@@ -77,12 +113,9 @@ class _DetailScreenState extends State<DetailScreen> {
               children: [
                 Stack(
                   children: [
-                    Image.asset(
-                      widget.product.image,
-                      width: double.infinity,
-                      height: 450,
-                      fit: BoxFit.cover,
-                    ),
+                    // --- GAMBAR PRODUK (DENGAN SVG SUPPORT) ---
+                    _buildProductImage(widget.product.image),
+                    
                     Positioned(
                       top: 50,
                       left: 20,
@@ -102,7 +135,6 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nama Produk & Badge Stok
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -130,7 +162,6 @@ class _DetailScreenState extends State<DetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 15),
-                      // Harga
                       Text(
                         formatIDR(currentPrice),
                         style: const TextStyle(
@@ -146,7 +177,6 @@ class _DetailScreenState extends State<DetailScreen> {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 10),
-                      // Deskripsi dari Model
                       Text(
                         widget.product.description.isEmpty 
                           ? "Racikan jamu tradisional ini dibuat dengan bahan alami pilihan tanpa pengawet." 
@@ -164,14 +194,13 @@ class _DetailScreenState extends State<DetailScreen> {
                 const Divider(thickness: 10, color: Color(0xFFF5F5F5)),
                 
                 ProductOptionsSection(
-                  onSizeChanged: (size) => updatePrice(size, selectedOption),
+                  onSizeChanged: (size) => updatePrice(size, selectedOption), productName: widget.product.name,
                 ),
                 const SizedBox(height: 120), 
               ],
             ),
           ),
 
-          // Tombol Bottom Bar
           Positioned(
             bottom: 0,
             left: 0,

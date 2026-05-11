@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Tambah ini buat baca SVG
 import 'package:jamu_saripah/Models/product_cart.dart'; 
 
 class AddToCartBottomSheet extends StatefulWidget {
@@ -29,17 +30,36 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
     _calculatePrice(widget.size);
   }
 
+  // Fungsi pembantu supaya gambar muncul (SVG atau PNG)
+  Widget _buildProductImage(String imageSource) {
+    if (imageSource.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        imageSource,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Image.asset(
+        imageSource,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+      );
+    }
+  }
+
   void _calculatePrice(String size) {
     bool isPaket = widget.product.name.contains("Paket");
 
     if (isPaket) {
-      // Harga khusus kalau user pilih Paket 3 Botol
       if (size == "250 ml") {
-        currentPrice = 60000; // Contoh: Paket 250ml
+        currentPrice = 60000; 
       } else if (size == "350 ml") {
-        currentPrice = 65000; // Contoh: Paket 350ml
+        currentPrice = 65000; 
       } else if (size == "1 Liter") {
-        currentPrice = 70000; // Sesuai screenshot lu!
+        currentPrice = 70000; 
       }
     } else {
       int basePrice = widget.product.price;
@@ -79,7 +99,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle Bar
           Container(
             width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
@@ -91,7 +110,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
           ),
           const SizedBox(height: 20),
 
-          // Kartu Item (UI LU TETEP SAMA)
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -100,7 +118,8 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
             ),
             child: Row(
               children: [
-                Image.asset(widget.product.image, width: 50, height: 50),
+                // Ganti Image.asset jadi pemanggilan fungsi pembantu
+                _buildProductImage(widget.product.image),
                 const SizedBox(width: 15),
                 Expanded(
                   child: Column(
@@ -125,7 +144,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
           ),
           const SizedBox(height: 10),
 
-          // Option Selection (UI LU TETEP SAMA)
           Row(
             children: [
               _buildSizeOption("250 ml"),
@@ -138,7 +156,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
 
           const SizedBox(height: 30),
 
-          // Tombol Masukan Keranjang
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -166,7 +183,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
           
           const SizedBox(height: 10),
 
-          // Tombol Lanjut Belanja (Navigate ke Home)
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
@@ -176,7 +192,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () {
-                // Beres! Langsung ke Home dan stack dibersihin
                 Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
               },
               child: const Text("Lanjut Belanja", style: TextStyle(color: Color(0xFF7E8959), fontWeight: FontWeight.bold)),
@@ -188,7 +203,6 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
     );
   }
 
-  // ✅ UI Selection (TETEP PAKE INKWELL LU)
   Widget _buildSizeOption(String label) {
     bool isSelected = selectedSize == label;
 
