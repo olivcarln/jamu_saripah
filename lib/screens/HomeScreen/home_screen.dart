@@ -75,12 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 const PromoBanner(),
                 const SizedBox(height: 25),
 
-                // Order Method Section
-                OrderMethod(
-                  onPickUpTap: () => _prosesCheckout("Pick Up"),
-                  onDeliveryTap: () => _prosesCheckout("Delivery"),
-                ),
-
                 const SizedBox(height: 25),
                 const Menus(), 
                 const SizedBox(height: 30),

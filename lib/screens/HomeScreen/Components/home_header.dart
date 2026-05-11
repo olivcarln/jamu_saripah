@@ -5,6 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
+import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomeHeader extends StatefulWidget {
   const HomeHeader({super.key});
@@ -267,32 +269,98 @@ class _HomeHeaderState extends State<HomeHeader> {
     );
   }
 
-  Widget _buildPointCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            right: -10, top: -10,
-            child: SvgPicture.asset('assets/coins.svg', width: 120),
-          ),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("100 Points", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              SizedBox(height: 12),
-              Divider(height: 1, color: Colors.black12),
-              SizedBox(height: 12),
-              Text("Redeem your points for exciting rewards", style: TextStyle(fontSize: 11, color: Colors.black54)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+Widget _buildPointCard() {
+  return Consumer<CartProvider>(
+    builder: (context, cart, child) {
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // --- BAGIAN ATAS: Pill Poin & Background Koin ---
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Gambar Koin Background
+                Positioned(
+                  right: 10,
+                  top: 15,
+                  child: SvgPicture.asset(
+                    'assets/coins.svg',
+                    width: 110, // Ukuran koin background disesuaikan
+                  ),
+                ),
+                
+                // Pil Angka Poin (Sudah diperkecil)
+                Padding(
+                  padding: const EdgeInsets.only(left: 15, top: 20, bottom: 15),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3E9D2).withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF8D6E63).withOpacity(0.8), 
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.monetization_on, color: Colors.orange, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            "${cart.totalPoints} Points",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14, // Ukuran teks poin lebih kecil
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // --- GARIS PEMISAH ---
+            Divider(height: 1, color: Colors.grey.withOpacity(0.1)),
+
+            // --- BAGIAN BAWAH: Teks Keterangan ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Redeem your points for exciting rewards",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey[400]),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 }

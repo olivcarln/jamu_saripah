@@ -14,6 +14,8 @@ class CartProvider with ChangeNotifier {
       .where((item) => item.isChecked)
       .fold(0, (sum, item) => sum + (item.price * item.quantity));
 
+  int get totalPoints => (checkedTotalPrice / 100).floor();    
+
   void addToCart(CartItem newItem) {
     int index = _items.indexWhere((i) => i.name == newItem.name && i.size == newItem.size);
 
