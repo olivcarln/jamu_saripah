@@ -194,7 +194,7 @@ class _AdminVoucherScreenState extends State<AdminVoucherScreen> {
                         });
                       },
 
-                      title: const Text("Sudah dipakai"),
+                      title: const Text("Voucher Sudah Dipakai"),
                     ),
                   ],
                 ),
@@ -248,6 +248,7 @@ class _AdminVoucherScreenState extends State<AdminVoucherScreen> {
                       if (!mounted) return;
 
                       Navigator.pop(context);
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(

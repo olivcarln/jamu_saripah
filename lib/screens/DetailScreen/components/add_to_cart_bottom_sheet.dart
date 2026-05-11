@@ -21,7 +21,7 @@ class AddToCartBottomSheet extends StatefulWidget {
 
 class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
   String selectedSize = "";
-  int currentPrice = 0;
+  double currentPrice = 0;
 
   @override
   void initState() {
@@ -62,7 +62,7 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
         currentPrice = 70000; 
       }
     } else {
-      int basePrice = widget.product.price;
+      double basePrice = widget.product.price;
       if (size == "350 ml") {
         currentPrice = basePrice + 5000;
       } else if (size == "1 Liter") {
@@ -88,7 +88,7 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
       decimalDigits: 0
     );
 
-    int totalHarga = currentPrice * widget.quantity;
+    double totalHarga = currentPrice * widget.quantity;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
