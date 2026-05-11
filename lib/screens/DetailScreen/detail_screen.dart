@@ -27,6 +27,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Tambahkan .toInt() untuk fix error tipe data double ke int
     currentPrice = widget.product.price.toInt(); 
     selectedOption = "${widget.product.name} Saja";
   }
