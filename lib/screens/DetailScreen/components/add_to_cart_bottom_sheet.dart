@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Tambah ini buat baca SVG
-import 'package:jamu_saripah/Models/product_cart.dart'; 
+import 'package:jamu_saripah/Models/product_cart.dart';
+import 'package:jamu_saripah/Screens/HomeScreen/home_screen.dart';
 
 class AddToCartBottomSheet extends StatefulWidget {
   final Product product;
@@ -45,7 +46,8 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
         width: 50,
         height: 50,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+        errorBuilder: (context, error, stackTrace) =>
+            const Icon(Icons.broken_image),
       );
     }
   }
@@ -55,11 +57,11 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
 
     if (isPaket) {
       if (size == "250 ml") {
-        currentPrice = 60000; 
+        currentPrice = 60000;
       } else if (size == "350 ml") {
-        currentPrice = 65000; 
+        currentPrice = 65000;
       } else if (size == "1 Liter") {
-        currentPrice = 70000; 
+        currentPrice = 70000;
       }
     } else {
       int basePrice = widget.product.price;
@@ -83,9 +85,9 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final formatCurrency = NumberFormat.currency(
-      locale: 'id_ID', 
-      symbol: 'Rp ', 
-      decimalDigits: 0
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
     );
 
     int totalHarga = currentPrice * widget.quantity;
@@ -100,21 +102,30 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-          
+
           const Text(
-            "Lengkapi Belanjamu", 
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF7E8959))
+            "Lengkapi Belanjamu",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF7E8959),
+            ),
           ),
           const SizedBox(height: 20),
 
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[200]!), 
-              borderRadius: BorderRadius.circular(15)
+              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Row(
               children: [
@@ -125,21 +136,33 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Text(selectedSize, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(
+                        widget.product.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        selectedSize,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 20),
           const Row(
             children: [
               Icon(Icons.lightbulb, color: Colors.orange, size: 18),
               SizedBox(width: 8),
-              Text("Ssst...ubah ukuran jamu jadi lebih besar", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(
+                "Ssst...ubah ukuran jamu jadi lebih besar",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -162,12 +185,16 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7E8959),
                 padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("${widget.product.name} ($selectedSize) ditambahkan!"),
+                    content: Text(
+                      "${widget.product.name} ($selectedSize) ditambahkan!",
+                    ),
                     backgroundColor: const Color(0xFF7E8959),
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -175,12 +202,15 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
                 Navigator.pop(context);
               },
               child: Text(
-                "Masukan Keranjang - ${formatCurrency.format(totalHarga)}", 
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                "Masukan Keranjang - ${formatCurrency.format(totalHarga)}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
-          
+
           const SizedBox(height: 10),
 
           SizedBox(
@@ -189,12 +219,23 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 side: const BorderSide(color: Color(0xFF7E8959)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
-                Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (route) => false,
+                );
               },
-              child: const Text("Lanjut Belanja", style: TextStyle(color: Color(0xFF7E8959), fontWeight: FontWeight.bold)),
+              child: const Text(
+                "Lanjut Belanja",
+                style: TextStyle(
+                  color: Color(0xFF7E8959),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -214,7 +255,9 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF7E8959) : Colors.white,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: isSelected ? Colors.transparent : Colors.grey[300]!),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : Colors.grey[300]!,
+          ),
         ),
         child: Text(
           label,

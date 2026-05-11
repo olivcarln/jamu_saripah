@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 class ProductOptionsSection extends StatefulWidget {
-  final String productName; // Tambahkan parameter nama produk agar dinamis
+  final String productName;
   final Function(String)? onSizeChanged;
+  final Function(String)? onOptionChanged; // Tambahkan callback untuk opsi
+  final bool isBundle; // Tambahkan parameter isBundle
 
   const ProductOptionsSection({
     super.key, 
-    required this.productName, // Wajib diisi agar teks radio berubah
-    this.onSizeChanged
+    required this.productName,
+    this.onSizeChanged,
+    this.onOptionChanged, // Tambahkan ke constructor
+    this.isBundle = false, // Default false agar UI lama tidak berubah
   });
 
   @override
@@ -15,7 +19,7 @@ class ProductOptionsSection extends StatefulWidget {
 }
 
 class _ProductOptionsSectionState extends State<ProductOptionsSection> {
-  String selectedSize = "350 ml"; 
+  String selectedSize = "250 ml"; // Sesuaikan default ke 250ml agar sinkron
   int selectedOption = 1;        
 
   @override
@@ -31,7 +35,6 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
           ),
           const SizedBox(height: 15),
           
-          // Row Ukuran (UI Tetap Sama)
           Row(
             children: [
               _buildSizeOption("250 ml"),
@@ -42,49 +45,57 @@ class _ProductOptionsSectionState extends State<ProductOptionsSection> {
             ],
           ),
           
-          const SizedBox(height: 25),
-          const Text(
-            "Pilihan Tersedia", 
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
-          ),
-
-          // Opsi Radio 1 - Mengikuti Nama Produk
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text("${widget.productName} Saja"), // Teks berubah otomatis
-            trailing: Radio<int>(
-              value: 1,
-              groupValue: selectedOption,
-              activeColor: const Color(0xFF7E8959),
-              onChanged: (val) {
-                setState(() {
-                  selectedOption = val!;
-                });
-              },
+          // LOGIKA: Jika isBundle true (Paket Mix), maka section pilihan di bawah ini hilang
+          if (!widget.isBundle) ...[
+            const SizedBox(height: 25),
+            const Text(
+              "Pilihan Tersedia", 
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
             ),
-          ),
 
-          // Opsi Radio 2 - Mengikuti Nama Produk
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text("Paket 3 Botol ${widget.productName}"), // Teks berubah otomatis
-            trailing: Radio<int>(
-              value: 2,
-              groupValue: selectedOption,
-              activeColor: const Color(0xFF7E8959),
-              onChanged: (val) {
-                setState(() {
-                  selectedOption = val!;
-                });
-              },
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text("${widget.productName} Saja"),
+              trailing: Radio<int>(
+                value: 1,
+                groupValue: selectedOption,
+                activeColor: const Color(0xFF7E8959),
+                onChanged: (val) {
+                  setState(() {
+                    selectedOption = val!;
+                  });
+                  // Kirim balik teks pilihan ke DetailScreen
+                  if (widget.onOptionChanged != null) {
+                    widget.onOptionChanged!("${widget.productName} Saja");
+                  }
+                },
+              ),
             ),
-          ),
+
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text("Paket 3 Botol ${widget.productName}"),
+              trailing: Radio<int>(
+                value: 2,
+                groupValue: selectedOption,
+                activeColor: const Color(0xFF7E8959),
+                onChanged: (val) {
+                  setState(() {
+                    selectedOption = val!;
+                  });
+                  // Kirim balik teks pilihan ke DetailScreen untuk trigger harga 70rb
+                  if (widget.onOptionChanged != null) {
+                    widget.onOptionChanged!("Paket 3 Botol ${widget.productName}");
+                  }
+                },
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  // Widget Button Ukuran (UI Tetap Sama)
   Widget _buildSizeOption(String label) {
     bool isSelected = selectedSize == label;
     

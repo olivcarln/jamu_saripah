@@ -1,7 +1,7 @@
-import 'dart:convert'; // Tambahkan untuk decode Base64
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Tambahkan library SVG
+import 'package:flutter_svg/flutter_svg.dart'; 
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/Models/product_cart.dart';
 import 'package:jamu_saripah/common/constasts.dart'; 
@@ -22,45 +22,52 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   int quantity = 1;
   String selectedSize = "250 ml"; 
-  String selectedOption = "Beras Kencur Saja"; 
+  String selectedOption = ""; 
   int currentPrice = 0; 
 
   @override
   void initState() {
     super.initState();
+    // Inisialisasi awal murni dari data Admin
     currentPrice = widget.product.price;
+    selectedOption = "${widget.product.name} Saja";
   }
 
+  // --- LOGIKA UPDATE HARGA DINAMIS SESUAI DATA ADMIN ---
   void updatePrice(String size, String option) {
     setState(() {
       selectedSize = size;
       selectedOption = option;
 
+      int basePrice = widget.product.price; // Harga dasar dari Admin
+      int sizeMarkup = 0;
+
+      // 1. Tentukan kenaikan harga berdasarkan ukuran (ml)
+      if (size == "350 ml") {
+        sizeMarkup = 5000; 
+      } else if (size == "1 Liter") {
+        sizeMarkup = 15000; 
+      }
+
+      // 2. Logika perhitungan akhir
       if (option.contains("Paket 3")) {
-        currentPrice = 70000; 
+        // Jika pilih Paket 3 Botol, harga dasar jadi 70rb 
+        // ditambah sizeMarkup jika ukurannya bukan 250ml
+        currentPrice = 70000 + (sizeMarkup * 3); 
       } else {
-        int basePrice = widget.product.price; 
-        if (size == "350 ml") {
-          currentPrice = basePrice + 5000;
-        } else if (size == "1 Liter") {
-          currentPrice = basePrice + 10000;
-        } else {
-          currentPrice = basePrice;
-        }
+        // Jika pilih satuan saja (Beras Kencur Saja)
+        currentPrice = basePrice + sizeMarkup;
       }
     });
   }
-
   String formatIDR(int amount) {
-    int priceToFormat = (amount == 0) ? widget.product.price : amount;
     return NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
-    ).format(priceToFormat);
+    ).format(amount);
   }
 
-  // --- HELPER UNTUK MENDETEKSI FORMAT GAMBAR ---
   Widget _buildProductImage(String imageSource) {
     if (imageSource.length > 100) {
       try {
@@ -96,12 +103,13 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (currentPrice == 0 && widget.product.price != 0) {
-      currentPrice = widget.product.price;
-    }
     bool isLowStock = widget.product.stock < 5;
     Color badgeBgColor = isLowStock ? const Color(0xFFFDE8E8) : AppColors.primaryOlive;
     Color badgeTextColor = isLowStock ? const Color(0xFFC53030) : AppColors.white;
+
+    // Menentukan apakah produk ini tipe bundle (untuk filter UI di section opsi)
+    bool isMix = widget.product.name.toLowerCase().contains("paket") || 
+                 widget.product.name.toLowerCase().contains("mix");
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -113,9 +121,7 @@ class _DetailScreenState extends State<DetailScreen> {
               children: [
                 Stack(
                   children: [
-                    // --- GAMBAR PRODUK (DENGAN SVG SUPPORT) ---
                     _buildProductImage(widget.product.image),
-                    
                     Positioned(
                       top: 50,
                       left: 20,
@@ -193,8 +199,12 @@ class _DetailScreenState extends State<DetailScreen> {
 
                 const Divider(thickness: 10, color: Color(0xFFF5F5F5)),
                 
+                // Meneruskan parameter isBundle dan onOptionChanged yang baru
                 ProductOptionsSection(
-                  onSizeChanged: (size) => updatePrice(size, selectedOption), productName: widget.product.name,
+                  productName: widget.product.name,
+                  onSizeChanged: (size) => updatePrice(size, selectedOption),
+                  onOptionChanged: (option) => updatePrice(selectedSize, option),
+                  isBundle: isMix, 
                 ),
                 const SizedBox(height: 120), 
               ],
@@ -213,7 +223,7 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
-    int totalPrice = (currentPrice == 0 ? widget.product.price : currentPrice) * quantity;
+    int totalPrice = currentPrice * quantity;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -257,7 +267,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 onPressed: () {
                   context.read<CartProvider>().addToCart(
                     CartItem(
-                      name: widget.product.name,
+                      name: "${widget.product.name} ($selectedOption)",
                       price: currentPrice,
                       quantity: quantity,
                       image: widget.product.image,
