@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/adding_menu_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/shopping_bag_screen.dart';
@@ -6,6 +7,7 @@ import 'package:jamu_saripah/screens/CheckoutSreen/component/payment_screen.dart
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
 import 'package:jamu_saripah/screens/orderscreen/order_history_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/select_method_screen.dart';
+import 'package:provider/provider.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final int? totalPrice;
@@ -58,10 +60,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text('Checkout',
             style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -251,16 +249,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: ElevatedButton(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderHistoryScreen())),
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7E8959), minimumSize: const Size(double.infinity, 54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
-        child: const Text('Pesan Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+// CheckoutScreen.dart
+
+    Widget _buildBottomBar() {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          // --- INI ADALAH ONPRESSED NYA ---
+          onPressed: () {
+          // 1. Simpan data ke provider (logika yang tadi)
+          final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+          orderProvider.addOrder(OrderModel(
+            title: cartItems[0]['name'],
+            date: DateTime.now().toString().substring(0, 16),
+            price: calculateTotal(),
+            status: "Diproses",
+            method: currentMethod,
+          ));
+
+          // 2. LANGSUNG GANTI HALAMAN (User gak bisa balik ke checkout lagi)
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const OrderHistoryScreen()),
+          );
+        },
+      // --------------------------------
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF7E8959),
+        minimumSize: const Size(double.infinity, 54),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
-    );
-  }
+      child: const Text(
+        'Pesan Sekarang', 
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+    ),
+  );
+}
 
   Widget _buildAddMoreButton() {
     return Row(

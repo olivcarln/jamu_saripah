@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,12 +35,17 @@ void main() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('showOnboarding') ?? true;
 
-  runApp(
-    MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => CartProvider())],
-      child: JamuSaripah(showOnboarding: showOnboarding),
-    ),
-  );
+// main.dart
+
+runApp(
+  MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => CartProvider()),
+      ChangeNotifierProvider(create: (_) => OrderProvider()), // ✅ Tambahkan ini
+    ],
+    child: JamuSaripah(showOnboarding: showOnboarding),
+  ),
+);
 }
 
 class JamuSaripah extends StatelessWidget {
