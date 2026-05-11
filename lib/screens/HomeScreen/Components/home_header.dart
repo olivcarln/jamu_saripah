@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
-import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeader extends StatefulWidget {

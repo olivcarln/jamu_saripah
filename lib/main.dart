@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Import file konfigurasi otomatis
 import 'firebase_options.dart'; 
 
-import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
