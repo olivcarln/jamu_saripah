@@ -1,18 +1,18 @@
 class Product {
   final String name;
-  final int price;
-  final String size; 
+  final double price;
+  final String size;
   final String image;
   final String description;
   final int stock;
 
   Product({
-    required this.name, 
-    required this.price, 
-    required this.size, 
-    required this.image, 
-    required this.description, 
-    required this.stock, 
+    required this.name,
+    required this.price,
+    required this.size,
+    required this.image,
+    required this.description,
+    required this.stock,
   });
 }
 
