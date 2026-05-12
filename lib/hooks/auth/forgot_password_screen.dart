@@ -11,11 +11,9 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  // Logic: Controller untuk menangkap input email
   final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
 
-  // Logic: Fungsi kirim email reset password via Firebase
   Future<void> _handleResetPassword() async {
     final email = _emailController.text.trim();
 
@@ -24,7 +22,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    // Validasi format email sederhana
     if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(email)) {
       _showSnackBar("Format email tidak valid", isError: true);
@@ -34,7 +31,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Perintah utama Firebase untuk kirim email reset
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       
       if (!mounted) return;
@@ -44,13 +40,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         isError: false
       );
 
-      // Otomatis balik ke Login setelah 3 detik agar user bisa langsung login nanti
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) Navigator.pop(context);
       });
 
     } on FirebaseAuthException catch (e) {
-      // Handling error spesifik dari Firebase
       String errorMessage = "Terjadi kesalahan";
       if (e.code == 'user-not-found') {
         errorMessage = "Email tidak terdaftar.";
@@ -84,10 +78,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF7E8959), // Tetap Hijau Olive
+      backgroundColor: const Color(0xFF7E8959), 
       body: Column(
         children: [
-          // Tombol Back di area hijau
           SafeArea(
             child: Align(
               alignment: Alignment.topLeft,
@@ -127,7 +120,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     const SizedBox(height: 40),
                     
-                    // Input Email (Desain sama persis dengan Login kamu)
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -145,7 +137,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     
                     const SizedBox(height: 50),
                     
-                    // Button Kirim
                     SizedBox(
                       width: double.infinity,
                       height: 55,

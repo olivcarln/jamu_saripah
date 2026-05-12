@@ -59,13 +59,45 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Checkout',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
+   appBar: AppBar(
+  // Bagian Arrow ada di sini
+ leading: IconButton(
+  icon: const Icon(Icons.arrow_back_ios, color: AppColors.primaryOlive),
+  onPressed: () {
+    // Panggil fungsi dialog di sini
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text("Batalkan Pesanan?"),
+          content: const Text("Data yang kamu isi mungkin tidak akan tersimpan."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // Tutup dialog saja
+              child: const Text("Lanjut Checkout", style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Tutup dialog
+                Navigator.pop(context); // Balik ke halaman sebelumnya (Batal)
+              },
+              child: const Text("Ya, Batal", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  },
+),
+  title: const Text(
+    'Checkout',
+    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+  ),
+  centerTitle: true,
+  backgroundColor: Colors.white,
+  elevation: 0,
+),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -120,7 +152,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
             _buildRincianSection(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
           ],
         ),
       ),
@@ -249,44 +281,63 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-// CheckoutScreen.dart
 
-    Widget _buildBottomBar() {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        child: ElevatedButton(
-          // --- INI ADALAH ONPRESSED NYA ---
-          onPressed: () {
-          // 1. Simpan data ke provider (logika yang tadi)
-          final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-          orderProvider.addOrder(OrderModel(
-            title: cartItems[0]['name'],
-            date: DateTime.now().toString().substring(0, 16),
-            price: calculateTotal(),
-            status: "Diproses",
-            method: currentMethod,
-          ));
 
-          // 2. LANGSUNG GANTI HALAMAN (User gak bisa balik ke checkout lagi)
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const OrderHistoryScreen()),
-          );
-        },
-      // --------------------------------
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF7E8959),
-        minimumSize: const Size(double.infinity, 54),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      ),
-      child: const Text(
-        'Pesan Sekarang', 
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+ Widget _buildBottomBar() {
+  return Container(
+    // Memberikan warna background putih agar tidak tembus ke body
+    color: Colors.white, 
+    child: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 0,      // Kita nol kan top padding di sini
+          bottom: 20,   // Jarak aman untuk navigasi bar
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // SANGAT PENTING agar tidak narik ke atas
+          children: [
+            // Garis tipis opsional agar terpisah dari info poin
+            const Divider(height: 1, color: Color(0xFFF1F1F1)), 
+            const SizedBox(height: 12), // Jarak manual antara divider/poin ke tombol
+            ElevatedButton(
+              onPressed: () {
+                final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+                orderProvider.addOrder(OrderModel(
+                  title: cartItems[0]['name'],
+                  date: DateTime.now().toString().substring(0, 16),
+                  price: calculateTotal(),
+                  status: "Diproses",
+                  method: currentMethod,
+                ));
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OrderHistoryScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7E8959),
+                minimumSize: const Size(double.infinity, 54),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Pesan Sekarang',
+                style: TextStyle(
+                  color: Colors.white, 
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 16
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
 }
-
   Widget _buildAddMoreButton() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

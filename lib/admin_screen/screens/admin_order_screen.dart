@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+// TODO: Tambahkan fitur filter berdasarkan status pesanan (Menunggu, Diproses, Dikirim, Selesai, Dibatalkan)
 class AdminOrderScreen extends StatefulWidget {
   const AdminOrderScreen({super.key});
 
@@ -73,16 +74,6 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
-
-      appBar: AppBar(
-        title: const Text(
-          "Kelola Pesanan",
-          style: TextStyle(color: Colors.white),
-        ),
-
-        backgroundColor: const Color(0xFF7E8959),
-      ),
-
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('orders')
