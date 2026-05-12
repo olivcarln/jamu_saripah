@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/Screens/CheckoutSreen/checkout.screen.dart';
 import 'package:provider/provider.dart'; 
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/Provider/cart_provider.dart'; 
@@ -9,7 +10,6 @@ import 'components/cart_empty_state.dart';
 import 'components/cart_button_summary.dart';
 
 class CartScreen extends StatefulWidget {
-  // initialItems tetep ada biar gak error dari arah navigasi Menus
   final List<CartItem> initialItems;
 
   const CartScreen({super.key, required this.initialItems});
@@ -40,7 +40,7 @@ class _CartScreenState extends State<CartScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               onPressed: () {
-                provider.clearCart(); // ✅ Panggil fungsi clearCart dari Provider lu
+                provider.clearCart();
                 Navigator.pop(context);
               },
               child: const Text("Ya, Hapus Semua", style: TextStyle(color: Colors.white)),
@@ -53,7 +53,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Menggunakan Consumer supaya UI update tiap kali Provider notifyListeners()
     return Consumer<CartProvider>(
       builder: (context, provider, child) {
         final cartItems = provider.items;
@@ -87,7 +86,7 @@ class _CartScreenState extends State<CartScreen> {
                         itemBuilder: (context, index) {
                           final item = cartItems[index];
                           return Dismissible(
-                            key: ObjectKey(item), // Pakai ObjectKey biar lebih stabil
+                            key: ObjectKey(item),
                             direction: DismissDirection.endToStart,
                             background: Container(
                               alignment: Alignment.centerRight,
@@ -95,7 +94,7 @@ class _CartScreenState extends State<CartScreen> {
                               color: AppColors.brown,
                               child: const Icon(Icons.delete_sweep, color: Colors.white, size: 30),
                             ),
-                            onDismissed: (_) => provider.removeItem(index), // ✅ Pake removeItem lu
+                            onDismissed: (_) => provider.removeItem(index),
                             child: CartItemWidget(
                               item: item,
                               onToggle: () => provider.checkItem(index, !item.isChecked),
@@ -109,16 +108,45 @@ class _CartScreenState extends State<CartScreen> {
                   ],
                 ),
           bottomNavigationBar: cartItems.isEmpty
-              ? null
-              : CartButtonSummary(
-                  totalPrice: provider.checkedTotalPrice, // ✅ Sesuaikan nama fungsi provider lu
+    ? null
+    : CartButtonSummary(
+        totalPrice: provider.checkedTotalPrice,
+        selectedCount: provider.checkedItemsCount,
+        onCheckout: () {
+          // Logika filter: minimal 1 produk terpilih
+          if (provider.checkedItemsCount > 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CheckoutScreen(
+                  totalPrice: provider.checkedTotalPrice,
                   selectedCount: provider.checkedItemsCount,
-                  onCheckout: () {
-                    print("Checkout ${provider.checkedItemsCount} item");
-                  },
                 ),
+              ),
+            );
+          } else {
+            // Tampilkan snackbar kalau nol
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text("Pilih produk dulu ya sebelum lanjut!"),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF634E34), // Senada sama tombol lu
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            );
+          }
+        },
+      ),
         );
       },
     );
-  }
+  } 
 }

@@ -13,16 +13,15 @@ class VoucherScreen extends StatelessWidget {
     
     if (user == null) {
       return const Scaffold(
-        backgroundColor: Colors.white, // Background putih untuk kondisi belum login
+        backgroundColor: Colors.white,
         body: Center(child: Text("Silakan login terlebih dahulu")),
       );
     }
 
     final userId = user.uid;
 
-    // Gunakan Scaffold agar bisa mengatur backgroundColor
     return Scaffold(
-      backgroundColor: Colors.white, // <--- SET WARNA PUTIH DI SINI
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           /// HEADER
@@ -101,6 +100,12 @@ class VoucherScreen extends StatelessWidget {
                           minTransaction: "Rp ${data['minPurchase']}",
                           quota: "Sisa Kuota: ${data['quota']}",
                           onClaim: () {
+                            // 1. Ambil nominal diskon dari Firestore. 
+                            // Pastikan di Firestore field-nya namanya 'discountAmount' atau sejenisnya.
+                            // Kalau cuma ada persen, sementara gue kasih default 10000 buat ngetes potongannya.
+                            int nominalDiskon = data['discountAmount'] ?? 10000;
+
+                            // 2. Feedback SnackBar
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: const Row(
@@ -116,9 +121,15 @@ class VoucherScreen extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                duration: const Duration(seconds: 2),
+                                duration: const Duration(seconds: 1),
                               ),
                             );
+
+                            // 3. KIRIM DATA BALIK & TUTUP HALAMAN
+                            // Kasih delay dikit biar animasi SnackBar kelihatan
+                            Future.delayed(const Duration(milliseconds: 800), () {
+                              Navigator.pop(context, nominalDiskon);
+                            });
                           },
                         );
                       },

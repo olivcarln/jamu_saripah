@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/Screens/CheckoutSreen/checkout.screen.dart';
 
 class CartButtonSummary extends StatelessWidget {
   final int totalPrice;
   final int selectedCount;
-  final VoidCallback onCheckout;
+  final VoidCallback? onCheckout; // Wajib dikirim dari CartScreen
 
   const CartButtonSummary({
     super.key,
@@ -64,9 +63,6 @@ class CartButtonSummary extends StatelessWidget {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF634E34),
-                disabledBackgroundColor: const Color(
-                  0xFF634E34,
-                ).withValues(alpha: 0.5),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 30,
                   vertical: 12,
@@ -75,19 +71,7 @@ class CartButtonSummary extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              // GANTI DI SINI: Navigasi langsung ke CheckoutScreen
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CheckoutScreen(
-                      // KAMU KURANG DUA BARIS INI:
-                      totalPrice: totalPrice,
-                      selectedCount: selectedCount,
-                    ),
-                  ),
-                );
-              },
+              onPressed: onCheckout, // Panggil fungsi yang dikirim dari CartScreen
               child: const Text(
                 "Lanjut",
                 style: TextStyle(
