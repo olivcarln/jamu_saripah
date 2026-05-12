@@ -4,7 +4,6 @@ import 'package:jamu_saripah/Screens/HomeScreen/Components/menus.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'package:jamu_saripah/services/database_services.dart';
 import 'Components/home_header.dart';
-import 'Components/order_method.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

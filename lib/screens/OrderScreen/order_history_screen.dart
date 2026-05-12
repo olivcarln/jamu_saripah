@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/screens/main_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:jamu_saripah/screens/OrderScreen/component/empty_order_state_screen.dart';
@@ -11,13 +10,17 @@ class OrderHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-            appBar: AppBar(
-        title: const Text("Order History", style: TextStyle(color: Colors.white)),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          "Order History", 
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+        ),
         centerTitle: true,
-        backgroundColor: Color(0xFF6B8E4E),
+        backgroundColor: const Color(0xFF7E8959),
+        elevation: 0,
+        automaticallyImplyLeading: false, 
       ),
-      // Menggunakan Consumer untuk mendengarkan perubahan di OrderProvider
       body: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
           final myOrders = orderProvider.orders;
@@ -26,10 +29,11 @@ class OrderHistoryScreen extends StatelessWidget {
             return const EmptyOrderStateScreen();
           }
 
-          // Pastikan widget ini menerima List<OrderModel>
           return OrderListStateScreen(orders: myOrders);
         },
       ),
+      // JANGAN PASANG bottomNavigationBar DI SINI LAGI
+      // BIAR GAK DOUBLE/TUMPUK SAMA MAIN_SCREEN
     );
   }
 }
