@@ -72,13 +72,13 @@ class VoucherScreen extends StatelessWidget {
                 }).toList();
 
                 if (filteredDocs.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text("Voucher sudah habis atau expired"),
                   );
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   itemCount: filteredDocs.length,
                   itemBuilder: (context, index) {
                     final doc = filteredDocs[index];

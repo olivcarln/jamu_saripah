@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40),
@@ -76,13 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 25),
-                const PromoBanner(),
-                const SizedBox(height: 25),
+                 SizedBox(height: 25),
+                 PromoBanner(),
+                 SizedBox(height: 25),
 
-                const SizedBox(height: 25),
-                const Menus(), 
-                const SizedBox(height: 30),
+                 SizedBox(height: 25),
+                 Menus(), 
+                 SizedBox(height: 30),
               ],
             ),
           ),
