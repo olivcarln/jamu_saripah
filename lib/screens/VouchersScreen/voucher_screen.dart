@@ -10,7 +10,7 @@ class VoucherScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    
+
     if (user == null) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -25,10 +25,7 @@ class VoucherScreen extends StatelessWidget {
       body: Column(
         children: [
           /// HEADER
-          VoucherHeader(
-            isVoucherActive: true,
-            onPaydayTap: () {},
-          ),
+          VoucherHeader(isVoucherActive: true, onPaydayTap: () {}),
 
           const Divider(height: 1),
 
@@ -45,7 +42,8 @@ class VoucherScreen extends StatelessWidget {
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(
-                      child: Text("Belum ada voucher tersedia di database"));
+                    child: Text("Belum ada voucher tersedia"),
+                  );
                 }
 
                 final now = DateTime.now();
@@ -58,8 +56,11 @@ class VoucherScreen extends StatelessWidget {
                   if (data['expiredAt'] != null) {
                     final expiredAt = (data['expiredAt'] as Timestamp).toDate();
                     final today = DateTime(now.year, now.month, now.day);
-                    final expiryDate =
-                        DateTime(expiredAt.year, expiredAt.month, expiredAt.day);
+                    final expiryDate = DateTime(
+                      expiredAt.year,
+                      expiredAt.month,
+                      expiredAt.day,
+                    );
 
                     if (expiryDate.isBefore(today)) return false;
                   } else {
@@ -69,11 +70,13 @@ class VoucherScreen extends StatelessWidget {
                 }).toList();
 
                 if (filteredDocs.isEmpty) {
-                  return const Center(child: Text("Voucher sudah habis atau expired"));
+                  return const Center(
+                    child: Text("Voucher sudah habis atau expired"),
+                  );
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   itemCount: filteredDocs.length,
                   itemBuilder: (context, index) {
                     final doc = filteredDocs[index];

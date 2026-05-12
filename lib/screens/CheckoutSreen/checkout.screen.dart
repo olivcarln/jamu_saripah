@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
+=======
+import 'package:jamu_saripah/Provider/order_provider.dart'; // Penting: OrderModel ada di sini
+import 'package:jamu_saripah/common/constasts.dart';
+>>>>>>> a43a04e9d23a1f6c95061b56c89e2971e49c737e
 import 'package:jamu_saripah/screens/CheckoutSreen/component/adding_menu_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/payment_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
 import 'package:jamu_saripah/screens/orderscreen/order_history_screen.dart';
+<<<<<<< HEAD
+=======
+import 'package:jamu_saripah/screens/CheckoutSreen/component/select_method_screen.dart';
+import 'package:jamu_saripah/screens/main_screen.dart'; 
+import 'package:provider/provider.dart';
+>>>>>>> a43a04e9d23a1f6c95061b56c89e2971e49c737e
 
 class CheckoutScreen extends StatefulWidget {
   final int? totalPrice;
@@ -66,6 +77,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+<<<<<<< HEAD
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
@@ -78,6 +90,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'Checkout',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+=======
+        title: const Text('Checkout',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+>>>>>>> a43a04e9d23a1f6c95061b56c89e2971e49c737e
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -180,6 +196,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  // --- UI Komponen Tetap Sesuai Keinginan Lo ---
+
   Widget _buildDeliveryMode() {
     return Container(
       color: const Color(0xFFF9FCF3),
@@ -276,6 +294,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
       ),
+<<<<<<< HEAD
+=======
+      title: Text(
+        isDelivery ? 'Rumah - Jatiasih' : 'Jamu Saripah - Anggrek Cakra', 
+        style: const TextStyle(fontWeight: FontWeight.bold)
+      ),
+      subtitle: Text(
+        isDelivery 
+            ? 'Jl. Melati No. 12, Bekasi (Alamat Kamu)' 
+            : '1.4 km dari lokasimu (Alamat Toko)'
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+>>>>>>> a43a04e9d23a1f6c95061b56c89e2971e49c737e
     );
   }
 
@@ -400,6 +431,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+<<<<<<< HEAD
   Widget _buildBottomBar() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -424,10 +456,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
       ),
+=======
+  Widget _buildAddMoreButton() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text('Ada tambahan lagi?', style: TextStyle(fontWeight: FontWeight.bold)),
+        OutlinedButton(
+          onPressed: () => setState(() => showSpecialPackage = !showSpecialPackage),
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Color(0xFF7E8959)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+          child: const Text('Tambah', style: TextStyle(color: Color(0xFF7E8959))),
+        )
+      ],
+>>>>>>> a43a04e9d23a1f6c95061b56c89e2971e49c737e
     );
   }
 
   Widget _buildCartItem(Map<String, dynamic> item) {
+<<<<<<< HEAD
     return Dismissible(
       key: UniqueKey(),
       direction: DismissDirection.endToStart,
@@ -480,6 +529,51 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             fontWeight: FontWeight.bold,
             color: Color(0xFF7E8959),
           ),
+=======
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text(item['size']),
+      trailing: Text(
+        'Rp ${formatHarga(item['price'])}', 
+        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF7E8959))
+      ),
+    );
+  }
+
+  // --- Logic Simpan Data ---
+  Widget _buildBottomBar() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: ElevatedButton(
+        onPressed: () {
+          final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+          
+          // Memasukkan data sebagai OrderModel (Ini yang bikin garis merah ilang)
+          orderProvider.addOrder(OrderModel(
+            title: cartItems.isNotEmpty ? cartItems[0]['name'] : "Pesanan Jamu",
+            date: DateTime.now().toString().substring(0, 16),
+            price: calculateTotal(),
+            status: "Diproses",
+            method: currentMethod,
+          ));
+
+          // Navigasi ke MainScreen supaya riwayat terupdate
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+            (route) => false,
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF7E8959),
+          minimumSize: const Size(double.infinity, 54),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        ),
+        child: const Text(
+          'Pesan Sekarang', 
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+>>>>>>> a43a04e9d23a1f6c95061b56c89e2971e49c737e
         ),
       ),
     );

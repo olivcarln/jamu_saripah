@@ -12,7 +12,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  bool _rememberMe = false;
+  final bool _rememberMe = false;
   bool _isObscure = true;
   bool _isLoading = false;
 

@@ -25,7 +25,7 @@ class AdminDashboardScreen extends StatelessWidget {
   // 4. Hitung Revenue
   double revenue = 0;
   for (var doc in orderSnapshot.docs) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data();
     revenue += (data['totalPrice'] ?? 0).toDouble();
   }
 

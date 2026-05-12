@@ -9,76 +9,126 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  String selectedFilter = "Relevance"; // Simpan filter
+  // 1. DATA PRODUK ASLI (Sesuai gambar kamu)
+  final List<Map<String, dynamic>> _allProducts = [
+    {"name": "Wedang Jahe", "price": 12000, "category": "250 ML", "type": "Wedang Jahe", "image": "assets/wedang_jahe.png"},
+    {"name": "Beras Kencur", "price": 22000, "category": "350 ML", "type": "Beras Kencur", "image": "assets/beras_kencur.png"},
+    {"name": "Kunyit Asam", "price": 11000, "category": "250 ML", "type": "Kunyit Asem", "image": "assets/kunyit_asam.png"},
+  ];
+
+  // 2. LIST UNTUK DITAMPILKAN (Hasil Filter)
+  List<Map<String, dynamic>> _displayedProducts = [];
+  Map<String, String> _activeFilters = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _displayedProducts = List.from(_allProducts); // Awalnya muncul semua
+  }
+
+  // 3. FUNGSI LOGIKA FILTER & SORTING
+  void _applyLogicFilter(Map<String, String> filters) {
+    setState(() {
+      _activeFilters = filters;
+      List<Map<String, dynamic>> tempProducts = List.from(_allProducts);
+
+      // Filter Kategori (ML)
+      if (filters['kategori'] != null && filters['kategori']!.isNotEmpty) {
+        tempProducts = tempProducts.where((p) => p['category'] == filters['kategori']).toList();
+      }
+
+      // Filter Jenis Jamu
+      if (filters['jenis'] != null && filters['jenis']!.isNotEmpty) {
+        tempProducts = tempProducts.where((p) => p['type'] == filters['jenis']).toList();
+      }
+
+      // SORTING HARGA (Ini yang kamu minta)
+      if (filters['harga'] == "Harga Terendah") {
+        tempProducts.sort((a, b) => a['price'].compareTo(b['price']));
+      } else if (filters['harga'] == "Harga Tertinggi") {
+        tempProducts.sort((a, b) => b['price'].compareTo(a['price']));
+      }
+
+      _displayedProducts = tempProducts;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        // Pakai tambahan dari Echa biar icon back-nya putih
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Pemberitahuan",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor:Color(0xFF7E8959),
-        elevation: 0,
+        title: const Text("Jamu Saripah"),
+        backgroundColor: const Color(0xFF7E8959),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune, color: Colors.white),
-            onPressed: () {
-              openFilterSheet(context);
-            },
+            icon: const Icon(Icons.tune),
+            onPressed: () => _openFilter(context),
           )
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/animation_notification.png',
-              height: 200,
-              color: const Color(0xFF7E8959),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Belum Ada Pemberitahuan",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+      body: _displayedProducts.isEmpty
+          ? const Center(child: Text("Produk tidak ditemukan"))
+          : GridView.builder(
+              padding: const EdgeInsets.all(15),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.8,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
               ),
+              itemCount: _displayedProducts.length,
+              itemBuilder: (context, index) {
+                final product = _displayedProducts[index];
+                return _buildProductCard(product);
+              },
             ),
-          ],
-        ),
-      ),
-
     );
   }
 
-  void openFilterSheet(BuildContext context) {
+  // UI CARD PRODUK (Sesuai gambar kamu)
+  Widget _buildProductCard(Map<String, dynamic> product) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: const Center(child: Icon(Icons.image, color: Colors.grey)), // Ganti Image.asset nanti
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(product['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                Text("Rp ${product['price']}", style: const TextStyle(color: Color(0xFF7E8959), fontWeight: FontWeight.bold)),
+                Text(product['category'], style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _openFilter(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+      builder: (context) => FilterSheet(
+        onApply: (selectedData) => _applyLogicFilter(selectedData),
       ),
-      builder: (context) {
-        return FilterSheet(
-          onApply: (value) {
-            setState(() {
-              selectedFilter = value;
-            });
-          },
-        );
-      },
     );
   }
 }

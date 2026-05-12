@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FilterSheet extends StatefulWidget {
-  final Function(String) onApply;
+  final Function(Map<String, String>) onApply;
 
   const FilterSheet({super.key, required this.onApply});
 
@@ -10,110 +10,106 @@ class FilterSheet extends StatefulWidget {
 }
 
 class _FilterSheetState extends State<FilterSheet> {
-  String selectedSort = "Relevance";
+  String selectedHarga = "";
+  String selectedKategori = "";
+  String selectedJenis = "";
 
   void resetFilter() {
     setState(() {
-      selectedSort = "Relevance";
+      selectedHarga = "";
+      selectedKategori = "";
+      selectedJenis = "";
     });
   }
 
   void applyFilter() {
-    widget.onApply(selectedSort);
+    widget.onApply({
+      "harga": selectedHarga,
+      "kategori": selectedKategori,
+      "jenis": selectedJenis,
+    });
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding:EdgeInsets.all(16),
-      child: SafeArea( // 🔥 biar ga ketiban notch / navbar
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            /// HEADER
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 15),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                 Text(
-                  "Filters",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                const SizedBox(width: 48),
+                const Text("Filter", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 TextButton(
                   onPressed: resetFilter,
-                  child: Text("Reset",
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[600]
-                  ),
-                  ),
-                )
+                  child: Text("Reset", style: TextStyle(color: Colors.grey[600])),
+                ),
               ],
             ),
-
-             SizedBox(height: 10),
-
-            /// SORT
-             Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Sort by",
-                style: TextStyle(fontWeight: FontWeight.bold),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    buildFilterSection("Harga", ["Harga Tertinggi", "Harga Terendah"], selectedHarga, (val) => setState(() => selectedHarga = val)),
+                    buildFilterSection("Kategori", ["250 ML", "350 ML", "1000 ML"], selectedKategori, (val) => setState(() => selectedKategori = val)),
+                    buildFilterSection("Jenis Jamu", ["Beras Kencur", "Kunyit Asem", "Wedang Jahe"], selectedJenis, (val) => setState(() => selectedJenis = val)),
+                  ],
+                ),
               ),
             ),
-
-           SizedBox(height: 8),
-
-            buildRadio("Relevance"),
-            buildRadio("Most recent"),
-            buildRadio("Highest priced"),
-            buildRadio("Lowest priced"),
-
-          SizedBox(height: 20),
-
-            /// BUTTON
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: applyFilter,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 14),
+                  backgroundColor: const Color(0xFF76895F),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
-                child: Text("Show results",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white
-                ),
-                ),
-              
+                child: const Text("Apply Filter", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget buildRadio(String value) {
-    final isSelected = selectedSort == value;
-
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(value),
-      trailing: Icon(
-        isSelected
-            ? Icons.radio_button_checked
-            : Icons.radio_button_off,
-        color: isSelected ? Colors.black : Colors.grey,
+  Widget buildFilterSection(String title, List<String> options, String selectedValue, Function(String) onSelected) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        initiallyExpanded: true,
+        children: options.map((option) {
+          final isSelected = selectedValue == option;
+          return ListTile(
+            leading: Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+              color: isSelected ? const Color(0xFF76895F) : Colors.grey,
+            ),
+            title: Text(option),
+            onTap: () => onSelected(option),
+          );
+        }).toList(),
       ),
-      onTap: () {
-        setState(() {
-          selectedSort = value;
-        });
-      },
     );
   }
 }

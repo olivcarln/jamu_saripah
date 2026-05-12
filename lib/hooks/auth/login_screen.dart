@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:jamu_saripah/admin_screen/admin_main_screen.dart';
 import 'package:jamu_saripah/hooks/auth/register_screen.dart';
 // Tambahkan import ini
-import 'package:jamu_saripah/hooks/auth/forgot_password_screen.dart'; 
+import 'package:jamu_saripah/hooks/auth/forgot_password_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,10 +32,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // 1. Login ke Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
       // 2. Ambil data role dari Firestore
       String uid = userCredential.user!.uid;
@@ -47,22 +48,23 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       // 3. Pengecekan Role
-      if (userDoc.exists && userDoc['role'] == 'admin') {
-        // Jika Admin
+      final data = userDoc.data() as Map<String, dynamic>?;
+
+      String role = data?['role'] ?? 'user';
+
+      if (role == 'admin') {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const AdminMainScreen()),
           (route) => false,
         );
       } else {
-        // Jika User Biasa atau data role tidak ada
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const MainScreen()),
           (route) => false,
         );
       }
-
     } on FirebaseAuthException catch (e) {
       _showSnackBar(_handleFirebaseError(e));
     } catch (e) {
@@ -90,9 +92,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -131,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Text(
-                      "Lanjutkan perjalanan sehatmu bersama kami",
-                    ),
+                    const Text("Lanjutkan perjalanan sehatmu bersama kami"),
                     const SizedBox(height: 30),
                     _buildTextField(
                       Icons.email_outlined,
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 10),
-                    
+
                     // BAGIAN YANG DIUBAH: Menambahkan tombol Forgot Password
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -161,7 +161,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             const Text(
                               "Ingat saya",
-                              style: TextStyle(color: Colors.grey, fontSize: 14),
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
                             ),
                             Checkbox(
                               value: _rememberMe,
@@ -177,7 +180,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const ForgotPasswordScreen(),
+                                builder: (context) =>
+                                    const ForgotPasswordScreen(),
                               ),
                             );
                           },
@@ -192,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 80),
                     SizedBox(
                       width: double.infinity,

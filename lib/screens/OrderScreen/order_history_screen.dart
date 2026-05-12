@@ -1,38 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:jamu_saripah/screens/OrderScreen/component/empty_order_state_screen.dart';
 import 'package:jamu_saripah/screens/OrderScreen/component/order_list_item_screen.dart';
 
-class OrderHistoryScreen extends StatefulWidget {
+class OrderHistoryScreen extends StatelessWidget {
   const OrderHistoryScreen({super.key});
-
-  @override
-  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
-}
-
-class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  // Index 3 sesuai urutan "Your order" di widget BottomNav
-  int _currentIndex = 2;
-
-  // Simulasi data order
-  final List _myOrders = ["Order 1", "Order 2"]; 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Order History", 
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
         ),
         centerTitle: true,
-        backgroundColor: Color(0xFF6B8E4E),
+        backgroundColor: const Color(0xFF7E8959),
         elevation: 0,
+        automaticallyImplyLeading: false, 
       ),
-      body: _myOrders.isEmpty 
-          ? const EmptyOrderStateScreen() 
-          : OrderListStateScreen(orders: _myOrders),
-          
+      body: Consumer<OrderProvider>(
+        builder: (context, orderProvider, child) {
+          final myOrders = orderProvider.orders;
+
+          if (myOrders.isEmpty) {
+            return const EmptyOrderStateScreen();
+          }
+
+          return OrderListStateScreen(orders: myOrders);
+        },
+      ),
+      // JANGAN PASANG bottomNavigationBar DI SINI LAGI
+      // BIAR GAK DOUBLE/TUMPUK SAMA MAIN_SCREEN
     );
   }
 }

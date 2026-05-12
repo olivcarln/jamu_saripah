@@ -4,7 +4,6 @@ import 'package:jamu_saripah/Screens/HomeScreen/Components/menus.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'package:jamu_saripah/services/database_services.dart';
 import 'Components/home_header.dart';
-import 'Components/order_method.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +16,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final String userName = FirebaseAuth.instance.currentUser?.displayName ?? "User";
   bool isLoading = false;
 
-  // Fungsi pembantu untuk memproses klik pesanan
   void _prosesCheckout(String metode) async {
     setState(() => isLoading = true);
 
@@ -55,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Area
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -68,7 +65,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       fit: BoxFit.cover,
                     ),
                   ),
-                  child: const SafeArea(child: HomeHeader()),
+                  child: SafeArea(
+                    child: HomeHeader(
+                      onFilterChanged: (filters) {
+                        // Ini yang bikin error merah hilang
+                        print("Filter Aktif: $filters");
+                        setState(() {}); 
+                      },
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 25),
@@ -82,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           
-          // Loading Overlay
           if (isLoading)
             Container(
               color: Colors.black26,

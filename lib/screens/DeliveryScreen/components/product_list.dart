@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/data/order_data.dart';
+import 'package:jamu_saripah/screens/orderscreen/order_history_screen.dart';
 import 'product_item.dart';
 
 class ProductList extends StatefulWidget {
@@ -91,28 +93,55 @@ class _ProductListState extends State<ProductList> {
                 ),
               ),
 
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF7E8959),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFF7E8959),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+  ),
 
-              // Button Total 
-                onPressed: totalPrice == 0
-                    ? null
-                    : () {
-                        final selectedItems = products
-                            .where((item) => item["qty"] > 0)
-                            .toList();
+  // 🔥 BUTTON TOTAL
+  onPressed: totalPrice == 0
+      ? null
+      : () {
 
-                        print("Cart: $selectedItems");
-                        print("Total: $totalPrice");
-                      },
+          // 🔥 AMBIL PRODUK YANG DIPILIH
+          final selectedItems = products
+              .where((item) => item["qty"] > 0)
+              .toList();
 
-                child: Text("Checkout", style: TextStyle(color: Colors.white)),
-              )
+          // 🔥 MASUKKAN KE ORDER HISTORY
+          for (var item in selectedItems) {
+
+            OrderData.orders.add({
+              "title": item["name"],
+              "date": "6 Mei 2026",
+              "price": item["price"] * item["qty"],
+              "status": "Diproses",
+            });
+          }
+
+          // 🔥 DEBUG
+          print(OrderData.orders);
+
+          // 🔥 PINDAH KE ORDER HISTORY
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const OrderHistoryScreen(),
+            ),
+          );
+        },
+
+  child: const Text(
+    "Checkout",
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+)
             ],
           ),
         )
