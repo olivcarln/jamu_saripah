@@ -48,7 +48,7 @@ class CartItemWidget extends StatelessWidget {
     for (int i = strAmount.length - 1; i >= 0; i--) {
       result = strAmount[i] + result;
       count++;
-      if (count % 3 == 0 && i != 0) result = "." + result;
+      if (count % 3 == 0 && i != 0) result = ".$result";
     }
     return "Rp $result";
   }

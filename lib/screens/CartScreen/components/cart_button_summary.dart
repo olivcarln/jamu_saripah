@@ -20,7 +20,7 @@ class CartButtonSummary extends StatelessWidget {
     for (int i = str.length - 1; i >= 0; i--) {
       res = str[i] + res;
       count++;
-      if (count % 3 == 0 && i != 0) res = "." + res;
+      if (count % 3 == 0 && i != 0) res = ".$res";
     }
     return "Rp $res";
   }
