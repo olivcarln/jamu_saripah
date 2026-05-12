@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:jamu_saripah/providers/cart_provider.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
 import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
-import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeader extends StatefulWidget {

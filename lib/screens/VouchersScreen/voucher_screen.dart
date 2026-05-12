@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:jamu_saripah/providers/cart_provider.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/component/voucher_card.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/component/voucher_header.dart';
 import 'package:provider/provider.dart';

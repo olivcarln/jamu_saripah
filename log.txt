@@ -1,0 +1,80 @@
+Launching lib/main.dart on SM A556E in debug mode...
+Running Gradle task 'assembleDebug'...                             20.5s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          33.1s
+D/FlutterJNI(20747): Beginning load of flutter...
+D/FlutterJNI(20747): flutter (null) was loaded normally!
+I/flutter (20747): [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).
+D/FlutterGeolocator(20747): Attaching Geolocator to activity
+D/FlutterRenderer(20747): Width is zero. 0,0
+D/FlutterGeolocator(20747): Creating service.
+D/FlutterGeolocator(20747): Binding to location service.
+D/FlutterRenderer(20747): Width is zero. 0,0
+D/FlutterJNI(20747): Sending viewport metrics to the engine.
+D/FlutterGeolocator(20747): Geolocator foreground service connected
+D/FlutterGeolocator(20747): Initializing Geolocator services
+D/FlutterGeolocator(20747): Flutter engine connected. Connected engine count 1
+D/FlutterJNI(20747): Sending viewport metrics to the engine.
+I/GSC     (20747): SID[36] : e5335acc4366a9c6, Kind: 0, time : 12.019 ms
+I/GSC     (20747): SID[37] : 22fd3f971a2878b0, Kind: 1, time : 2.325 ms
+I/GSC     (20747): SID[38] : ae3865b8f0286348, Kind: 1, time : 17.312 ms
+I/GSC     (20747): SID[39] : 578de6ccda420e12, Kind: 0, time : 3.678 ms
+I/GSC     (20747): SID[40] : 578de6ccda420e12, Kind: 0, time : 4.633 ms
+I/GSC     (20747): SID[41] : 22fd3f971a2878b0, Kind: 1, time : 3.453 ms
+I/GSC     (20747): SID[42] : 22fd3f971a2878b0, Kind: 1, time : 3.938 ms
+I/GSC     (20747): SID[43] : 578de6ccda420e12, Kind: 0, time : 4.284 ms
+I/GSC     (20747): SID[44] : 578de6ccda420e12, Kind: 0, time : 4.566 ms
+I/GSC     (20747): SID[45] : 3a1b0c574bf100a0, Kind: 1, time : 30.552 ms
+I/GSC     (20747): SID[46] : 22fd3f971a2878b0, Kind: 1, time : 4.589 ms
+I/GSC     (20747): SID[47] : 22fd3f971a2878b0, Kind: 1, time : 4.392 ms
+I/GSC     (20747): SID[48] : 22fd3f971a2878b0, Kind: 1, time : 3.846 ms
+I/GSC     (20747): SID[49] : 578de6ccda420e12, Kind: 0, time : 5.592 ms
+I/GSC     (20747): SID[51] : 22fd3f971a2878b0, Kind: 1, time : 4.005 ms
+I/GSC     (20747): SID[52] : 22fd3f971a2878b0, Kind: 1, time : 9.155 ms
+I/GSC     (20747): SID[53] : 22fd3f971a2878b0, Kind: 1, time : 4.745 ms
+I/GSC     (20747): SID[50] : 22fd3f971a2878b0, Kind: 1, time : 4.008 ms
+I/GSC     (20747): SID[54] : 578de6ccda420e12, Kind: 0, time : 5.010 ms
+I/GSC     (20747): SID[56] : 22fd3f971a2878b0, Kind: 1, time : 4.462 ms
+I/GSC     (20747): SID[55] : 22fd3f971a2878b0, Kind: 1, time : 4.902 ms
+I/GSC     (20747): SID[57] : 22fd3f971a2878b0, Kind: 1, time : 5.172 ms
+I/GSC     (20747): SID[58] : 22fd3f971a2878b0, Kind: 1, time : 4.384 ms
+I/GSC     (20747): SID[59] : 22fd3f971a2878b0, Kind: 1, time : 4.256 ms
+I/GSC     (20747): SID[60] : fff553ff524a5c2d, Kind: 1, time : 29.702 ms
+I/GSC     (20747): SID[61] : fff553ff524a5c2d, Kind: 1, time : 29.263 ms
+I/GSC     (20747): SID[62] : fff553ff524a5c2d, Kind: 1, time : 29.872 ms
+I/GSC     (20747): SID[63] : fff553ff524a5c2d, Kind: 1, time : 27.700 ms
+I/GSC     (20747): SID[64] : ec881026aa083e1c, Kind: 0, time : 4.887 ms
+I/GSC     (20747): SID[65] : fff553ff524a5c2d, Kind: 1, time : 21.080 ms
+I/GSC     (20747): SID[66] : fff553ff524a5c2d, Kind: 1, time : 23.049 ms
+I/GSC     (20747): SID[67] : fff553ff524a5c2d, Kind: 1, time : 29.119 ms
+I/GSC     (20747): SID[68] : fff553ff524a5c2d, Kind: 1, time : 21.032 ms
+I/GSC     (20747): SID[69] : fff553ff524a5c2d, Kind: 1, time : 28.583 ms
+I/GSC     (20747): SID[70] : fff553ff524a5c2d, Kind: 1, time : 24.156 ms
+I/GSC     (20747): SID[71] : fff553ff524a5c2d, Kind: 1, time : 24.562 ms
+I/GSC     (20747): SID[72] : fff553ff524a5c2d, Kind: 1, time : 21.266 ms
+I/GSC     (20747): SID[73] : fff553ff524a5c2d, Kind: 1, time : 31.955 ms
+I/GSC     (20747): SID[74] : e2aab5fd2f1c9bb6, Kind: 1, time : 5.567 ms
+I/GSC     (20747): SID[75] : 23f026140451c91e, Kind: 1, time : 10.427 ms
+I/GSC     (20747): SID[76] : 02b33aa6ee28bb3f, Kind: 1, time : 7.265 ms
+I/GSC     (20747): SID[77] : fff553ff524a5c2d, Kind: 1, time : 24.050 ms
+I/GSC     (20747): SID[78] : 69f3d164121ea5c4, Kind: 0, time : 5.136 ms
+I/GSC     (20747): SID[79] : fff553ff524a5c2d, Kind: 1, time : 56.326 ms
+I/GSC     (20747): SID[80] : 6b251b41d4870e04, Kind: 1, time : 4.063 ms
+Syncing files to device SM A556E...                             
+I/GSC     (20747): SID[81] : 69f3d164121ea5c4, Kind: 0, time : 4.735 ms
+D/FirebaseAuth(20747): Notifying id token listeners about user ( AU7OveUC5GU2pMHIQV00vaPkzPy1 ).
+D/com.google.firebase.appcheck.debug.internal.DebugAppCheckProvider(20747): Enter this debug secret into the allow list in the Firebase Console for your project: f3f72923-adae-426e-b1c0-d01cf8231649
+Syncing files to device SM A556E...                                265ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on SM A556E is available at: http://127.0.0.1:57579/MBqyGko7NWY=/
+The Flutter DevTools debugger and profiler on SM A556E is available at: http://127.0.0.1:57579/MBqyGko7NWY=/devtools/?uri=ws://127.0.0.1:57579/MBqyGko7NWY=/ws
+D/ProfileInstaller(20747): Installing profile for com.example.jamu_saripah
+W/le.jamu_saripah(20747): userfaultfd: MOVE ioctl seems unsupported: Connection timed out

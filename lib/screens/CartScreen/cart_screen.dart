@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
-import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/common/constasts.dart';
 import 'components/cart_header.dart';
 import 'components/cart_item.dart';
