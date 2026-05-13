@@ -5,13 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jamu_saripah/Provider/order_provider.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import file konfigurasi otomatis
 import 'firebase_options.dart'; 
 
-import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
@@ -25,27 +25,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.debug,
-    appleProvider: AppleProvider.debug,
-    // Tambahkan web provider jika kamu running di browser
-    webProvider: ReCaptchaV3Provider('6Lcw-5pAAAAAAH_Uxyz...'), 
-  );
 
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('showOnboarding') ?? true;
 
 // main.dart
 
-runApp(
-  MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => CartProvider()),
-      ChangeNotifierProvider(create: (_) => OrderProvider()), // ✅ Tambahkan ini
-    ],
-    child: JamuSaripah(showOnboarding: showOnboarding),
-  ),
-);
+runApp(JamuSaripah(showOnboarding: showOnboarding));
 }
 
 class JamuSaripah extends StatelessWidget {
@@ -55,17 +41,22 @@ class JamuSaripah extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Jamu Saripah',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-      },
-      theme: ThemeData(
-        textTheme: GoogleFonts.montserratTextTheme(Theme.of(context).textTheme),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Jamu Saripah',
+        routes: {
+          '/login': (context) => const LoginScreen(),
+        },
+        theme: ThemeData(
+          textTheme: GoogleFonts.montserratTextTheme(Theme.of(context).textTheme),
+        ),
+        home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
       ),
-      // Jika onboarding sudah pernah dilihat, masuk ke AuthWrapper untuk cek login
-      home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
     );
   }
 }

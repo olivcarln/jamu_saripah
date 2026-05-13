@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/Provider/order_provider.dart'; 
+import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/adding_menu_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutSreen/component/payment_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
-import 'package:jamu_saripah/screens/main_screen.dart'; 
+import 'package:jamu_saripah/screens/main_screen.dart';
 import 'package:provider/provider.dart';
+
 
 class CheckoutScreen extends StatefulWidget {
   final int? totalPrice;
   final int? selectedCount;
 
+
   const CheckoutScreen({super.key, this.totalPrice, this.selectedCount});
+
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
+
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   String currentMethod = 'Pick Up';
@@ -25,9 +29,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String selectedBooth = 'Plaza Atria Jakarta';
   List<String> booths = ['Plaza Atria Jakarta', 'Gedung Jamsostek', 'Lippo Mal Karawaci'];
 
+
   Map<String, dynamic>? selectedPayment;
   Map<String, dynamic>? appliedVoucher;
   late List<Map<String, dynamic>> cartItems;
+
 
   @override
   void initState() {
@@ -38,15 +44,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'size': '350 ml',
         'price': widget.totalPrice ?? 19500,
         'qty': 1,
-        'image': 'assets/images/beras_kencur.png' 
+        'image': 'assets/images/beras_kencur.png'
       }
     ];
   }
+
 
   String formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
   }
+
 
   int calculateTotal() {
     int totalProduk = cartItems.fold(0, (sum, item) => sum + ((item['price'] as int) * (item['qty'] as int)));
@@ -56,6 +64,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     return total > 0 ? total : 0;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -81,20 +90,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   _buildLocationInfo(),
                   const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
                   _buildDetailPesananSection(),
-                  
+                 
                   if (showSpecialPackage)
                     AddingMenuScreen(
-                      onAddTap: (n, s, p) => setState(() => 
+                      onAddTap: (n, s, p) => setState(() =>
                         cartItems.add({'name': n ?? 'Menu', 'size': s ?? '', 'price': p ?? 0, 'qty': 1, 'image': ''})
                       ),
                     ),
+
 
                   ShoppingBagScreen(
                     isSelected: perluTasBelanja,
                     harga: hargaTas,
                     onChanged: (val) => setState(() => perluTasBelanja = val),
                   ),
-                  
+                 
                   const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
                   _buildClickableSection(
                     title: appliedVoucher != null ? 'Voucher Dipakai' : 'Voucher Diskon',
@@ -106,7 +116,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     },
                   ),
                   const Divider(thickness: 1, color: Color(0xFFF1F1F1)),
-                  
+                 
                   _buildClickableSection(
                     title: 'Metode Pembayaran',
                     subtitle: selectedPayment != null ? selectedPayment!['name'] : 'Pilih pembayaranmu',
@@ -133,6 +143,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       bottomNavigationBar: _buildBottomBar(),
     );
   }
+
 
   Widget _buildDetailPesananSection() {
     return Padding(
@@ -174,6 +185,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+
   Widget _buildCartItem(Map<String, dynamic> item, int index) {
     return Column(
       children: [
@@ -210,13 +222,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Rp ${formatHarga(item['price'] ?? 0)}', 
+            Text('Rp ${formatHarga(item['price'] ?? 0)}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF7E8959))),
             Row(
               children: [
                 GestureDetector(
-                  onTap: () {}, 
-                  child: const Text("Ubah", 
+                  onTap: () {},
+                  child: const Text("Ubah",
                     style: TextStyle(color: Color(0xFF7E8959), decoration: TextDecoration.underline, fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
                 const SizedBox(width: 12),
@@ -233,9 +245,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         child: IconButton(
                           padding: EdgeInsets.zero,
                           icon: const Icon(Icons.remove, size: 18, color: Color(0xFF7E8959)),
-                          onPressed: () => setState(() { 
+                          onPressed: () => setState(() {
                             if(item['qty'] > 1) {
-                              item['qty']--; 
+                              item['qty']--;
                             } else {
                               // Hapus item jika jumlahnya 1 dan tombol minus ditekan
                               cartItems.removeAt(index);
@@ -260,10 +272,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 20), 
+        const SizedBox(height: 20),
       ],
     );
   }
+
 
   Widget _buildDeliveryMode() {
     return Container(
@@ -278,6 +291,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ]),
     );
   }
+
 
   Widget _buildLocationInfo() {
     return Padding(
@@ -300,6 +314,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+
   Widget _buildClickableSection({required String title, required String subtitle, required IconData icon, required VoidCallback onTap}) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF7E8959)),
@@ -310,6 +325,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+
   Widget _buildRincianSection() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -319,6 +335,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ]),
     );
   }
+
 
   Widget _buildBottomBar() {
     return Padding(
@@ -345,3 +362,4 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 }
+

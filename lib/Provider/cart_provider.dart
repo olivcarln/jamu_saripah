@@ -28,18 +28,19 @@ class CartProvider with ChangeNotifier {
 
   int get totalPoints => (checkedTotalPrice / 100).floor();
 
-  void addToCart(CartItem newItem) {
-    int index = _items.indexWhere(
-      (i) => i.name == newItem.name && i.size == newItem.size,
-    );
-
-    if (index != -1) {
-      _items[index].quantity += newItem.quantity;
-    } else {
-      _items.add(newItem);
-    }
-    notifyListeners();
+void addToCart(CartItem newItem) {
+  int index = _items.indexWhere(
+    (i) => i.name == newItem.name && i.size == newItem.size,
+  );
+  if (index != -1) {
+    _items[index].quantity += newItem.quantity;
+  } else {
+    newItem.isChecked = true; // ← tambah ini
+    _items.add(newItem);
   }
+  _isAllChecked = _items.every((item) => item.isChecked); // ← tambah ini
+  notifyListeners();
+}
 
   void checkItem(int index, bool value) {
     _items[index].isChecked = value;
