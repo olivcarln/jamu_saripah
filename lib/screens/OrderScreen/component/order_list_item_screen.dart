@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/common/constasts.dart';
-import 'package:jamu_saripah/Provider/order_provider.dart'; // Pastikan import OrderModel
-import 'package:jamu_saripah/screens/CheckoutSreen/checkout.screen.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart'; 
+import 'package:jamu_saripah/screens/CheckoutScreen/checkout.screen.dart';
 
 class OrderListStateScreen extends StatelessWidget {
-  // Ubah tipe data List menjadi List<OrderModel> agar lebih spesifik
   final List<OrderModel> orders; 
   
   const OrderListStateScreen({super.key, required this.orders});
 
-  // Fungsi helper untuk format harga
   String formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
@@ -21,7 +19,6 @@ class OrderListStateScreen extends StatelessWidget {
       padding: EdgeInsets.zero,
       itemCount: orders.length,
       itemBuilder: (context, index) {
-        // Ambil data satuan dari list orders
         final order = orders[index];
 
         return Container(
@@ -36,18 +33,43 @@ class OrderListStateScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      order.title, // ✅ Pakai data judul dari Provider
+                      order.title, 
                       style: const TextStyle(
-                        fontSize: 20, // Diperkecil sedikit agar muat jika nama produk panjang
+                        fontSize: 20, 
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryOlive,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
+                    
+                    // --- SECTION DETAIL PESANAN ---
                     Text(
-                      "Tanggal: ${order.date}\nTotal Pembayaran: Rp ${formatHarga(order.price)}", // ✅ Pakai data tgl & harga
+                      "Tanggal: ${order.date}",
                       style: const TextStyle(fontSize: 13, color: Colors.black87),
                     ),
+                    const SizedBox(height: 4),
+                    
+                    // MENAMPILKAN LOKASI OUTLET
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Color(0xFF7E8959)),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            "Lokasi: ${order.location}",
+                            style: const TextStyle(fontSize: 13, color: Colors.black87),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    
+                    Text(
+                      "Total Pembayaran: Rp ${formatHarga(order.price)}",
+                      style: const TextStyle(fontSize: 13, color: Colors.black87),
+                    ),
+                    // ------------------------------
+
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -60,7 +82,7 @@ class OrderListStateScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              order.method, // ✅ Munculkan "Delivery" atau "Pickup" sesuai pilihan user
+                              order.method, 
                               style: const TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ],
@@ -69,7 +91,6 @@ class OrderListStateScreen extends StatelessWidget {
                           height: 35,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Logika tombol: bisa diarahkan ke Detail Pesanan atau Checkout lagi
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -107,7 +128,7 @@ class OrderListStateScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Status: ${order.status}", // ✅ Menampilkan status pesanan
+                      "Status: ${order.status}", 
                       style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.bold),
                     ),
                     const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),

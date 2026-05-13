@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// OrderModel lo tetap sama seperti sebelumnya
 class OrderModel {
   final String title;
   final String date;
   final int price;
   final String status;
   final String method;
+  final String location; // Tambah ini biar data lokasi gak ilang
 
   OrderModel({
     required this.title,
@@ -15,44 +15,63 @@ class OrderModel {
     required this.price,
     required this.status,
     required this.method,
+    required this.location,
   });
 }
 
 class OrderProvider extends ChangeNotifier {
   final List<OrderModel> _orders = [];
-  int _userPoints = 0; // Variabel poin lo
+  int _userPoints = 0;
 
   List<OrderModel> get orders => List.unmodifiable(_orders);
   int get userPoints => _userPoints;
 
   OrderProvider() {
-    loadDataFromDevice(); // Load poin pas aplikasi baru jalan
+    loadDataFromDevice();
   }
 
-  // Fungsi simpan poin
   Future<void> savePoints() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('user_points', _userPoints);
   }
 
-  // Fungsi ambil poin yang tersimpan
   Future<void> loadDataFromDevice() async {
     final prefs = await SharedPreferences.getInstance();
     _userPoints = prefs.getInt('user_points') ?? 0;
     notifyListeners();
   }
 
-  void addOrder(OrderModel order) {
-    _orders.insert(0, order);
+  // DISINI PERBAIKANNYA: Sesuaikan parameter agar matching dengan CheckoutScreen
+  void addOrder({
+    required List<Map<String, dynamic>> items,
+    required int totalPrice,
+    required String paymentMethod,
+    required String location,
+  }) {
+    // 1. Buat nama/title order (misal: ambil nama item pertama)
+    String orderTitle = items.isNotEmpty ? items[0]['name'] : 'Pesanan Jamu';
+    if (items.length > 1) orderTitle += ' +${items.length - 1} lainnya';
+
+    // 2. Bungkus ke dalam OrderModel
+    final newOrder = OrderModel(
+      title: orderTitle,
+      date: "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+      price: totalPrice,
+      status: 'Sedang Diproses',
+      method: paymentMethod,
+      location: location,
+    );
+
+    // 3. Masukkan ke list
+    _orders.insert(0, newOrder);
     
-    // Tambah poin setiap ada order baru (misal: tiap order dapet 4 poin)
+    // 4. Update Poin
     _userPoints += 4; 
     
-    savePoints(); // Simpan ke memori HP biar gak ilang
+    savePoints();
     notifyListeners();
   }
 
-  // PENTING: Panggil ini kalau lo mau reset manual atau buat fitur logout tertentu
   void clearPoints() async {
     _userPoints = 0;
     await savePoints();
