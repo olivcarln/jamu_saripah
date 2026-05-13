@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/Provider/order_provider.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/component/adding_menu_screen.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/component/shopping_bag_screen.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/component/payment_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/component/adding_menu_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/component/payment_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 import 'package:provider/provider.dart';

@@ -7,7 +7,7 @@ class OrderModel {
   final int price;
   final String status;
   final String method;
-  final String location; // Tambah ini biar data lokasi gak ilang
+  final String location;
 
   OrderModel({
     required this.title,
@@ -27,32 +27,33 @@ class OrderProvider extends ChangeNotifier {
   int get userPoints => _userPoints;
 
   OrderProvider() {
-    loadDataFromDevice();
+    loadDataFromDevice(); // Otomatis ambil poin pas aplikasi nyala
   }
 
-  Future<void> savePoints() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('user_points', _userPoints);
-  }
-
+  // Ambil poin dari memori HP
   Future<void> loadDataFromDevice() async {
     final prefs = await SharedPreferences.getInstance();
     _userPoints = prefs.getInt('user_points') ?? 0;
     notifyListeners();
   }
 
-  // DISINI PERBAIKANNYA: Sesuaikan parameter agar matching dengan CheckoutScreen
+  // Simpan poin ke memori HP
+  Future<void> savePoints() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('user_points', _userPoints);
+  }
+
+  // Fungsi dipanggil SAAT CHECKOUT SELESAI
   void addOrder({
     required List<Map<String, dynamic>> items,
     required int totalPrice,
     required String paymentMethod,
     required String location,
   }) {
-    // 1. Buat nama/title order (misal: ambil nama item pertama)
+    // Buat title otomatis
     String orderTitle = items.isNotEmpty ? items[0]['name'] : 'Pesanan Jamu';
     if (items.length > 1) orderTitle += ' +${items.length - 1} lainnya';
 
-    // 2. Bungkus ke dalam OrderModel
     final newOrder = OrderModel(
       title: orderTitle,
       date: "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
@@ -62,16 +63,16 @@ class OrderProvider extends ChangeNotifier {
       location: location,
     );
 
-    // 3. Masukkan ke list
     _orders.insert(0, newOrder);
     
-    // 4. Update Poin
+    // POIN BARU NAMBAH DI SINI (Pas pesanan dibuat)
     _userPoints += 4; 
     
-    savePoints();
+    savePoints(); // Simpan biar gak ilang pas logout
     notifyListeners();
   }
 
+  // Gunakan ini kalau bener-bener mau hapus poin (misal reset data)
   void clearPoints() async {
     _userPoints = 0;
     await savePoints();
