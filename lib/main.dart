@@ -4,13 +4,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:jamu_saripah/Provider/order_provider.dart';
+import 'package:jamu_saripah/provider/auth_user_provider.dart';
+import 'package:jamu_saripah/provider/order_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// Import file konfigurasi otomatis
 import 'firebase_options.dart'; 
-
 import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
@@ -20,7 +18,6 @@ import 'package:jamu_saripah/admin_screen/admin_main_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ Perbaikan Utama: Menggunakan konfigurasi otomatis sesuai platform (Web/Android/iOS)
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -28,7 +25,6 @@ void main() async {
   await FirebaseAppCheck.instance.activate(
     androidProvider: AndroidProvider.debug,
     appleProvider: AppleProvider.debug,
-    // Tambahkan web provider jika kamu running di browser
     webProvider: ReCaptchaV3Provider('6Lcw-5pAAAAAAH_Uxyz...'), 
   );
 
@@ -42,6 +38,7 @@ runApp(
     providers: [
       ChangeNotifierProvider(create: (_) => CartProvider()),
       ChangeNotifierProvider(create: (_) => OrderProvider()), // ✅ Tambahkan ini
+      ChangeNotifierProvider(create: (_) => AuthUserProvider()), // ✅ Tambahkan ini
     ],
     child: JamuSaripah(showOnboarding: showOnboarding),
   ),

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:jamu_saripah/admin_screen/components/add_product_screen.dart';
 
 class AdminProductScreen extends StatefulWidget {
@@ -10,7 +11,6 @@ class AdminProductScreen extends StatefulWidget {
 }
 
 class _AdminProductScreenState extends State<AdminProductScreen> {
-  /// DELETE PRODUCT
   void _deleteProduct(String docId, String name) {
     showDialog(
       context: context,
@@ -202,13 +202,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
                           const SizedBox(height: 6),
 
-                          Text(
-                            "Rp ${data['price']}",
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.black87,
-                            ),
-                          ),
+                   Text(
+  NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  ).format(data['price']),
+),
 
                           const SizedBox(height: 10),
 

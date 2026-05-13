@@ -1,65 +1,140 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-// TODO: Tambahkan fitur filter berdasarkan status pesanan (Menunggu, Diproses, Dikirim, Selesai, Dibatalkan)
+import 'package:jamu_saripah/provider/auth_user_provider.dart';
+import 'package:jamu_saripah/provider/order_provider.dart';
+
 class AdminOrderScreen extends StatefulWidget {
   const AdminOrderScreen({super.key});
 
   @override
-  State<AdminOrderScreen> createState() => _AdminOrderScreenState();
+  State<AdminOrderScreen> createState() =>
+      _AdminOrderScreenState();
 }
 
-class _AdminOrderScreenState extends State<AdminOrderScreen> {
-  /// UPDATE STATUS PESANAN
-  Future<void> _updateOrderStatus(String orderId, String status) async {
+class _AdminOrderScreenState
+    extends State<AdminOrderScreen> {
+  /// FILTER
+  String selectedFilter = "Semua";
+
+  /// LIST STATUS VALID
+  final List<String> orderStatuses = [
+    "Diproses",
+    "Menunggu Pengambilan",
+    "Sudah Diambil",
+    "Dibatalkan",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      Provider.of<OrderProvider>(
+        context,
+        listen: false,
+      ).fetchOrders();
+    });
+  }
+
+  /// UPDATE STATUS
+  Future<void> _updateStatus(
+    BuildContext context,
+    String orderId,
+    String status,
+  ) async {
     try {
-      await FirebaseFirestore.instance.collection('orders').doc(orderId).update(
-        {'status': status},
+      final orderProvider =
+          Provider.of<OrderProvider>(
+        context,
+        listen: false,
+      );
+
+      await orderProvider.updateStatus(
+        orderId,
+        status,
       );
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Status berhasil diubah menjadi $status")),
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            "Status berhasil diubah menjadi $status",
+          ),
+        ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal update status: $e")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            "Gagal update status: $e",
+          ),
+        ),
+      );
     }
   }
 
   /// KONFIRMASI PEMBAYARAN
-  Future<void> _confirmPayment(String orderId) async {
+  Future<void> _confirmPayment(
+    BuildContext context,
+    String orderId,
+  ) async {
     try {
-      await FirebaseFirestore.instance.collection('orders').doc(orderId).update(
-        {'paymentConfirmed': true, 'status': 'Diproses'},
+      final orderProvider =
+          Provider.of<OrderProvider>(
+        context,
+        listen: false,
+      );
+
+      await orderProvider.confirmPayment(
+        orderId,
       );
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pembayaran berhasil dikonfirmasi")),
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Pembayaran berhasil dikonfirmasi",
+          ),
+        ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal konfirmasi pembayaran: $e")),
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            "Gagal konfirmasi pembayaran: $e",
+          ),
+        ),
       );
     }
   }
 
+  /// FORMAT RUPIAH
+  String formatRupiah(dynamic value) {
+    return NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    ).format(value ?? 0);
+  }
+
+  /// WARNA STATUS
   Color _statusColor(String status) {
     switch (status) {
-      case 'Menunggu':
-        return Colors.orange;
-
       case 'Diproses':
         return Colors.blue;
 
-      case 'Dikirim':
+      case 'Menunggu Pengambilan':
         return Colors.purple;
 
-      case 'Selesai':
+      case 'Sudah Diambil':
         return Colors.green;
 
       case 'Dibatalkan':
@@ -72,299 +147,659 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAF7),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('orders')
-            .orderBy('createdAt', descending: true)
-            .snapshots(),
+    final authProvider =
+        Provider.of<AuthUserProvider>(context);
 
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+    final String? emailLogin =
+        authProvider.user?.email;
+
+    return Scaffold(
+      backgroundColor:
+          const Color(0xFFF9FAF7),
+
+      body: Consumer<OrderProvider>(
+        builder: (
+          context,
+          orderProvider,
+          child,
+        ) {
+          /// AMBIL ORDER
+          final allOrders =
+              orderProvider.orders;
+
+          /// FILTER
+          final filteredOrders =
+              selectedFilter == "Semua"
+                  ? allOrders
+                  : allOrders.where((
+                      order,
+                    ) {
+                      switch (
+                          selectedFilter) {
+                        case "Diproses":
+                          return order
+                                  .status ==
+                              "Diproses";
+
+                        case "Sukses":
+                          return order
+                                  .status ==
+                              "Sudah Diambil";
+
+                        case "Dibatalkan":
+                          return order
+                                  .status ==
+                              "Dibatalkan";
+
+                        default:
+                          return true;
+                      }
+                    }).toList();
+
+          /// JIKA KOSONG
+          if (filteredOrders.isEmpty) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF7E8959)),
+              child: Text(
+                "Tidak ada pesanan",
+              ),
             );
           }
 
-          if (snapshot.hasError) {
-            return const Center(child: Text("Terjadi kesalahan data pesanan"));
-          }
-
-          final docs = snapshot.data?.docs ?? [];
-
-          if (docs.isEmpty) {
-            return const Center(child: Text("Belum ada pesanan"));
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-
-            itemCount: docs.length,
-
-            itemBuilder: (context, index) {
-              final doc = docs[index];
-
-              final data = doc.data() as Map<String, dynamic>;
-
-              final status = data['status'] ?? 'Menunggu';
-
-              final paymentConfirmed = data['paymentConfirmed'] ?? false;
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-
-                padding: const EdgeInsets.all(18),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius: BorderRadius.circular(20),
-
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 10,
-                      color: Colors.black.withOpacity(0.05),
-                    ),
-                  ],
+          return Column(
+            children: [
+              /// FILTER
+              Padding(
+                padding:
+                    const EdgeInsets.all(
+                  16,
                 ),
 
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ),
 
-                  children: [
-                    /// HEADER
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
+                  decoration:
+                      BoxDecoration(
+                    color: Colors.white,
 
-                          decoration: BoxDecoration(
-                            color: _statusColor(status).withOpacity(0.1),
+                    borderRadius:
+                        BorderRadius.circular(
+                      14,
+                    ),
+                  ),
 
-                            borderRadius: BorderRadius.circular(15),
-                          ),
+                  child:
+                      DropdownButtonHideUnderline(
+                    child:
+                        DropdownButton<String>(
+                      value:
+                          selectedFilter,
 
-                          child: Icon(
-                            Icons.shopping_bag,
-                            color: _statusColor(status),
-                          ),
-                        ),
+                      isExpanded: true,
 
-                        const SizedBox(width: 12),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-
-                            children: [
-                              Text(
-                                data['userName'] ?? 'User',
-
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              const SizedBox(height: 5),
-
-                              Text(data['userEmail'] ?? '-'),
-                            ],
-                          ),
-                        ),
-
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-
-                          decoration: BoxDecoration(
-                            color: _statusColor(status).withOpacity(0.1),
-
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-
+                      items: const [
+                        DropdownMenuItem(
+                          value: "Semua",
                           child: Text(
-                            status,
+                            "Semua Pesanan",
+                          ),
+                        ),
 
-                            style: TextStyle(
-                              color: _statusColor(status),
+                        DropdownMenuItem(
+                          value:
+                              "Diproses",
+                          child: Text(
+                            "Sedang Diproses",
+                          ),
+                        ),
 
-                              fontWeight: FontWeight.bold,
-                            ),
+                        DropdownMenuItem(
+                          value:
+                              "Sukses",
+                          child: Text(
+                            "Pesanan Sukses",
+                          ),
+                        ),
+
+                        DropdownMenuItem(
+                          value:
+                              "Dibatalkan",
+                          child: Text(
+                            "Pesanan Dibatalkan",
                           ),
                         ),
                       ],
+
+                      onChanged: (
+                        value,
+                      ) {
+                        if (value !=
+                            null) {
+                          setState(() {
+                            selectedFilter =
+                                value;
+                          });
+                        }
+                      },
                     ),
+                  ),
+                ),
+              ),
 
-                    const SizedBox(height: 20),
+              /// LIST ORDER
+              Expanded(
+                child:
+                    ListView.builder(
+                  padding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ),
 
-                    /// DETAIL ORDER
-                    Container(
-                      padding: const EdgeInsets.all(14),
+                  itemCount:
+                      filteredOrders
+                          .length,
 
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                  itemBuilder:
+                      (
+                    context,
+                    index,
+                  ) {
+                    final order =
+                        filteredOrders[
+                            index];
 
-                        borderRadius: BorderRadius.circular(15),
+                    final status =
+                        orderStatuses.contains(
+                              order
+                                  .status,
+                            )
+                            ? order
+                                .status
+                            : orderStatuses
+                                .first;
+
+                    final isConfirmed =
+                        order
+                            .paymentConfirmed;
+
+                    return Container(
+                      margin:
+                          const EdgeInsets.only(
+                        bottom: 16,
+                      ),
+
+                      padding:
+                          const EdgeInsets.all(
+                        18,
+                      ),
+
+                      decoration:
+                          BoxDecoration(
+                        color:
+                            Colors.white,
+
+                        borderRadius:
+                            BorderRadius.circular(
+                          20,
+                        ),
                       ),
 
                       child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+
                         children: [
-                          _buildInfoRow(
-                            "Total Harga",
-                            "Rp ${data['totalPrice'] ?? 0}",
+                          /// HEADER
+                          Row(
+                            children: [
+                              Container(
+                                padding:
+                                    const EdgeInsets.all(
+                                  12,
+                                ),
+
+                                decoration:
+                                    BoxDecoration(
+                                  color: _statusColor(
+                                    status,
+                                  ).withOpacity(
+                                    0.1,
+                                  ),
+
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                    15,
+                                  ),
+                                ),
+
+                                child:
+                                    Icon(
+                                  Icons
+                                      .shopping_bag,
+
+                                  color:
+                                      _statusColor(
+                                    status,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(
+                                width: 12,
+                              ),
+
+                              Expanded(
+                                child:
+                                    Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+
+                                  children: [
+                                    Text(
+                                      order
+                                          .userName,
+
+                                      style:
+                                          const TextStyle(
+                                        fontSize:
+                                            16,
+
+                                        fontWeight:
+                                            FontWeight.bold,
+                                      ),
+                                    ),
+
+                                    const SizedBox(
+                                      height:
+                                          5,
+                                    ),
+
+                                    Text(
+                                      order
+                                              .email ??
+                                          '-',
+
+                                      style:
+                                          TextStyle(
+                                        color:
+                                            Colors.grey[600],
+
+                                        fontSize:
+                                            13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              _statusBadge(
+                                status,
+                              ),
+                            ],
                           ),
 
-                          const SizedBox(height: 10),
-
-                          _buildInfoRow(
-                            "Metode Pembayaran",
-                            data['paymentMethod'] ?? '-',
+                          const SizedBox(
+                            height: 20,
                           ),
 
-                          const SizedBox(height: 10),
+                          /// TOTAL
+                          Text(
+                            "Total: ${formatRupiah(order.totalAmount)}",
+                          ),
 
-                          _buildInfoRow("Alamat", data['address'] ?? '-'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+
+                          /// STATUS
+                          Text(
+                            "Status: ${order.status}",
+                          ),
+
+                          const SizedBox(
+                            height: 10,
+                          ),
+
+                          /// METODE
+                          Text(
+                            "Metode: ${order.method}",
+                          ),
+
+                          const SizedBox(
+                            height: 20,
+                          ),
+
+                          /// =========================
+                          /// MENU PESANAN
+                          /// =========================
+                          const Text(
+                            "Menu Pesanan",
+                            style:
+                                TextStyle(
+                              fontWeight:
+                                  FontWeight.bold,
+                              fontSize:
+                                  15,
+                            ),
+                          ),
+
+                          const SizedBox(
+                            height: 14,
+                          ),
+
+                          ...(order.items ??
+                                  [])
+                              .map(
+                            (item) {
+                              if (item
+                                  is Map) {
+                                final String name =
+                                    item['name']
+                                            ?.toString() ??
+                                        'Menu';
+
+                                final String image =
+                                    item['image']
+                                            ?.toString() ??
+                                        '';
+
+                                final int qty =
+                                    int.tryParse(
+                                          item['qty']
+                                              .toString(),
+                                        ) ??
+                                        0;
+
+                                final int price =
+                                    int.tryParse(
+                                          item['price']
+                                              .toString(),
+                                        ) ??
+                                        0;
+
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.only(
+                                    bottom:
+                                        14,
+                                  ),
+
+                                  child:
+                                      Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+
+                                    children: [
+                                      /// IMAGE
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(
+                                          10,
+                                        ),
+
+                                        child: image
+                                                .isNotEmpty
+                                            ? Image.network(
+                                                image,
+
+                                                width:
+                                                    60,
+                                                height:
+                                                    60,
+
+                                                fit: BoxFit.cover,
+
+                                                errorBuilder:
+                                                    (
+                                                  context,
+                                                  error,
+                                                  stackTrace,
+                                                ) {
+                                                  return Container(
+                                                    width:
+                                                        60,
+                                                    height:
+                                                        60,
+
+                                                    color:
+                                                        Colors.grey[300],
+
+                                                    child:
+                                                        const Icon(
+                                                      Icons.image,
+                                                    ),
+                                                  );
+                                                },
+                                              )
+                                            : Container(
+                                                width:
+                                                    60,
+                                                height:
+                                                    60,
+
+                                                color:
+                                                    Colors.grey[300],
+
+                                                child:
+                                                    const Icon(
+                                                  Icons.image,
+                                                ),
+                                              ),
+                                      ),
+
+                                      const SizedBox(
+                                        width:
+                                            12,
+                                      ),
+
+                                      /// DETAIL
+                                      Expanded(
+                                        child:
+                                            Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+
+                                          children: [
+                                            Text(
+                                              name,
+
+                                              style:
+                                                  const TextStyle(
+                                                fontWeight:
+                                                    FontWeight.bold,
+
+                                                fontSize:
+                                                    14,
+                                              ),
+                                            ),
+
+                                            const SizedBox(
+                                              height:
+                                                  4,
+                                            ),
+
+                                            Text(
+                                              "Qty: $qty",
+                                            ),
+
+                                            const SizedBox(
+                                              height:
+                                                  4,
+                                            ),
+
+                                            Text(
+                                              formatRupiah(
+                                                price,
+                                              ),
+
+                                              style:
+                                                  const TextStyle(
+                                                color:
+                                                    Colors.green,
+
+                                                fontWeight:
+                                                    FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              return const SizedBox();
+                            },
+                          ),
+
+                          const SizedBox(
+                            height: 10,
+                          ),
+
+                          /// UPDATE STATUS
+                          DropdownButton<
+                              String>(
+                            value: status,
+
+                            isExpanded:
+                                true,
+
+                            items:
+                                orderStatuses.map((
+                              item,
+                            ) {
+                              return DropdownMenuItem(
+                                value:
+                                    item,
+
+                                child:
+                                    Text(
+                                  item,
+                                ),
+                              );
+                            }).toList(),
+
+                            onChanged:
+                                (
+                              value,
+                            ) async {
+                              if (value !=
+                                  null) {
+                                await _updateStatus(
+                                  context,
+                                  order.id,
+                                  value,
+                                );
+                              }
+                            },
+                          ),
+
+                          const SizedBox(
+                            height: 20,
+                          ),
+
+                          /// KONFIRMASI
+                          SizedBox(
+                            width:
+                                double.infinity,
+
+                            child:
+                                ElevatedButton(
+                              onPressed:
+                                  isConfirmed
+                                      ? null
+                                      : () async {
+                                          await _confirmPayment(
+                                            context,
+                                            order.id,
+                                          );
+                                        },
+
+                              style:
+                                  ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color(
+                                  0xFF7E8959,
+                                ),
+
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  vertical:
+                                      14,
+                                ),
+
+                                shape:
+                                    RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                    14,
+                                  ),
+                                ),
+                              ),
+
+                              child:
+                                  Text(
+                                isConfirmed
+                                    ? "Sudah Konfirmasi"
+                                    : "Konfirmasi Pembayaran",
+
+                                style:
+                                    const TextStyle(
+                                  color:
+                                      Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    /// STATUS PEMBAYARAN
-                    Row(
-                      children: [
-                        Icon(
-                          paymentConfirmed ? Icons.check_circle : Icons.pending,
-
-                          color: paymentConfirmed
-                              ? Colors.green
-                              : Colors.orange,
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        Text(
-                          paymentConfirmed
-                              ? "Pembayaran Terkonfirmasi"
-                              : "Menunggu Konfirmasi Pembayaran",
-
-                          style: TextStyle(
-                            color: paymentConfirmed
-                                ? Colors.green
-                                : Colors.orange,
-
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// ACTION BUTTON
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        /// KONFIRMASI
-                        if (!paymentConfirmed)
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                            ),
-
-                            onPressed: () {
-                              _confirmPayment(doc.id);
-                            },
-
-                            icon: const Icon(Icons.check, color: Colors.white),
-
-                            label: const Text(
-                              "Konfirmasi",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-
-                        /// DIPROSES
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                          ),
-
-                          onPressed: () {
-                            _updateOrderStatus(doc.id, "Diproses");
-                          },
-
-                          child: const Text(
-                            "Diproses",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-
-                        /// DIKIRIM
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                          ),
-
-                          onPressed: () {
-                            _updateOrderStatus(doc.id, "Dikirim");
-                          },
-
-                          child: const Text(
-                            "Dikirim",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-
-                        /// SELESAI
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                          ),
-
-                          onPressed: () {
-                            _updateOrderStatus(doc.id, "Selesai");
-                          },
-
-                          child: const Text(
-                            "Selesai",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildInfoRow(String title, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  /// BADGE STATUS
+  Widget _statusBadge(
+    String status,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
 
-      children: [
-        SizedBox(
-          width: 120,
+      decoration: BoxDecoration(
+        color: _statusColor(
+          status,
+        ).withOpacity(0.1),
 
-          child: Text(
-            title,
-
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+        borderRadius:
+            BorderRadius.circular(
+          20,
         ),
+      ),
 
-        Expanded(child: Text(value)),
-      ],
+      child: Text(
+        status,
+
+        style: TextStyle(
+          color: _statusColor(status),
+
+          fontWeight:
+              FontWeight.bold,
+        ),
+      ),
     );
   }
 }
