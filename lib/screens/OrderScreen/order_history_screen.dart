@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:jamu_saripah/screens/OrderScreen/component/empty_order_state_screen.dart';
+// Pastikan path import ini sesuai dengan struktur folder lo (Screens vs screens)
 import 'package:jamu_saripah/screens/OrderScreen/component/order_list_item_screen.dart';
 
 class OrderHistoryScreen extends StatelessWidget {
@@ -21,7 +22,7 @@ class OrderHistoryScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false, 
       ),
-      body: Consumer<OrderProvider>(
+     body: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
           final myOrders = orderProvider.orders;
 
@@ -29,11 +30,10 @@ class OrderHistoryScreen extends StatelessWidget {
             return const EmptyOrderStateScreen();
           }
 
-          return OrderListStateScreen(orders: myOrders);
+          // PERBAIKAN: Namanya harus OrderListStateScreen (tambahin kata Screen)
+          return OrderListStateScreen(orders: myOrders); 
         },
       ),
-      // JANGAN PASANG bottomNavigationBar DI SINI LAGI
-      // BIAR GAK DOUBLE/TUMPUK SAMA MAIN_SCREEN
     );
   }
 }
