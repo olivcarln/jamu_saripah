@@ -7,7 +7,8 @@ class VoucherCard extends StatelessWidget {
   final String minTransaction;
   final String quota;
   final double discountAmount;
-  final VoidCallback onClaim;
+  final String buttonText; // Digunakan untuk label tombol
+  final VoidCallback? onClaim; // Jika null, tombol otomatis disabled
 
   const VoucherCard({
     super.key,
@@ -17,14 +18,14 @@ class VoucherCard extends StatelessWidget {
     required this.minTransaction,
     required this.quota,
     required this.discountAmount,
-    required this.onClaim,
+    this.buttonText = "Gunakan", // Default label
+    this.onClaim, // Sekarang bisa menerima null dari screen
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      // Memakai constraints agar fleksibel tapi punya tinggi minimal
       constraints: const BoxConstraints(minHeight: 160), 
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -39,31 +40,25 @@ class VoucherCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          /// NOTCH KIRI (Tetap di tengah secara dinamis)
           Positioned(
             left: -15,
             top: 0,
             bottom: 0,
             child: Center(child: _buildNotch()),
           ),
-
-          /// NOTCH KANAN
           Positioned(
             right: -15,
             top: 0,
             bottom: 0,
             child: Center(child: _buildNotch()),
           ),
-
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min, 
-              // Ini kuncinya: Mendorong konten atas dan bawah agar berjauhan
               mainAxisAlignment: MainAxisAlignment.spaceBetween, 
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// BAGIAN ATAS (Dibuat dalam satu grup)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -111,18 +106,12 @@ class VoucherCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 12), // Jarak minimal agar tidak nempel
-
-                /// GARIS PEMISAH
+                const SizedBox(height: 12),
                 Container(
                   height: 1,
                   color: Colors.white30,
                 ),
-
-                const SizedBox(height: 12), // Jarak minimal
-
-                /// BAGIAN BAWAH
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -151,7 +140,8 @@ class VoucherCard extends StatelessWidget {
                       height: 35,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
+                          // Jika onClaim null, warna akan otomatis menyesuaikan (disabled)
+                          backgroundColor: onClaim == null ? Colors.white54 : Colors.white,
                           foregroundColor: const Color(0xFF6B7548),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -159,10 +149,10 @@ class VoucherCard extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
-                        onPressed: onClaim,
-                        child: const Text(
-                          "Gunakan",
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        onPressed: onClaim, // Menggunakan fungsi dari parameter
+                        child: Text(
+                          buttonText, // Menggunakan teks dari parameter (Gunakan / Telah Terpakai)
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -176,7 +166,6 @@ class VoucherCard extends StatelessWidget {
     );
   }
 
-  // Widget _buildNotch & _buildBrandIcon tetap sama seperti sebelumnya
   Widget _buildNotch() {
     return Container(
       height: 30,

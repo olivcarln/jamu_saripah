@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:jamu_saripah/Screens/CheckoutSreen/checkout.screen.dart';
+import 'package:provider/provider.dart';
 
 class CartButtonSummary extends StatelessWidget {
   final int totalPrice;
@@ -64,36 +67,24 @@ class CartButtonSummary extends StatelessWidget {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF634E34),
-                disabledBackgroundColor: const Color(
-                  0xFF634E34,
-                ).withValues(alpha: 0.5),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                disabledBackgroundColor: const Color(0xFF634E34).withValues(alpha: 0.5),
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              // GANTI DI SINI: Navigasi langsung ke CheckoutScreen
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CheckoutScreen(
-                      // KAMU KURANG DUA BARIS INI:
-                      totalPrice: totalPrice,
-                      selectedCount: selectedCount,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CheckoutScreen(
+                        totalPrice: totalPrice,
+                        selectedCount: selectedCount,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
               child: const Text(
                 "Lanjut",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],
