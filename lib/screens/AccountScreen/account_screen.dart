@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'package:jamu_saripah/screens/AccountScreen/components/help_center_screen.dart';
 import 'package:jamu_saripah/screens/AccountScreen/components/payment_method_screen.dart';
 import 'package:jamu_saripah/screens/AccountScreen/components/privacy_police_screen.dart';

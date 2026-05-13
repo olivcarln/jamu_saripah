@@ -63,7 +63,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true, // Agar body bisa tampil di balik navbar melayang
+      extendBody: true, 
       appBar: AppBar(
         title: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
@@ -86,9 +86,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
             const SizedBox(width: 48),
         ],
       ),
-      
-      // LAYAR LANGSUNG BERGANTI TANPA GESER (INSTAN)
-      body: pages[currentIndex],
+            body: pages[currentIndex],
       
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -134,7 +132,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          // Efek pill kalau aktif
           color: isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
@@ -146,7 +143,6 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
               color: isSelected ? Colors.white : Colors.white70,
               size: 24,
             ),
-            // Teks hanya muncul saat terpilih dengan animasi melebar
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               child: isSelected

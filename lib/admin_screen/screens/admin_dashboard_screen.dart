@@ -63,7 +63,6 @@ class AdminDashboardScreen extends StatelessWidget {
           final data = snapshot.data!;
 
           return SingleChildScrollView(
-            // Bottom padding ditambahkan agar tidak tertutup floating navbar
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +97,6 @@ class AdminDashboardScreen extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                /// TITLE 1
                 const Text(
                   "Ringkasan Bisnis",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -106,11 +104,10 @@ class AdminDashboardScreen extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                /// GRID STATISTIK
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
-                  padding: EdgeInsets.zero, // Hapus padding default GridView
+                  padding: EdgeInsets.zero, 
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 15,
