@@ -4,6 +4,7 @@ import 'package:jamu_saripah/Screens/HomeScreen/Components/menus.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'package:jamu_saripah/services/database_services.dart';
 import 'Components/home_header.dart';
+import 'Components/order_method.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final String userName = FirebaseAuth.instance.currentUser?.displayName ?? "User";
   bool isLoading = false;
+  Map<String, String> _activeFilters = {}; // ← tambah ini
 
   void _prosesCheckout(String metode) async {
     setState(() => isLoading = true);
@@ -25,9 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
 
       await DatabaseService().buatPesanan(
-        items: jamuDipesan, 
-        total: 15000,      
-        method: metode,     
+        items: jamuDipesan,
+        total: 15000,
+        method: metode,
       );
 
       if (!mounted) return;
@@ -55,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40),
@@ -68,25 +70,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: SafeArea(
                     child: HomeHeader(
                       onFilterChanged: (filters) {
-                        // Ini yang bikin error merah hilang
-                        print("Filter Aktif: $filters");
-                        setState(() {}); 
+                        setState(() {
+                          _activeFilters = filters; // ← simpan filter
+                        });
                       },
                     ),
                   ),
                 ),
 
-                 SizedBox(height: 25),
-                 PromoBanner(),
-                 SizedBox(height: 25),
+                const SizedBox(height: 25),
+                const PromoBanner(),
+                const SizedBox(height: 25),
 
-                 SizedBox(height: 25),
-                 Menus(), 
-                 SizedBox(height: 30),
+                const SizedBox(height: 25),
+                Menus(filters: _activeFilters), // ← pass filter ke Menus
+                const SizedBox(height: 30),
               ],
             ),
           ),
-          
+
           if (isLoading)
             Container(
               color: Colors.black26,
