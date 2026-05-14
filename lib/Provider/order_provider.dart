@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:jamu_saripah/Models/order_model.dart';
+
+import 'package:jamu_saripah/Models/order.dart';
 
 class OrderProvider with ChangeNotifier {
-  final List<OrderModel> _orders = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+List<OrderModel> _orders = [];
   int _userPoints = 0;
+  bool _isLoading = false;
+
+  // =========================
+  // GETTER
+  // =========================
 
   List<OrderModel> get orders => List.unmodifiable(_orders);
+
   int get userPoints => _userPoints;
+
+  bool get isLoading => _isLoading;
 
   /// LIST STATUS ORDER
   final List<String> orderStatuses = [
@@ -23,37 +34,77 @@ class OrderProvider with ChangeNotifier {
     loadDataFromDevice();
   }
 
-  /// LOAD POINTS DARI DEVICE
+  // =========================
+  // LOCAL STORAGE
+  // =========================
+
+  /// LOAD POINTS
   Future<void> loadDataFromDevice() async {
-    final prefs = await SharedPreferences.getInstance();
-    _userPoints = prefs.getInt('user_points') ?? 0;
-    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      _userPoints = prefs.getInt('user_points') ?? 0;
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error load data: $e");
+    }
   }
 
-  /// SIMPAN POINTS
+  /// SAVE POINTS
   Future<void> savePoints() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('user_points', _userPoints);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setInt(
+        'user_points',
+        _userPoints,
+      );
+    } catch (e) {
+      debugPrint("Error save points: $e");
+    }
   }
 
   /// RESET POINTS
   Future<void> clearPoints() async {
     _userPoints = 0;
+
     await savePoints();
+
     notifyListeners();
   }
 
+  // =========================
+  // ORDER STATE
+  // =========================
+
   /// SET ORDER
   void setOrders(List<OrderModel> newOrders) {
-    _orders.clear();
-    _orders.addAll(newOrders);
+    _orders
+      ..clear()
+      ..addAll(newOrders);
+
     notifyListeners();
   }
+
+  /// CLEAR ORDER
+  void clearOrders() {
+    _orders.clear();
+
+    notifyListeners();
+  }
+
+  // =========================
+  // FIRESTORE
+  // =========================
 
   /// ADD ORDER
   Future<void> addOrder(OrderModel order) async {
     try {
-      await FirebaseFirestore.instance
+      _isLoading = true;
+      notifyListeners();
+
+      await _firestore
           .collection('orders')
           .doc(order.id)
           .set(order.toMap());
@@ -62,33 +113,51 @@ class OrderProvider with ChangeNotifier {
 
       /// TAMBAH POINTS
       _userPoints += 4;
+
       await savePoints();
 
       notifyListeners();
+
+      debugPrint("Order berhasil ditambahkan");
     } catch (e) {
       debugPrint("Error add order: $e");
       rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  /// FETCH ORDER
+  /// FETCH ORDERS
   Future<void> fetchOrders() async {
     try {
-      final snapshot = await FirebaseFirestore.instance
+      _isLoading = true;
+      notifyListeners();
+
+      final snapshot = await _firestore
           .collection('orders')
-          .orderBy('createdAt', descending: true)
+          .orderBy(
+            'createdAt',
+            descending: true,
+          )
           .get();
 
-      final loadedOrders = snapshot.docs.map((doc) {
-        return OrderModel.fromFirestore(doc);
-      }).toList();
+      final loadedOrders = snapshot.docs
+          .map((doc) => OrderModel.fromFirestore(doc))
+          .toList();
 
-      _orders.clear();
-      _orders.addAll(loadedOrders);
+      _orders
+        ..clear()
+        ..addAll(loadedOrders);
 
       notifyListeners();
+
+      debugPrint("Fetch order berhasil");
     } catch (e) {
       debugPrint("Error fetch orders: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -98,7 +167,7 @@ class OrderProvider with ChangeNotifier {
     String status,
   ) async {
     try {
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('orders')
           .doc(orderId)
           .update({
@@ -127,9 +196,11 @@ class OrderProvider with ChangeNotifier {
   }
 
   /// KONFIRMASI PEMBAYARAN
-  Future<void> confirmPayment(String orderId) async {
+  Future<void> confirmPayment(
+    String orderId,
+  ) async {
     try {
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('orders')
           .doc(orderId)
           .update({

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/Models/order_model.dart';
+import 'package:jamu_saripah/Models/order.dart';
 import 'package:jamu_saripah/common/constasts.dart';
 import 'package:jamu_saripah/provider/order_provider.dart';
 import 'package:provider/provider.dart';

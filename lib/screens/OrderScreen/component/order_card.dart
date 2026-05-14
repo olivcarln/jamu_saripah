@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:jamu_saripah/Models/order_model.dart';
+import 'package:jamu_saripah/Models/order.dart';
 
 class OrderCard extends StatelessWidget {
   final OrderModel order;

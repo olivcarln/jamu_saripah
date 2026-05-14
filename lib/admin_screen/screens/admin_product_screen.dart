@@ -212,14 +212,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
                           const SizedBox(height: 10),
 
-                          Row(
+                             Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
                             children: [
                               _badge(
                                 "Diskon ${data['discount']}%",
                                 Colors.green,
                               ),
-
-                              const SizedBox(width: 8),
 
                               _badge(
                                 "Stok ${data['stock']}",
