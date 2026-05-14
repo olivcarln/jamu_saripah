@@ -75,15 +75,14 @@ class Menus extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final data = docs[index].data() as Map<String, dynamic>;
 
-                  /// CONVERT FIRESTORE DATA TO PRODUCT MODEL
-                  final product = Product(
-                    name: data['name'] ?? '',
-                    image: data['imageUrl'] ?? '',
-                    price: (data['price'] as num?)?.toDouble() ?? 0,
-                    size: data['size'] ?? '',
-                    description: data['description'] ?? '',
-                    stock: (data['stock'] as num?)?.toInt() ?? 0,
-                  );
+              final product = Product(
+  name: data['name'] ?? '',
+  image: data['imageBase64'] ?? '',
+  price: (data['price'] as num?)?.toDouble() ?? 0,
+  size: data['size'] ?? '',
+  description: data['description'] ?? '',
+  stock: (data['stock'] as num?)?.toInt() ?? 0,
+);
                   return _buildProductCard(context, product);
                 },
               );
