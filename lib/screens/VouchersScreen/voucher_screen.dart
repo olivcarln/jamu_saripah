@@ -95,6 +95,10 @@ class VoucherScreen extends StatelessWidget {
                           return const SizedBox.shrink();
                         }
 
+                        // AMBIL DATA DISKON DARI FIRESTORE
+                        // Gunakan .toDouble() karena VoucherCard minta tipe double
+                        final double diskonNominal = (data['discountAmount'] ?? 0).toDouble();
+
                         return VoucherCard(
                           title: data['code'] ?? 'PROMO',
                           subTitle: "Diskon ${data['discount']}%",
@@ -102,13 +106,12 @@ class VoucherScreen extends StatelessWidget {
                               "${expiredAt.day}/${expiredAt.month}/${expiredAt.year}",
                           minTransaction: "Rp ${data['minPurchase']}",
                           quota: "Sisa Kuota: ${data['quota']}",
-                          onClaim: () {
-                            // 1. Ambil nominal diskon dari Firestore. 
-                            // Pastikan di Firestore field-nya namanya 'discountAmount' atau sejenisnya.
-                            // Kalau cuma ada persen, sementara gue kasih default 10000 buat ngetes potongannya.
-                            int nominalDiskon = data['discountAmount'] ?? 10000;
+                          
+                          // ✅ BERESIN ERROR 'discountAmount' DI SINI
+                          discountAmount: diskonNominal, 
 
-                            // 2. Feedback SnackBar
+                          onClaim: () {
+                            // Feedback Visual
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: const Row(
@@ -128,10 +131,10 @@ class VoucherScreen extends StatelessWidget {
                               ),
                             );
 
-                            // 3. KIRIM DATA BALIK & TUTUP HALAMAN
-                            // Kasih delay dikit biar animasi SnackBar kelihatan
+                            // KIRIM DATA BALIK KE CHECKOUT
                             Future.delayed(const Duration(milliseconds: 800), () {
-                              Navigator.pop(context, nominalDiskon);
+                              // Kirim balik sebagai int agar bisa dikurangi di kalkulasi harga
+                              Navigator.pop(context, diskonNominal.toInt());
                             });
                           },
                         );

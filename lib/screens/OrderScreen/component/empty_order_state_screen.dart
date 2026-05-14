@@ -1,27 +1,124 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/common/constasts.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart'; 
+import 'package:jamu_saripah/screens/CheckoutSreen/checkout.screen.dart';
 
-class EmptyOrderStateScreen extends StatelessWidget {
-  const EmptyOrderStateScreen({super.key});
+class OrderListStateScreen extends StatelessWidget {
+  final List<OrderModel> orders; 
+  
+  const OrderListStateScreen({super.key, required this.orders});
+
+  String formatHarga(int harga) {
+    return harga.toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Ganti dengan Image.asset jika kamu sudah punya filenya
-          Icon(Icons.inventory_2_outlined, size: 120, color: Colors.grey[400]),
-          const SizedBox(height: 20),
-          const Text(
-            "Belum Ada Riwayat Pesanan",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey,
-            ),
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        final order = orders[index];
+
+        return Container(
+          width: double.infinity,
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      order.title, 
+                      style: const TextStyle(
+                        fontSize: 20, 
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryOlive,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Tanggal: ${order.date}\nTotal Pembayaran: Rp ${formatHarga(order.price)}", 
+                      style: const TextStyle(fontSize: 13, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              order.method == 'Delivery' ? Icons.delivery_dining : Icons.shopping_bag,
+                              color: Colors.grey[700],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              order.method, 
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 35,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Navigasi ke Checkout dengan data
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CheckoutScreen(
+                                    totalPrice: order.price, 
+                                    selectedCount: 1, 
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryOlive,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            ),
+                            child: Text(
+                              order.status == 'Selesai' ? "Beli Lagi" : "Lihat Pesanan",
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "-------------------------------------------------------------------------",
+                  maxLines: 1,
+                  style: TextStyle(color: Colors.grey, letterSpacing: 2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Status: ${order.status}", 
+                      style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.bold),
+                    ),
+                    const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                  ],
+                ),
+              ),
+              Container(height: 8, color: const Color(0xFFEEEEEE)), 
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
