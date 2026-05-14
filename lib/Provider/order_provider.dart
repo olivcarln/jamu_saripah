@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // <--- Import ini penting!
 
 class OrderModel {
   final String title;
@@ -20,6 +21,7 @@ class OrderModel {
 }
 
 class OrderProvider extends ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final List<OrderModel> _orders = [];
   int _userPoints = 0;
 
@@ -27,52 +29,61 @@ class OrderProvider extends ChangeNotifier {
   int get userPoints => _userPoints;
 
   OrderProvider() {
-    loadDataFromDevice(); // Otomatis ambil poin pas aplikasi nyala
+    loadDataFromDevice();
   }
 
-  // Ambil poin dari memori HP
   Future<void> loadDataFromDevice() async {
     final prefs = await SharedPreferences.getInstance();
     _userPoints = prefs.getInt('user_points') ?? 0;
     notifyListeners();
   }
 
-  // Simpan poin ke memori HP
   Future<void> savePoints() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('user_points', _userPoints);
   }
 
-  // Fungsi dipanggil SAAT CHECKOUT SELESAI
-  void addOrder({
+  // Fungsi async untuk simpan ke Firestore
+  Future<void> addOrder({
     required List<Map<String, dynamic>> items,
     required int totalPrice,
     required String paymentMethod,
     required String location,
-  }) {
-    // Buat title otomatis
-    String orderTitle = items.isNotEmpty ? items[0]['name'] : 'Pesanan Jamu';
-    if (items.length > 1) orderTitle += ' +${items.length - 1} lainnya';
+  }) async {
+    try {
+      String orderTitle = items.isNotEmpty ? items[0]['name'] : 'Pesanan Jamu';
+      if (items.length > 1) orderTitle += ' +${items.length - 1} lainnya';
 
-    final newOrder = OrderModel(
-      title: orderTitle,
-      date: "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
-      price: totalPrice,
-      status: 'Sedang Diproses',
-      method: paymentMethod,
-      location: location,
-    );
+      // SIMPAN KE CLOUD FIRESTORE
+      await _firestore.collection('orders').add({
+        'title': orderTitle,
+        'totalPrice': totalPrice,
+        'paymentMethod': paymentMethod,
+        'location': location,
+        'status': 'Sedang Diproses',
+        'createdAt': FieldValue.serverTimestamp(),
+        'items': items,
+      });
 
-    _orders.insert(0, newOrder);
-    
-    // POIN BARU NAMBAH DI SINI (Pas pesanan dibuat)
-    _userPoints += 4; 
-    
-    savePoints(); // Simpan biar gak ilang pas logout
-    notifyListeners();
+      // UPDATE LOKAL & POINT
+      _orders.insert(0, OrderModel(
+        title: orderTitle,
+        date: "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+        price: totalPrice,
+        status: 'Sedang Diproses',
+        method: paymentMethod,
+        location: location,
+      ));
+
+      _userPoints += 4;
+      await savePoints();
+      notifyListeners();
+    } catch (e) {
+      print("Error Firestore: $e");
+      rethrow;
+    }
   }
 
-  // Gunakan ini kalau bener-bener mau hapus poin (misal reset data)
   void clearPoints() async {
     _userPoints = 0;
     await savePoints();
