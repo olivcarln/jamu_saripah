@@ -4,7 +4,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jamu_saripah/Provider/order_provider.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
-import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeader extends StatefulWidget {
@@ -79,10 +78,7 @@ class _HomeHeaderState extends State<HomeHeader> {
         ),
         Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.notifications, color: Colors.white),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen())),
-            ),
+    
             IconButton(
               icon: const Icon(Icons.shopping_cart, color: Colors.white),
               onPressed: () => Navigator.push(
@@ -263,7 +259,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                     "Tukarkan poinmu dengan hadiah seru", 
                     style: TextStyle(fontSize: 12, color: Colors.black54)
                   ),
-                  Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey[400]),
                 ],
               ),
             ),
