@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/controllers/voucher_controller.dart';
 
-class VoucherCard extends StatelessWidget {
+class VoucherCard extends StatefulWidget {
   final String title;
   final String subTitle;
   final String expiryDate;
   final String minTransaction;
   final String quota;
   final double discountAmount;
-  final String buttonText; // Digunakan untuk label tombol
-  final VoidCallback? onClaim; // Jika null, tombol otomatis disabled
+  final String buttonText;
+  final VoidCallback? onClaim;
 
   const VoucherCard({
     super.key,
@@ -18,16 +18,109 @@ class VoucherCard extends StatelessWidget {
     required this.expiryDate,
     required this.minTransaction,
     required this.quota,
-    required this.discountAmount,
-    this.buttonText = "Gunakan", // Default label
-    this.onClaim, // Sekarang bisa menerima null dari screen
+    required this.discountAmount, this.onClaim, required this.buttonText,
   });
+
+  @override
+  State<VoucherCard> createState() => _VoucherCardState();
+}
+
+// TODO: KALO MISALNYA DIA UDAH CHECKOUT VOUCHER NYA GABISA DIPAKE LAGI
+
+class _VoucherCardState extends State<VoucherCard> {
+  bool isApplied = false;
+
+  void _applyVoucher() {
+    // CEGAH APPLY BERKALI-KALI
+    if (isApplied) return;
+
+    setState(() {
+      isApplied = true;
+    });
+
+    // APPLY DISKON
+    VoucherController.discountNotifier.value =
+        widget.discountAmount.toInt();
+
+    // SNACKBAR SUCCESS
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF6B7548),
+        elevation: 10,
+        margin: const EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        duration: const Duration(seconds: 2),
+        content: Row(
+          children: const [
+            Icon(
+              Icons.check_circle,
+              color: Colors.white,
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "Voucher berhasil digunakan!",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _cancelVoucher() {
+    setState(() {
+      isApplied = false;
+    });
+
+    // RESET DISKON
+    VoucherController.discountNotifier.value = 0;
+
+    // SNACKBAR CANCEL
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.redAccent,
+        elevation: 10,
+        margin: const EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        duration: const Duration(seconds: 2),
+        content: Row(
+          children: const [
+            Icon(
+              Icons.cancel,
+              color: Colors.white,
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "Voucher dibatalkan",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      constraints: const BoxConstraints(minHeight: 160), 
+      constraints: const BoxConstraints(minHeight: 160),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
         gradient: const LinearGradient(
@@ -47,159 +140,204 @@ class VoucherCard extends StatelessWidget {
             bottom: 0,
             child: Center(child: _buildNotch()),
           ),
+
           Positioned(
             right: -15,
             top: 0,
             bottom: 0,
             child: Center(child: _buildNotch()),
           ),
+
           Padding(
             padding: const EdgeInsets.all(20),
+
             child: Column(
-              mainAxisSize: MainAxisSize.min, 
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
               children: [
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+
                       children: [
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+
                             children: [
                               Text(
-                                title,
-                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                widget.title,
+                                style:
+                                    const TextStyle(
+                                  color:
+                                      Colors.white70,
+                                  fontSize: 13,
+                                ),
                               ),
-                              const SizedBox(height: 4),
+
+                              const SizedBox(
+                                  height: 4),
+
                               Text(
-                                subTitle,
-                                style: const TextStyle(
+                                widget.subTitle,
+                                style:
+                                    const TextStyle(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight
+                                          .bold,
                                   fontSize: 16,
                                 ),
                               ),
                             ],
                           ),
                         ),
+
                         const SizedBox(width: 8),
+
                         _buildBrandIcon(),
                       ],
                     ),
+
                     const SizedBox(height: 4),
+
                     Text(
-                      "Min. Pembelian $minTransaction",
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                      "Min. Pembelian ${widget.minTransaction}",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
                     ),
+
                     const SizedBox(height: 4),
+
                     Text(
-                      "Potongan Rp ${discountAmount.toInt()}",
+                      "Potongan Rp ${widget.discountAmount.toInt()}",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        fontWeight:
+                            FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 12),
+
                 Container(
                   height: 1,
                   color: Colors.white30,
                 ),
+
                 const SizedBox(height: 12),
+
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment:
+                      MainAxisAlignment
+                          .spaceBetween,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.end,
+
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+
                         children: [
                           const Text(
                             'Berlaku Sampai',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
+
                           const SizedBox(height: 2),
+
                           Text(
-                            expiryDate,
-                            style: const TextStyle(
+                            widget.expiryDate,
+                            style:
+                                const TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontWeight:
+                                  FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
-                   SizedBox(
-  height: 35,
-  child: ElevatedButton(
-    style: ElevatedButton.styleFrom(
-      backgroundColor:
-          onClaim == null ? Colors.white54 : Colors.white,
-      foregroundColor: const Color(0xFF6B7548),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-    ),
 
-    onPressed: () {
-      // APPLY DISKON
-      VoucherController.discountNotifier.value = 5000;
+                    SizedBox(
+                      height: 35,
 
-      // SNACKBAR BAGUS
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFF6B7548),
-          elevation: 10,
-          margin: const EdgeInsets.all(20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          duration: const Duration(seconds: 2),
+                      child: ElevatedButton(
+                        style:
+                            ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isApplied
+                                  ? Colors.redAccent
+                                  : Colors.white,
 
-          content: Row(
-            children: const [
-              Icon(
-                Icons.check_circle,
-                color: Colors.white,
-              ),
+                          foregroundColor:
+                              isApplied
+                                  ? Colors.white
+                                  : const Color(
+                                      0xFF6B7548),
 
-              SizedBox(width: 12),
+                          elevation: 0,
 
-              Expanded(
-                child: Text(
-                  "Voucher berhasil digunakan 🎉",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
+                          shape:
+                              RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius
+                                    .circular(20),
+                          ),
 
-    child: Text(
-      buttonText,
-      style: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-),
+                          padding:
+                              const EdgeInsets.symmetric(
+                            horizontal: 14,
+                          ),
+                        ),
+
+                        onPressed: () {
+                          if (isApplied) {
+                            _cancelVoucher();
+                          } else {
+                            _applyVoucher();
+                          }
+                        },
+
+                        child: Text(
+                          isApplied
+                              ? "Batalkan"
+                              : "Gunakan",
+
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight:
+                                FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -214,7 +352,10 @@ class VoucherCard extends StatelessWidget {
     return Container(
       height: 30,
       width: 30,
-      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
     );
   }
 
@@ -225,11 +366,17 @@ class VoucherCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white24,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white30, width: 1),
+        border: Border.all(
+          color: Colors.white30,
+          width: 1,
+        ),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(25),
-        child: const Icon(Icons.shopping_bag, color: Colors.white),
+        child: const Icon(
+          Icons.shopping_bag,
+          color: Colors.white,
+        ),
       ),
     );
   }

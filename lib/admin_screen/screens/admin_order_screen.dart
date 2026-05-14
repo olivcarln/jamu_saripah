@@ -29,7 +29,10 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     super.initState();
 
     Future.microtask(() {
-      Provider.of<OrderProvider>(context, listen: false).fetchOrders();
+      Provider.of<OrderProvider>(
+        context,
+        listen: false,
+      ).fetchOrders();
     });
   }
 
@@ -37,40 +40,66 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   Future<void> _updateStatus(
     BuildContext context,
     String orderId,
-    String status,
+    String newStatus,
   ) async {
     try {
-      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+      final orderProvider = Provider.of<OrderProvider>(
+        context,
+        listen: false,
+      );
 
-      await orderProvider.updateStatus(orderId, status);
+      await orderProvider.updateOrderStatus(
+        orderId: orderId,
+        newStatus: newStatus,
+      );
 
-      if (!mounted) return;
+      if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Status berhasil diubah menjadi $status")),
+        SnackBar(
+          content: Text(
+            "Status berhasil diubah menjadi $newStatus",
+          ),
+        ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal update status: $e")));
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Gagal update status: $e"),
+        ),
+      );
     }
   }
 
   /// KONFIRMASI PEMBAYARAN
-  Future<void> _confirmPayment(BuildContext context, String orderId) async {
+  Future<void> _confirmPayment(
+    BuildContext context,
+    String orderId,
+  ) async {
     try {
-      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+      final orderProvider = Provider.of<OrderProvider>(
+        context,
+        listen: false,
+      );
 
       await orderProvider.confirmPayment(orderId);
 
-      if (!mounted) return;
+      if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pembayaran berhasil dikonfirmasi")),
+        const SnackBar(
+          content: Text("Pembayaran berhasil dikonfirmasi"),
+        ),
       );
     } catch (e) {
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal konfirmasi pembayaran: $e")),
+        SnackBar(
+          content: Text("Gagal konfirmasi pembayaran: $e"),
+        ),
       );
     }
   }
@@ -113,6 +142,19 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
 
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF7E8959),
+        title: Text(
+          emailLogin == null
+              ? "Admin Order"
+              : "Admin Order - $emailLogin",
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+
       body: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
           /// AMBIL ORDER
@@ -139,7 +181,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
           /// KOSONG
           if (filteredOrders.isEmpty) {
-            return const Center(child: Text("Tidak ada pesanan"));
+            return const Center(
+              child: Text("Tidak ada pesanan"),
+            );
           }
 
           return Column(
@@ -199,7 +243,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                         ? order.status
                         : orderStatuses.first;
 
-                    final isConfirmed = order.paymentConfirmed;
+                    final isConfirmed =
+                        order.paymentConfirmed;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -209,7 +254,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
                         children: [
                           /// HEADER
                           Row(
@@ -217,8 +263,10 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: _statusColor(status).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(15),
+                                  color: _statusColor(status)
+                                      .withOpacity(0.1),
+                                  borderRadius:
+                                      BorderRadius.circular(15),
                                 ),
                                 child: Icon(
                                   Icons.shopping_bag,
@@ -230,25 +278,27 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       order.userName,
                                       style: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight:
+                                            FontWeight.bold,
                                       ),
                                     ),
 
                                     const SizedBox(height: 5),
 
-                                  Text(
-  order.userEmail ?? '-',
-  style: TextStyle(
-    color: Colors.grey[600],
-    fontSize: 13,
-  ),
-),
+                                    Text(
+                                      order.userEmail ?? '-',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 13,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -260,7 +310,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           const SizedBox(height: 20),
 
                           /// TOTAL
-                          Text("Total: ${formatRupiah(order.totalAmount)}"),
+                          Text(
+                            "Total: ${formatRupiah(order.totalAmount)}",
+                          ),
 
                           const SizedBox(height: 10),
 
@@ -270,7 +322,16 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           const SizedBox(height: 10),
 
                           /// METODE
-                          Text("Metode: ${order.paymentMethod}"),
+                          Text(
+                            "Metode: ${order.paymentMethod}",
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          /// ALAMAT
+                          Text(
+                            "Alamat: ${order.address}",
+                          ),
 
                           const SizedBox(height: 20),
 
@@ -288,48 +349,81 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           ...order.items.map((item) {
                             if (item is Map) {
                               final String name =
-                                  item['name']?.toString() ?? 'Menu';
+                                  item['name']
+                                          ?.toString() ??
+                                      'Menu';
 
                               final String image =
-                                  item['image']?.toString() ?? '';
+                                  item['image']
+                                          ?.toString() ??
+                                      '';
 
                               final int qty =
-                                  int.tryParse(item['qty'].toString()) ?? 0;
+                                  int.tryParse(
+                                        item['qty']
+                                            .toString(),
+                                      ) ??
+                                      0;
 
                               final int price =
-                                  int.tryParse(item['price'].toString()) ?? 0;
+                                  int.tryParse(
+                                        item['price']
+                                            .toString(),
+                                      ) ??
+                                      0;
 
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 14),
+                                padding:
+                                    const EdgeInsets.only(
+                                  bottom: 14,
+                                ),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
                                   children: [
                                     /// IMAGE
                                     ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: image.isNotEmpty
+                                      borderRadius:
+                                          BorderRadius
+                                              .circular(10),
+                                      child: image
+                                              .isNotEmpty
                                           ? Image.network(
                                               image,
                                               width: 60,
                                               height: 60,
                                               fit: BoxFit.cover,
                                               errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return Container(
-                                                      width: 60,
-                                                      height: 60,
-                                                      color: Colors.grey[300],
-                                                      child: const Icon(
-                                                        Icons.image,
-                                                      ),
-                                                    );
-                                                  },
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) {
+                                                return Container(
+                                                  width: 60,
+                                                  height: 60,
+                                                  color:
+                                                      Colors.grey[
+                                                          300],
+                                                  child:
+                                                      const Icon(
+                                                    Icons
+                                                        .image,
+                                                  ),
+                                                );
+                                              },
                                             )
                                           : Container(
                                               width: 60,
                                               height: 60,
-                                              color: Colors.grey[300],
-                                              child: const Icon(Icons.image),
+                                              color:
+                                                  Colors.grey[
+                                                      300],
+                                              child:
+                                                  const Icon(
+                                                Icons.image,
+                                              ),
                                             ),
                                     ),
 
@@ -339,27 +433,43 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment
+                                                .start,
                                         children: [
                                           Text(
                                             name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
+                                            style:
+                                                const TextStyle(
+                                              fontWeight:
+                                                  FontWeight
+                                                      .bold,
                                               fontSize: 14,
                                             ),
                                           ),
 
-                                          const SizedBox(height: 4),
-
-                                          Text("Qty: $qty"),
-
-                                          const SizedBox(height: 4),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
 
                                           Text(
-                                            formatRupiah(price),
-                                            style: const TextStyle(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.w600,
+                                            "Qty: $qty",
+                                          ),
+
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+
+                                          Text(
+                                            formatRupiah(
+                                              price,
+                                            ),
+                                            style:
+                                                const TextStyle(
+                                              color:
+                                                  Colors.green,
+                                              fontWeight:
+                                                  FontWeight
+                                                      .w600,
                                             ),
                                           ),
                                         ],
@@ -371,7 +481,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             }
 
                             return const SizedBox();
-                          }),
+                          }).toList(),
 
                           const SizedBox(height: 10),
 
@@ -385,9 +495,14 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                                 child: Text(item),
                               );
                             }).toList(),
+
                             onChanged: (value) async {
                               if (value != null) {
-                                await _updateStatus(context, order.id, value);
+                                await _updateStatus(
+                                  context,
+                                  order.id,
+                                  value,
+                                );
                               }
                             },
                           ),
@@ -401,22 +516,35 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                               onPressed: isConfirmed
                                   ? null
                                   : () async {
-                                      await _confirmPayment(context, order.id);
+                                      await _confirmPayment(
+                                        context,
+                                        order.id,
+                                      );
                                     },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF7E8959),
-                                padding: const EdgeInsets.symmetric(
+                              style:
+                                  ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color(
+                                  0xFF7E8959,
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(
                                   vertical: 14,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                shape:
+                                    RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(14),
                                 ),
                               ),
                               child: Text(
                                 isConfirmed
                                     ? "Sudah Konfirmasi"
                                     : "Konfirmasi Pembayaran",
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
@@ -436,7 +564,10 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   /// BADGE STATUS
   Widget _statusBadge(String status) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
       decoration: BoxDecoration(
         color: _statusColor(status).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),

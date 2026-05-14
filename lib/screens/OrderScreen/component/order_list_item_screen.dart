@@ -110,7 +110,7 @@ class OrderListStateScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      const CheckoutScreen(),
+                                      const CheckoutScreen(cartItems: [],),
                                 ),
                               );
                             },
