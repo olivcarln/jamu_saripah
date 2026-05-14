@@ -7,9 +7,9 @@ class AddingMenuScreen extends StatelessWidget {
   const AddingMenuScreen({super.key, required this.onAddTap});
 
   final List<Map<String, dynamic>> specialMenus = const [
-    {'name': '3 botol Beras kencur', 'size': '350 ml', 'price': 56000, 'image': 'assets/product_2.svg'},
-    {'name': 'Paket Kunyit Asam', 'size': '350 ml', 'price': 45000, 'image': 'assets/product_2.svg'},
-    {'name': 'Paket Temulawak', 'size': '350 ml', 'price': 48000, 'image': 'assets/product_2.svg'},
+    {'name': '3 Botol Beras kencur', 'size': '350 ml', 'price': 58000, 'image': 'assets/product_2.svg'},
+    {'name': 'Paket Mix 5 Jamu', 'size': '350 ml', 'price': 96500, 'image': 'assets/product_2.svg'},
+    {'name': 'Kunyit Asem ', 'size': '250 ml', 'price': 13500, 'image': 'assets/product_2.svg'},
   ];
 
   // Fungsi pembantu untuk format ribuan

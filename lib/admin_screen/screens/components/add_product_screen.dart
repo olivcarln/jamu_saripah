@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -25,6 +26,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   File? _imageFile;
   String? _imageUrl;
+
   bool _isLoading = false;
 
   bool get isEdit => widget.id != null;
@@ -36,26 +38,24 @@ class _AddProductScreenState extends State<AddProductScreen> {
     if (widget.data != null) {
       _nameController.text = widget.data!['name'] ?? '';
 
-      _priceController.text =
-          (widget.data!['price'] ?? '').toString();
+      _priceController.text = (widget.data!['price'] ?? '').toString();
 
-      _stockController.text =
-          (widget.data!['stock'] ?? '').toString();
+      _stockController.text = (widget.data!['stock'] ?? '').toString();
 
-      _discountController.text =
-          (widget.data!['discount'] ?? '').toString();
+      _discountController.text = (widget.data!['discount'] ?? '').toString();
 
-      _descController.text =
-          widget.data!['description'] ?? '';
+      _descController.text = widget.data!['description'] ?? '';
 
       _imageUrl = widget.data!['imageUrl'];
     }
   }
 
+  /// PICK IMAGE
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 60,
+      imageQuality: 40,
+      maxWidth: 800,
     );
 
     if (picked != null) {
@@ -65,42 +65,35 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
-  Future<String?> _uploadImage(String productId) async {
+  /// CONVERT IMAGE TO BASE64
+  Future<String?> _uploadImage() async {
     if (_imageFile == null) return _imageUrl;
 
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('products')
-        .child('$productId.jpg');
+    final bytes = await _imageFile!.readAsBytes();
 
-    await ref.putFile(_imageFile!);
-
-    return await ref.getDownloadURL();
+    return base64Encode(bytes);
   }
 
+  /// SAVE PRODUCT
   Future<void> _saveProduct() async {
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
         _stockController.text.isEmpty ||
         _discountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Isi semua field dulu ya"),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Isi semua field dulu ya")));
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final collection =
-          FirebaseFirestore.instance.collection('products');
+      final collection = FirebaseFirestore.instance.collection('products');
 
-      final docRef =
-          isEdit ? collection.doc(widget.id) : collection.doc();
+      final docRef = isEdit ? collection.doc(widget.id) : collection.doc();
 
-      final imageUrl = await _uploadImage(docRef.id);
+      final imageBase64 = await _uploadImage();
 
       await docRef.set({
         'name': _nameController.text,
@@ -108,26 +101,37 @@ class _AddProductScreenState extends State<AddProductScreen> {
         'stock': int.tryParse(_stockController.text) ?? 0,
         'discount': int.tryParse(_discountController.text) ?? 0,
         'description': _descController.text,
-        'imageUrl': imageUrl,
+        'imageUrl': imageBase64,
         'updatedAt': FieldValue.serverTimestamp(),
-        if (!isEdit)
-          'createdAt': FieldValue.serverTimestamp(),
+
+        if (!isEdit) 'createdAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isEdit
+                  ? "Produk berhasil diupdate"
+                  : "Produk berhasil ditambahkan",
+            ),
+          ),
+        );
+
         Navigator.pop(context);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Gagal simpan produk"),
-        ),
-      );
+      debugPrint("ERROR: $e");
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal simpan produk\n$e")));
     }
 
     setState(() => _isLoading = false);
   }
 
+  /// IMAGE PREVIEW
   Widget _buildImagePreview() {
     if (_imageFile != null) {
       return ClipRRect(
@@ -139,35 +143,39 @@ class _AddProductScreenState extends State<AddProductScreen> {
           height: double.infinity,
         ),
       );
-    } else if (_imageUrl != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.network(
-          _imageUrl!,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      );
-    } else {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(
-            Icons.camera_alt,
-            size: 40,
-            color: Colors.grey,
-          ),
-          SizedBox(height: 8),
-          Text(
-            "Tambah Foto",
-            style: TextStyle(color: Colors.grey),
-          ),
-        ],
-      );
     }
+
+    if (_imageUrl != null && _imageUrl!.isNotEmpty) {
+      try {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.memory(
+            base64Decode(_imageUrl!),
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          ),
+        );
+      } catch (e) {
+        return const Center(
+          child: Icon(Icons.broken_image, color: Colors.grey),
+        );
+      }
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Icon(Icons.camera_alt, size: 40, color: Colors.grey),
+
+        SizedBox(height: 8),
+
+        Text("Tambah Foto", style: TextStyle(color: Colors.grey)),
+      ],
+    );
   }
 
+  /// INPUT FIELD
   Widget _inputField({
     required TextEditingController controller,
     required String label,
@@ -178,10 +186,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
       controller: controller,
       keyboardType: type,
       maxLines: maxLines,
+
       decoration: InputDecoration(
         labelText: label,
+
         filled: true,
         fillColor: const Color(0xFFF5F6F2),
+
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
@@ -205,42 +216,50 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
+
       appBar: AppBar(
-        title: Text(
-          isEdit ? "Edit Produk" : "Tambah Produk",
-        ),
+        title: Text(isEdit ? "Edit Produk" : "Tambah Produk"),
+
         backgroundColor: Colors.transparent,
+
         elevation: 0,
         foregroundColor: Colors.black,
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
+
         child: Column(
           children: [
-            /// IMAGE CARD
+            /// IMAGE
             GestureDetector(
               onTap: _pickImage,
+
               child: Container(
                 height: 170,
                 width: double.infinity,
+
                 decoration: BoxDecoration(
                   color: const Color(0xFFE5EAD9),
+
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Center(
-                  child: _buildImagePreview(),
-                ),
+
+                child: Center(child: _buildImagePreview()),
               ),
             ),
 
             const SizedBox(height: 25),
 
-            /// FORM CARD
+            /// FORM
             Container(
               padding: const EdgeInsets.all(18),
+
               decoration: BoxDecoration(
                 color: Colors.white,
+
                 borderRadius: BorderRadius.circular(20),
+
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 12,
@@ -248,6 +267,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   ),
                 ],
               ),
+
               child: Column(
                 children: [
                   _inputField(
@@ -296,22 +316,23 @@ class _AddProductScreenState extends State<AddProductScreen> {
             SizedBox(
               width: double.infinity,
               height: 55,
+
               child: ElevatedButton(
-                onPressed:
-                    _isLoading ? null : _saveProduct,
+                onPressed: _isLoading ? null : _saveProduct,
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7B8B5C),
+
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
+
                 child: Text(
                   _isLoading
                       ? "Menyimpan..."
-                      : (isEdit
-                          ? "Update Produk"
-                          : "Tambah Produk"),
+                      : (isEdit ? "Update Produk" : "Tambah Produk"),
+
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

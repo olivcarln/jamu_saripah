@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/Provider/cart_provider.dart';
-import 'package:jamu_saripah/Provider/order_provider.dart';
-import 'package:jamu_saripah/Screens/CheckoutSreen/checkout.screen.dart';
-import 'package:provider/provider.dart';
+import 'package:jamu_saripah/Screens/CheckoutScreen/checkout.screen.dart';
 
 class CartButtonSummary extends StatelessWidget {
   final int totalPrice;
@@ -20,11 +17,16 @@ class CartButtonSummary extends StatelessWidget {
     String str = amount.toString();
     String res = "";
     int count = 0;
+
     for (int i = str.length - 1; i >= 0; i--) {
       res = str[i] + res;
       count++;
-      if (count % 3 == 0 && i != 0) res = ".$res";
+
+      if (count % 3 == 0 && i != 0) {
+        res = ".$res";
+      }
     }
+
     return "Rp $res";
   }
 
@@ -36,7 +38,7 @@ class CartButtonSummary extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -52,7 +54,10 @@ class CartButtonSummary extends StatelessWidget {
               children: [
                 Text(
                   "Total ($selectedCount Item)",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
                 ),
                 Text(
                   _formatRupiah(totalPrice),
@@ -67,24 +72,37 @@ class CartButtonSummary extends StatelessWidget {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF634E34),
-                disabledBackgroundColor: const Color(0xFF634E34).withValues(alpha: 0.5),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                disabledBackgroundColor:
+                    const Color(0xFF634E34).withOpacity(0.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CheckoutScreen(
-                        totalPrice: totalPrice,
-                        selectedCount: selectedCount,
-                      ),
-                    ),
-                  );
-                },
+              onPressed: selectedCount == 0
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CheckoutScreen(
+                            totalPrice: totalPrice,
+                            selectedCount: selectedCount,
+                          ),
+                        ),
+                      );
+
+                      onCheckout();
+                    },
               child: const Text(
                 "Lanjut",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

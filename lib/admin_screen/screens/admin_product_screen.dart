@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:jamu_saripah/admin_screen/components/add_product_screen.dart';
+import 'package:jamu_saripah/admin_screen/screens/components/add_product_screen.dart';
 
 class AdminProductScreen extends StatefulWidget {
   const AdminProductScreen({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jamu_saripah/Models/order_model.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/checkout.screen.dart';
+import 'package:jamu_saripah/Screens/CheckoutScreen/checkout.screen.dart';
 
 class OrderListStateScreen extends StatelessWidget {
   final List<OrderModel> orders; 

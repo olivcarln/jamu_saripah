@@ -8,22 +8,17 @@ class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
 
   @override
-  State<OrderHistoryScreen> createState() =>
-      _OrderHistoryScreenState();
+  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
-class _OrderHistoryScreenState
-    extends State<OrderHistoryScreen> {
+class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   void initState() {
     super.initState();
 
     /// FETCH ORDER DARI FIRESTORE
     Future.microtask(() {
-      Provider.of<OrderProvider>(
-        context,
-        listen: false,
-      ).fetchOrders();
+      Provider.of<OrderProvider>(context, listen: false).fetchOrders();
     });
   }
 
@@ -58,11 +53,9 @@ class _OrderHistoryScreenState
 
   @override
   Widget build(BuildContext context) {
-    final orderProvider =
-        Provider.of<OrderProvider>(context);
+    final orderProvider = Provider.of<OrderProvider>(context);
 
-    final List<OrderModel> orders =
-        orderProvider.orders;
+    final List<OrderModel> orders = orderProvider.orders;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -70,10 +63,7 @@ class _OrderHistoryScreenState
       appBar: AppBar(
         title: const Text(
           "Riwayat Pesanan",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: AppColors.primaryOlive,
@@ -82,23 +72,15 @@ class _OrderHistoryScreenState
       body: orders.isEmpty
           ? const Center(
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.receipt_long,
-                    size: 90,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.receipt_long, size: 90, color: Colors.grey),
 
                   SizedBox(height: 16),
 
                   Text(
                     "Belum ada pesanan",
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 ],
               ),
@@ -112,148 +94,97 @@ class _OrderHistoryScreenState
               },
 
               child: ListView.builder(
-                padding:
-                    const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
 
                 itemCount: orders.length,
 
-                itemBuilder: (
-                  context,
-                  index,
-                ) {
-                  final order =
-                      orders[index];
+                itemBuilder: (context, index) {
+                  final order = orders[index];
 
                   return Card(
-                    margin:
-                        const EdgeInsets.only(
-                      bottom: 16,
-                    ),
+                    margin: const EdgeInsets.only(bottom: 16),
 
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        16,
-                      ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
 
                     elevation: 3,
 
                     child: Padding(
-                      padding:
-                          const EdgeInsets.all(
-                        16,
-                      ),
+                      padding: const EdgeInsets.all(16),
 
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
 
                         children: [
                           /// =========================
                           /// HEADER
                           /// =========================
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment
-                                    .spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                             children: [
                               Expanded(
                                 child: Text(
                                   order.userName,
-                                  style:
-                                      const TextStyle(
-                                    fontWeight:
-                                        FontWeight
-                                            .bold,
-                                    fontSize:
-                                        18,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
                                   ),
                                 ),
                               ),
 
                               Container(
-                                padding:
-                                    const EdgeInsets.symmetric(
-                                  horizontal:
-                                      10,
-                                  vertical:
-                                      4,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
                                 ),
 
-                                decoration:
-                                    BoxDecoration(
+                                decoration: BoxDecoration(
                                   color: getStatusColor(
-                                          order
-                                              .status)
-                                      .withOpacity(
-                                          0.15),
+                                    order.status,
+                                  ).withOpacity(0.15),
 
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                    20,
-                                  ),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
 
                                 child: Text(
                                   order.status,
-                                  style:
-                                      TextStyle(
-                                    fontSize:
-                                        12,
-                                    fontWeight:
-                                        FontWeight
-                                            .bold,
-                                    color:
-                                        getStatusColor(
-                                      order
-                                          .status,
-                                    ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: getStatusColor(order.status),
                                   ),
                                 ),
                               ),
                             ],
                           ),
 
-                          const SizedBox(
-                              height: 8),
+                          const SizedBox(height: 8),
 
                           /// METHOD
                           Row(
                             children: [
                               Icon(
-                                order.method ==
-                                        'Delivery'
-                                    ? Icons
-                                        .delivery_dining
-                                    : Icons
-                                        .store,
+                                order.method == 'Delivery'
+                                    ? Icons.delivery_dining
+                                    : Icons.store,
 
                                 size: 18,
 
-                                color:
-                                    Colors.grey,
+                                color: Colors.grey,
                               ),
 
-                              const SizedBox(
-                                  width: 6),
+                              const SizedBox(width: 6),
 
                               Text(
                                 order.method,
-                                style:
-                                    const TextStyle(
-                                  color:
-                                      Colors.grey,
-                                ),
+                                style: const TextStyle(color: Colors.grey),
                               ),
                             ],
                           ),
 
-                          const SizedBox(
-                              height: 16),
+                          const SizedBox(height: 16),
 
                           /// =========================
                           /// TITLE MENU
@@ -261,181 +192,116 @@ class _OrderHistoryScreenState
                           const Text(
                             "Menu Pesanan",
                             style: TextStyle(
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
                           ),
 
-                          const SizedBox(
-                              height: 12),
+                          const SizedBox(height: 12),
 
                           /// =========================
                           /// ITEMS
                           /// =========================
-                          ...(order.items ?? [])
-                              .map((item) {
+                          ...(order.items ?? []).map((item) {
                             /// FORMAT STRING LAMA
                             if (item is String) {
                               return Padding(
-                                padding:
-                                    const EdgeInsets.only(
-                                  bottom: 8,
-                                ),
+                                padding: const EdgeInsets.only(bottom: 8),
 
-                                child: Text(
-                                    "• $item"),
+                                child: Text("• $item"),
                               );
                             }
 
                             /// FORMAT MAP BARU
                             if (item is Map) {
                               final String name =
-                                  item['name']
-                                          ?.toString() ??
-                                      'Menu';
+                                  item['name']?.toString() ?? 'Menu';
 
                               final String image =
-                                  item['image']
-                                          ?.toString() ??
-                                      '';
+                                  item['image']?.toString() ?? '';
 
                               final int qty =
-                                  int.tryParse(
-                                        item['qty']
-                                            .toString(),
-                                      ) ??
-                                      0;
+                                  int.tryParse(item['qty'].toString()) ?? 0;
 
                               final int price =
-                                  int.tryParse(
-                                        item[
-                                                'price']
-                                            .toString(),
-                                      ) ??
-                                      0;
+                                  int.tryParse(item['price'].toString()) ?? 0;
 
                               return Padding(
-                                padding:
-                                    const EdgeInsets.only(
-                                  bottom: 12,
-                                ),
+                                padding: const EdgeInsets.only(bottom: 12),
 
                                 child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
 
                                   children: [
                                     /// IMAGE
                                     ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(
-                                        10,
-                                      ),
+                                      borderRadius: BorderRadius.circular(10),
 
-                                      child: image
-                                              .isNotEmpty
+                                      child: image.isNotEmpty
                                           ? Image.network(
                                               image,
-                                              width:
-                                                  60,
-                                              height:
-                                                  60,
-                                              fit: BoxFit
-                                                  .cover,
+                                              width: 60,
+                                              height: 60,
+                                              fit: BoxFit.cover,
 
                                               errorBuilder:
-                                                  (
-                                                context,
-                                                error,
-                                                stackTrace,
-                                              ) {
-                                                return Container(
-                                                  width:
-                                                      60,
-                                                  height:
-                                                      60,
-                                                  color:
-                                                      Colors.grey[
-                                                          300],
+                                                  (context, error, stackTrace) {
+                                                    return Container(
+                                                      width: 60,
+                                                      height: 60,
+                                                      color: Colors.grey[300],
 
-                                                  child:
-                                                      const Icon(
-                                                    Icons.image,
-                                                  ),
-                                                );
-                                              },
+                                                      child: const Icon(
+                                                        Icons.image,
+                                                      ),
+                                                    );
+                                                  },
                                             )
                                           : Container(
-                                              width:
-                                                  60,
-                                              height:
-                                                  60,
-                                              decoration:
-                                                  BoxDecoration(
-                                                color:
-                                                    Colors.grey[300],
+                                              width: 60,
+                                              height: 60,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[300],
 
                                                 borderRadius:
-                                                    BorderRadius.circular(
-                                                  10,
-                                                ),
+                                                    BorderRadius.circular(10),
                                               ),
 
-                                              child:
-                                                  const Icon(
-                                                Icons
-                                                    .image,
-                                              ),
+                                              child: const Icon(Icons.image),
                                             ),
                                     ),
 
-                                    const SizedBox(
-                                        width: 12),
+                                    const SizedBox(width: 12),
 
                                     /// DETAIL
                                     Expanded(
-                                      child:
-                                          Column(
+                                      child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
 
                                         children: [
                                           Text(
                                             name,
-                                            style:
-                                                const TextStyle(
-                                              fontWeight:
-                                                  FontWeight.bold,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
 
-                                              fontSize:
-                                                  14,
+                                              fontSize: 14,
                                             ),
                                           ),
 
-                                          const SizedBox(
-                                              height:
-                                                  4),
+                                          const SizedBox(height: 4),
 
-                                          Text(
-                                            "Qty: $qty",
-                                          ),
+                                          Text("Qty: $qty"),
 
-                                          const SizedBox(
-                                              height:
-                                                  4),
+                                          const SizedBox(height: 4),
 
                                           Text(
                                             "Rp ${formatHarga(price)}",
 
-                                            style:
-                                                const TextStyle(
-                                              color:
-                                                  Colors.green,
+                                            style: const TextStyle(
+                                              color: Colors.green,
 
-                                              fontWeight:
-                                                  FontWeight.w600,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                           ),
                                         ],
@@ -449,42 +315,29 @@ class _OrderHistoryScreenState
                             return const SizedBox();
                           }).toList(),
 
-                          const Divider(
-                              height: 24),
+                          const Divider(height: 24),
 
                           /// =========================
                           /// TOTAL
                           /// =========================
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment
-                                    .spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                             children: [
                               const Text(
                                 "Total Pembayaran",
-                                style:
-                                    TextStyle(
-                                  fontWeight:
-                                      FontWeight
-                                          .bold,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
 
                               Text(
                                 "Rp ${formatHarga(order.totalAmount)}",
 
-                                style:
-                                    const TextStyle(
-                                  color:
-                                      Colors.green,
+                                style: const TextStyle(
+                                  color: Colors.green,
 
-                                  fontWeight:
-                                      FontWeight
-                                          .bold,
+                                  fontWeight: FontWeight.bold,
 
-                                  fontSize:
-                                      16,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
