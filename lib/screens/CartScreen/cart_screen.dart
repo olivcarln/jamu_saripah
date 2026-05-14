@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/provider/order_provider.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/provider/cart_provider.dart';
@@ -74,10 +76,10 @@ class _CartScreenState extends State<CartScreen> {
         return Scaffold(
           backgroundColor: const Color(0xFFF9F9F9),
           appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context), // ← cukup pop saja
+              ),
             iconTheme: const IconThemeData(color: Colors.white),
             centerTitle: true,
             title: const Text(

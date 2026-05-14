@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/provider/order_provider.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart'; 
 import 'package:jamu_saripah/screens/CheckoutScreen/component/adding_menu_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/component/payment_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
-import 'package:jamu_saripah/screens/main_screen.dart';
+import 'package:jamu_saripah/screens/main_screen.dart'; 
 import 'package:provider/provider.dart';
-
 
 class CheckoutScreen extends StatefulWidget {
   final int? totalPrice;
   final int? selectedCount;
 
-
   const CheckoutScreen({super.key, this.totalPrice, this.selectedCount});
-
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
-
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   String currentMethod = 'Pick Up';
@@ -29,11 +25,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String selectedBooth = 'Plaza Atria Jakarta';
   List<String> booths = ['Plaza Atria Jakarta', 'Gedung Jamsostek', 'Lippo Mal Karawaci'];
 
-
   Map<String, dynamic>? selectedPayment;
   Map<String, dynamic>? appliedVoucher;
   late List<Map<String, dynamic>> cartItems;
-
 
   @override
   void initState() {
@@ -44,17 +38,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'size': '350 ml',
         'price': widget.totalPrice ?? 19500,
         'qty': 1,
-        'image': 'assets/images/beras_kencur.png'
+        'image': 'assets/images/beras_kencur.png' 
       }
     ];
   }
-
 
   String formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
   }
-
 
   int calculateTotal() {
     int totalProduk = cartItems.fold(0, (sum, item) => sum + ((item['price'] as int) * (item['qty'] as int)));
@@ -64,7 +56,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     return total > 0 ? total : 0;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -90,21 +81,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   _buildLocationInfo(),
                   const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
                   _buildDetailPesananSection(),
-                 
+                  
                   if (showSpecialPackage)
                     AddingMenuScreen(
-                      onAddTap: (n, s, p) => setState(() =>
+                      onAddTap: (n, s, p) => setState(() => 
                         cartItems.add({'name': n ?? 'Menu', 'size': s ?? '', 'price': p ?? 0, 'qty': 1, 'image': ''})
                       ),
                     ),
-
 
                   ShoppingBagScreen(
                     isSelected: perluTasBelanja,
                     harga: hargaTas,
                     onChanged: (val) => setState(() => perluTasBelanja = val),
                   ),
-                 
+                  
                   const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
                   _buildClickableSection(
                     title: appliedVoucher != null ? 'Voucher Dipakai' : 'Voucher Diskon',
@@ -116,7 +106,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     },
                   ),
                   const Divider(thickness: 1, color: Color(0xFFF1F1F1)),
-                 
+                  
                   _buildClickableSection(
                     title: 'Metode Pembayaran',
                     subtitle: selectedPayment != null ? selectedPayment!['name'] : 'Pilih pembayaranmu',
@@ -144,7 +134,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-
   Widget _buildDetailPesananSection() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -153,7 +142,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           const Text('Detail Pesanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 20),
-          // Menggunakan for loop untuk mendapatkan index agar bisa menghapus item
           for (int i = 0; i < cartItems.length; i++) _buildCartItem(cartItems[i], i),
           const Divider(height: 30, thickness: 1, color: Color(0xFFEEEEEE)),
           Row(
@@ -184,7 +172,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
   }
-
 
   Widget _buildCartItem(Map<String, dynamic> item, int index) {
     return Column(
@@ -222,13 +209,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Rp ${formatHarga(item['price'] ?? 0)}',
+            Text('Rp ${formatHarga(item['price'] ?? 0)}', 
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF7E8959))),
             Row(
               children: [
                 GestureDetector(
-                  onTap: () {},
-                  child: const Text("Ubah",
+                  onTap: () {}, 
+                  child: const Text("Ubah", 
                     style: TextStyle(color: Color(0xFF7E8959), decoration: TextDecoration.underline, fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
                 const SizedBox(width: 12),
@@ -245,11 +232,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         child: IconButton(
                           padding: EdgeInsets.zero,
                           icon: const Icon(Icons.remove, size: 18, color: Color(0xFF7E8959)),
-                          onPressed: () => setState(() {
+                          onPressed: () => setState(() { 
                             if(item['qty'] > 1) {
-                              item['qty']--;
+                              item['qty']--; 
                             } else {
-                              // Hapus item jika jumlahnya 1 dan tombol minus ditekan
                               cartItems.removeAt(index);
                             }
                           }),
@@ -272,11 +258,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 20), 
       ],
     );
   }
-
 
   Widget _buildDeliveryMode() {
     return Container(
@@ -291,7 +276,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ]),
     );
   }
-
 
   Widget _buildLocationInfo() {
     return Padding(
@@ -314,7 +298,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-
   Widget _buildClickableSection({required String title, required String subtitle, required IconData icon, required VoidCallback onTap}) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF7E8959)),
@@ -324,7 +307,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       onTap: onTap,
     );
   }
-
 
   Widget _buildRincianSection() {
     return Padding(
@@ -336,30 +318,48 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-
-  Widget _buildBottomBar() {
+ Widget _buildBottomBar() {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ElevatedButton(
         onPressed: () {
+          // 1. Cek keranjang (tetap perlu biar gak error kalau kosong)
           if (cartItems.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Keranjang kosong, silakan tambah menu')),
             );
             return;
           }
-          if (selectedPayment == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Silakan pilih metode pembayaran terlebih dahulu')),
-            );
-            return;
-          }
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const MainScreen()), (route) => false);
+
+          // Bagian pengecekan (selectedPayment == null) dihapus agar bisa langsung klik
+
+          // 2. Langsung panggil Provider untuk simpan pesanan
+          final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+          orderProvider.addOrder(
+            items: List.from(cartItems),
+            totalPrice: calculateTotal(),
+            // Karena dummy, kita kasih nilai default "Tunai" jika belum pilih apa-apa
+            paymentMethod: selectedPayment != null ? selectedPayment!['name'] : 'Tunai (Dummy)',
+            location: selectedBooth,
+          );
+
+          // 3. Pindah ke MainScreen (History)
+          Navigator.pushAndRemoveUntil(
+            context, 
+            MaterialPageRoute(builder: (context) => const MainScreen()), 
+            (route) => false
+          );
         },
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7E8959), minimumSize: const Size(double.infinity, 54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
-        child: const Text('Pesan Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF7E8959), 
+          minimumSize: const Size(double.infinity, 54), 
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))
+        ),
+        child: const Text(
+          'Pesan Sekarang', 
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)
+        ),
       ),
     );
   }
 }
-

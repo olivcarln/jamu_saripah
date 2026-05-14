@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:intl/intl.dart';
 import 'package:jamu_saripah/Models/order_model.dart';
 import 'package:jamu_saripah/Screens/CheckoutScreen/checkout.screen.dart';
+=======
+import 'package:jamu_saripah/common/constasts.dart';
+import 'package:jamu_saripah/Provider/order_provider.dart'; 
+import 'package:jamu_saripah/screens/CheckoutScreen/checkout.screen.dart';
+>>>>>>> 0165851c45bea4b48a4cb7a9e8a77a73173d6fcb
 
 class OrderListStateScreen extends StatelessWidget {
   final List<OrderModel> orders; 
@@ -32,6 +38,7 @@ class OrderListStateScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+<<<<<<< HEAD
                     // Text(
                     //   order.userName, 
                     //   style: const TextStyle(
@@ -43,8 +50,46 @@ class OrderListStateScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       "Tanggal: ${DateFormat('dd MMM yyyy').format(order.createdAt)}\nTotal Pembayaran: Rp ${formatHarga(order.totalAmount)}", 
+=======
+                    Text(
+                      order.title, 
+                      style: const TextStyle(
+                        fontSize: 20, 
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryOlive,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // --- SECTION DETAIL PESANAN ---
+                    Text(
+                      "Tanggal: ${order.date}",
+>>>>>>> 0165851c45bea4b48a4cb7a9e8a77a73173d6fcb
                       style: const TextStyle(fontSize: 13, color: Colors.black87),
                     ),
+                    const SizedBox(height: 4),
+                    
+                    // MENAMPILKAN LOKASI OUTLET
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Color(0xFF7E8959)),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            "Lokasi: ${order.location}",
+                            style: const TextStyle(fontSize: 13, color: Colors.black87),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    
+                    Text(
+                      "Total Pembayaran: Rp ${formatHarga(order.price)}",
+                      style: const TextStyle(fontSize: 13, color: Colors.black87),
+                    ),
+                    // ------------------------------
+
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

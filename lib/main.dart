@@ -52,17 +52,22 @@ class JamuSaripah extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Jamu Saripah',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-      },
-      theme: ThemeData(
-        textTheme: GoogleFonts.montserratTextTheme(Theme.of(context).textTheme),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Jamu Saripah',
+        routes: {
+          '/login': (context) => const LoginScreen(),
+        },
+        theme: ThemeData(
+          textTheme: GoogleFonts.montserratTextTheme(Theme.of(context).textTheme),
+        ),
+        home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
       ),
-      // Jika onboarding sudah pernah dilihat, masuk ke AuthWrapper untuk cek login
-      home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
     );
   }
 }

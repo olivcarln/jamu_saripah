@@ -23,17 +23,17 @@ class OrderProvider with ChangeNotifier {
     loadDataFromDevice();
   }
 
-  /// SIMPAN POINTS
-  Future<void> savePoints() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('user_points', _userPoints);
-  }
-
-  /// LOAD POINTS
+  /// LOAD POINTS DARI DEVICE
   Future<void> loadDataFromDevice() async {
     final prefs = await SharedPreferences.getInstance();
     _userPoints = prefs.getInt('user_points') ?? 0;
     notifyListeners();
+  }
+
+  /// SIMPAN POINTS
+  Future<void> savePoints() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('user_points', _userPoints);
   }
 
   /// RESET POINTS
