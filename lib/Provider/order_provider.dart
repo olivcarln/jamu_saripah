@@ -107,7 +107,7 @@ List<OrderModel> _orders = [];
       await _firestore
           .collection('orders')
           .doc(order.id)
-          .set(order.toMap());
+          .set(order.toJson());
 
       _orders.insert(0, order);
 

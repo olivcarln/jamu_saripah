@@ -163,26 +163,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           const SizedBox(height: 8),
 
                           /// METHOD
-                          Row(
-                            children: [
-                              Icon(
-                                order.method == 'Delivery'
-                                    ? Icons.delivery_dining
-                                    : Icons.store,
-
-                                size: 18,
-
-                                color: Colors.grey,
-                              ),
-
-                              const SizedBox(width: 6),
-
-                              Text(
-                                order.method,
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),
+                    
 
                           const SizedBox(height: 16),
 

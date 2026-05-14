@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -158,31 +160,38 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 child: Row(
                   children: [
                     /// IMAGE
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.network(
-                        data['imageUrl'] ?? '',
-                        width: 90,
-                        height: 90,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) {
-                          return Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius:
-                                  BorderRadius.circular(18),
-                            ),
-                            child: const Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+               ClipRRect(
+  borderRadius: BorderRadius.circular(18),
+
+  child: data['imageBase64'] != null &&
+          data['imageBase64'].toString().isNotEmpty
+      ? Image.memory(
+          base64Decode(
+            data['imageBase64'],
+          ),
+
+          width: 90,
+          height: 90,
+
+          fit: BoxFit.cover,
+        )
+      : Container(
+          width: 90,
+          height: 90,
+
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+
+            borderRadius:
+                BorderRadius.circular(18),
+          ),
+
+          child: const Icon(
+            Icons.image_not_supported,
+            color: Colors.grey,
+          ),
+        ),
+),
 
                     const SizedBox(width: 16),
 

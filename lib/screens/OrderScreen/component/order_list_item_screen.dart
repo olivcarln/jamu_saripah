@@ -100,23 +100,7 @@ class OrderListStateScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              order.method == 'Delivery'
-                                  ? Icons.delivery_dining
-                                  : Icons.shopping_bag,
-                              color: Colors.grey[700],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              order.method,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+            
 
                         SizedBox(
                           height: 35,

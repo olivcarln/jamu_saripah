@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/checkout.screen.dart';
+import 'package:provider/provider.dart';
 
 class CartButtonSummary extends StatelessWidget {
   final int totalPrice;
@@ -32,13 +34,22 @@ class CartButtonSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    /// AMBIL CART PROVIDER
+    final cartProvider = Provider.of<CartProvider>(context);
+
+    /// ITEM YANG DICENTANG
+    final selectedItems = cartProvider.items
+        .where((item) => item.isChecked)
+        .toList();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -48,6 +59,8 @@ class CartButtonSummary extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+
+            /// TOTAL
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,6 +72,7 @@ class CartButtonSummary extends StatelessWidget {
                     fontSize: 12,
                   ),
                 ),
+
                 Text(
                   _formatRupiah(totalPrice),
                   style: const TextStyle(
@@ -69,34 +83,42 @@ class CartButtonSummary extends StatelessWidget {
                 ),
               ],
             ),
+
+            /// BUTTON
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF634E34),
+
                 disabledBackgroundColor:
-                    const Color(0xFF634E34).withOpacity(0.5),
+                    const Color(0xFF634E34).withValues(alpha: 0.5),
+
                 padding: const EdgeInsets.symmetric(
                   horizontal: 30,
                   vertical: 12,
                 ),
+
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
+
               onPressed: selectedCount == 0
                   ? null
                   : () {
+
+                      /// PINDAH KE CHECKOUT + KIRIM CART
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => CheckoutScreen(
-                            totalPrice: totalPrice,
-                            selectedCount: selectedCount,
+                            cartItems: selectedItems,
                           ),
                         ),
                       );
 
                       onCheckout();
                     },
+
               child: const Text(
                 "Lanjut",
                 style: TextStyle(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jamu_saripah/Screens/HomeScreen/Components/menus.dart';
 import 'package:jamu_saripah/screens/HomeScreen/Components/banner_promo.dart';
 import 'package:jamu_saripah/services/database_services.dart';
+
 import 'Components/home_header.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,33 +14,56 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final String userName = FirebaseAuth.instance.currentUser?.displayName ?? "User";
+  final String userName =
+      FirebaseAuth.instance.currentUser?.displayName ?? "User";
+
   bool isLoading = false;
 
-  void _prosesCheckout(String metode) async {
+  Map<String, String> _activeFilters = {};
+
+  Future<void> _prosesCheckout() async {
     setState(() => isLoading = true);
 
     try {
       List<Map<String, dynamic>> jamuDipesan = [
-        {'nama': 'Kunyit Asam', 'jumlah': 1, 'harga': 15000},
+        {
+          "nama": "Kunyit Asam",
+          "jumlah": 1,
+          "harga": 15000,
+        }
       ];
 
+      int totalHarga = jamuDipesan.fold(
+        0,
+        (sum, item) =>
+            sum + ((item['harga'] as int) * (item['jumlah'] as int)),
+      );
+
       await DatabaseService().buatPesanan(
-        items: jamuDipesan, 
-        total: 15000,      
-        method: metode,     
+        items: jamuDipesan,
+        total: totalHarga.toDouble(),
+        method: "Pickup",
       );
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Berhasil memesan via $metode!")),
+        const SnackBar(
+          content: Text("Pesanan berhasil dibuat"),
+        ),
       );
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal memesan: $e")),
+        SnackBar(
+          content: Text("Checkout gagal: $e"),
+        ),
       );
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -47,15 +71,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
       body: Stack(
         children: [
           SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // HEADER
                 Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40),
@@ -68,30 +94,65 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: SafeArea(
                     child: HomeHeader(
                       onFilterChanged: (filters) {
-                        // Ini yang bikin error merah hilang
-                        print("Filter Aktif: $filters");
-                        setState(() {}); 
+                        setState(() {
+                          _activeFilters = filters;
+                        });
                       },
                     ),
                   ),
                 ),
 
-                 SizedBox(height: 25),
-                 PromoBanner(),
-                 SizedBox(height: 25),
+                const SizedBox(height: 25),
 
-                 SizedBox(height: 25),
-                 Menus(), 
-                 SizedBox(height: 30),
+                // PROMO
+                const PromoBanner(),
+
+                const SizedBox(height: 25),
+
+                // MENUS
+                const Menus(),
+
+                const SizedBox(height: 30),
+
+                // BUTTON CHECKOUT
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _prosesCheckout,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7E8959),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Checkout",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
               ],
             ),
           ),
-          
+
+          // LOADING
           if (isLoading)
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF7E8959)),
+                child: CircularProgressIndicator(
+                  color: Color(0xFF7E8959),
+                ),
               ),
             ),
         ],

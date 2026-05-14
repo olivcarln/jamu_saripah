@@ -1,19 +1,27 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/Models/order.dart';
 import 'package:jamu_saripah/provider/order_provider.dart';
 import 'package:jamu_saripah/provider/user_provider.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/component/adding_menu_screen.dart';
-import 'package:jamu_saripah/screens/CheckoutScreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/component/payment_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 import 'package:provider/provider.dart';
 
-class CheckoutScreen extends StatefulWidget {
-  final int? totalPrice;
-  final int? selectedCount;
 
-  const CheckoutScreen({super.key, this.totalPrice, this.selectedCount});
+class CheckoutScreen extends StatefulWidget {
+
+  final List<CartItem> cartItems;
+
+  const CheckoutScreen({
+    super.key,
+    required this.cartItems,
+  });
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -22,8 +30,7 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   String currentMethod = 'Pick Up';
 
-  bool showSpecialPackage = false;
-
+  bool showSpecialPackage = true;
   bool perluTasBelanja = false;
 
   int hargaTas = 3000;
@@ -37,7 +44,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   ];
 
   Map<String, dynamic>? selectedPayment;
-
   Map<String, dynamic>? appliedVoucher;
 
   late List<Map<String, dynamic>> cartItems;
@@ -50,7 +56,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       {
         'name': 'Jamu Beras Kencur',
         'size': '350 ml',
-        'price': widget.totalPrice ?? 19500,
+        'price': widget.cartItems.isNotEmpty ? widget.cartItems.first.price : 19500,
         'qty': 1,
         'image': 'assets/images/beras_kencur.png',
       },
@@ -67,10 +73,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int calculateTotal() {
     int totalProduk = cartItems.fold(
       0,
-      (sum, item) => sum + ((item['price'] as int) * (item['qty'] as int)),
+      (sum, item) =>
+          sum + ((item['price'] as int) * (item['qty'] as int)),
     );
 
-    int total = perluTasBelanja ? totalProduk + hargaTas : totalProduk;
+    int total = perluTasBelanja
+        ? totalProduk + hargaTas
+        : totalProduk;
 
     if (appliedVoucher != null) {
       total -= (appliedVoucher!['discount'] as int);
@@ -86,19 +95,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF7E8959)),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Color(0xFF7E8959),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
 
         title: const Text(
           'Checkout',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
 
         centerTitle: true,
-
         backgroundColor: Colors.white,
-
         elevation: 0,
       ),
 
@@ -112,32 +125,47 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                   _buildLocationInfo(),
 
-                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
+                  const Divider(
+                    thickness: 8,
+                    color: Color(0xFFF1F1F1),
+                  ),
 
                   _buildDetailPesananSection(),
 
-                  if (showSpecialPackage)
-                    AddingMenuScreen(
-                      onAddTap: (n, s, p) => setState(
-                        () => cartItems.add({
-                          'name': n ?? 'Menu',
-                          'size': s ?? '',
-                          'price': p ?? 0,
-                          'qty': 1,
-                          'image': '',
-                        }),
-                      ),
-                    ),
+          if (showSpecialPackage)
+  AddingMenuScreen(
+    onAddTap: (
+      String? n,
+      String? s,
+      int? p,
+      String? img,
+    ) {
+      setState(() {
+        cartItems.add({
+          'name': n ?? 'Menu Spesial',
+          'size': s ?? '',
+          'price': p ?? 0,
+          'qty': 1,
+          'image': img ?? '',
+        });
+      });
+    },
+  ),
 
                   ShoppingBagScreen(
                     isSelected: perluTasBelanja,
-
                     harga: hargaTas,
-
-                    onChanged: (val) => setState(() => perluTasBelanja = val),
+                    onChanged: (val) {
+                      setState(() {
+                        perluTasBelanja = val;
+                      });
+                    },
                   ),
 
-                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
+                  const Divider(
+                    thickness: 8,
+                    color: Color(0xFFF1F1F1),
+                  ),
 
                   _buildClickableSection(
                     title: appliedVoucher != null
@@ -159,12 +187,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       );
 
                       if (result != null) {
-                        setState(() => appliedVoucher = result);
+                        setState(() {
+                          appliedVoucher = result;
+                        });
                       }
                     },
                   ),
 
-                  const Divider(thickness: 1, color: Color(0xFFF1F1F1)),
+                  const Divider(
+                    thickness: 1,
+                    color: Color(0xFFF1F1F1),
+                  ),
 
                   _buildClickableSection(
                     title: 'Metode Pembayaran',
@@ -179,23 +212,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const PaymentScreen(),
+                          builder: (context) =>
+                              const PaymentScreen(),
                         ),
                       );
 
                       if (result != null) {
-                        setState(() => selectedPayment = result);
+                        setState(() {
+                          selectedPayment = result;
+                        });
                       }
                     },
                   ),
 
-                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
+                  const Divider(
+                    thickness: 8,
+                    color: Color(0xFFF1F1F1),
+                  ),
                 ],
               ),
             ),
           ),
 
-          const Divider(height: 1, color: Color(0xFFF1F1F1)),
+          const Divider(
+            height: 1,
+            color: Color(0xFFF1F1F1),
+          ),
 
           _buildRincianSection(),
         ],
@@ -215,7 +257,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           const Text(
             'Detail Pesanan',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -223,102 +268,170 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           for (int i = 0; i < cartItems.length; i++)
             _buildCartItem(cartItems[i], i),
 
-          const Divider(height: 30, thickness: 1, color: Color(0xFFEEEEEE)),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    Text(
-                      'Ada yang mau ditambah?',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-
-                    SizedBox(height: 4),
-
-                    Text(
-                      'Pastikan semua yang kamu mau sudah masuk ya!',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-
-              OutlinedButton(
-                onPressed: () =>
-                    setState(() => showSpecialPackage = !showSpecialPackage),
-
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF7E8959), width: 1.5),
-
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
-                  ),
-                ),
-
-                child: const Text(
-                  "Tambah",
-                  style: TextStyle(
-                    color: Color(0xFF7E8959),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
+          const Divider(
+            height: 30,
+            thickness: 1,
+            color: Color(0xFFEEEEEE),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCartItem(Map<String, dynamic> item, int index) {
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCartItem(
+    Map<String, dynamic> item,
+    int index,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
 
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
 
-                children: [
-                  Text(
-                    item['name'] ?? 'No Name',
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: _buildProductImage(item['image'] ?? ''),
+          ),
 
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                Text(
+                  item['name'] ?? 'No Name',
+
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
+                ),
 
-                  const SizedBox(height: 4),
+                const SizedBox(height: 4),
 
-                  Text(
-                    item['size'] ?? '',
+                Text(
+                  item['size'] ?? '',
 
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
                   ),
-                ],
-              ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Qty: ${item['qty']}",
+
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Rp ${formatHarga(item['price'] ?? 0)}",
+
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF7E8959),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// IMAGE BUILDER
+  Widget _buildProductImage(String imageSource) {
+    if (imageSource.isEmpty) {
+      return _errorImage();
+    }
+
+    /// BASE64
+    if (imageSource.length > 100 &&
+        !imageSource.startsWith('http')) {
+      try {
+        return Image.memory(
+          base64Decode(imageSource),
+
+          width: 80,
+          height: 80,
+
+          fit: BoxFit.cover,
+
+          errorBuilder: (context, error, stackTrace) {
+            return _errorImage();
+          },
+        );
+      } catch (e) {
+        return _errorImage();
+      }
+    }
+
+    /// NETWORK
+    if (imageSource.startsWith('http')) {
+      return Image.network(
+        imageSource,
+
+        width: 80,
+        height: 80,
+
+        fit: BoxFit.cover,
+
+        errorBuilder: (context, error, stackTrace) {
+          return _errorImage();
+        },
+      );
+    }
+
+    /// SVG
+    if (imageSource.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        imageSource,
+
+        width: 80,
+        height: 80,
+
+        fit: BoxFit.cover,
+      );
+    }
+
+    /// ASSET
+    return Image.asset(
+      imageSource,
+
+      width: 80,
+      height: 80,
+
+      fit: BoxFit.cover,
+
+      errorBuilder: (context, error, stackTrace) {
+        return _errorImage();
+      },
+    );
+  }
+
+  Widget _errorImage() {
+    return Container(
+      width: 80,
+      height: 80,
+
+      color: Colors.grey.shade200,
+
+      child: const Icon(
+        Icons.broken_image,
+        color: Colors.grey,
+      ),
     );
   }
 
@@ -330,7 +443,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       child: const Row(
         children: [
-          Icon(Icons.person_pin_circle, color: Color(0xFF7E8959), size: 24),
+          Icon(
+            Icons.person_pin_circle,
+            color: Color(0xFF7E8959),
+            size: 24,
+          ),
 
           SizedBox(width: 12),
 
@@ -341,6 +458,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               children: [
                 Text(
                   'Pick Up',
+
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF7E8959),
@@ -350,7 +468,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                 Text(
                   'Datang, ambil, beres!',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -370,7 +492,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           const Text(
             "Pesananmu siap diambil di sini",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
 
           const SizedBox(height: 10),
@@ -383,7 +509,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
               borderRadius: BorderRadius.circular(12),
 
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(
+                color: Colors.grey.shade300,
+              ),
             ),
 
             child: DropdownButtonHideUnderline(
@@ -392,13 +520,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                 isExpanded: true,
 
-                items: booths
-                    .map(
-                      (val) => DropdownMenuItem(value: val, child: Text(val)),
-                    )
-                    .toList(),
+                items: booths.map((val) {
+                  return DropdownMenuItem(
+                    value: val,
+                    child: Text(val),
+                  );
+                }).toList(),
 
-                onChanged: (nv) => setState(() => selectedBooth = nv!),
+                onChanged: (nv) {
+                  setState(() {
+                    selectedBooth = nv!;
+                  });
+                },
               ),
             ),
           ),
@@ -414,13 +547,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF7E8959)),
+      leading: Icon(
+        icon,
+        color: const Color(0xFF7E8959),
+      ),
 
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
 
       subtitle: Text(subtitle),
 
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+      ),
 
       onTap: onTap,
     );
@@ -436,7 +580,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           const Text(
             'Total Pembayaran',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
 
           Text(
@@ -460,35 +608,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: ElevatedButton(
         onPressed: () async {
           if (cartItems.isEmpty) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Keranjang kosong')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Keranjang kosong'),
+              ),
+            );
 
             return;
           }
 
           if (selectedPayment == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Pilih metode pembayaran')),
+              const SnackBar(
+                content: Text('Pilih metode pembayaran'),
+              ),
             );
 
             return;
           }
 
           try {
-            final orderProvider = Provider.of<OrderProvider>(
+            final orderProvider =
+                Provider.of<OrderProvider>(
               context,
               listen: false,
             );
 
-            final userProvider = Provider.of<UserProvider>(
+            final userProvider =
+                Provider.of<UserProvider>(
               context,
               listen: false,
             );
 
             await orderProvider.addOrder(
               OrderModel(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                id: DateTime.now()
+                    .millisecondsSinceEpoch
+                    .toString(),
 
                 userName: userProvider.name,
 
@@ -496,7 +652,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                 status: "Menunggu",
 
-                method: selectedPayment!['name'],
+                paymentMethod:
+                    selectedPayment!['name'],
 
                 address: selectedBooth,
 
@@ -504,36 +661,54 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                 items: List.from(cartItems),
 
+                image: cartItems.first['image'],
+
                 paymentConfirmed: false,
               ),
             );
 
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Pesanan berhasil dibuat')),
+                const SnackBar(
+                  content: Text(
+                    'Pesanan berhasil dibuat',
+                  ),
+                ),
               );
             }
 
             if (mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const MainScreen()),
+
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const MainScreen(),
+                ),
+
                 (route) => false,
               );
             }
           } catch (e) {
             debugPrint("Error checkout: $e");
 
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: $e')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Terjadi kesalahan: $e',
+                ),
+              ),
+            );
           }
         },
 
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF7E8959),
 
-          minimumSize: const Size(double.infinity, 54),
+          minimumSize: const Size(
+            double.infinity,
+            54,
+          ),
 
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -542,6 +717,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
         child: const Text(
           'Pesan Sekarang',
+
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

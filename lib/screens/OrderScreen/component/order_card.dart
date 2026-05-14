@@ -97,7 +97,7 @@ Align(
 
             /// METODE
             Text(
-              "Metode: ${order.method}",
+              "Metode: ${order.paymentMethod}",
 
               style: TextStyle(color: Colors.grey[700], fontSize: 13),
             ),
@@ -263,7 +263,7 @@ Align(
                       ),
                     ),
 
-                    Text("${order.totalQty}"),
+                    Text("${order.totalItem}"),
                   ],
                 ),
 
