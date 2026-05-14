@@ -17,11 +17,16 @@ class AdminDashboardScreen extends StatelessWidget {
     final orderSnapshot =
         await FirebaseFirestore.instance.collection('orders').get();
 
-    double revenue = 0;
-    for (var doc in orderSnapshot.docs) {
-      final data = doc.data();
-      revenue += (data['totalPrice'] ?? 0).toDouble();
-    }
+          double revenue = 0;
+        for (var doc in orderSnapshot.docs) {
+          final data = doc.data();
+          final status = (data['status'] ?? '').toString();
+          
+          // Hitung pemasukan hanya kalau status bukan Dibatalkan
+          if (status != 'Dibatalkan') {
+            revenue += (data['totalPrice'] ?? 0).toDouble();
+          }
+        }
 
     return {
       'products': productSnapshot.docs.length,
