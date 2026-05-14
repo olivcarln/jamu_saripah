@@ -83,11 +83,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   _buildDetailPesananSection(),
                   
                   if (showSpecialPackage)
-                    AddingMenuScreen(
-                      onAddTap: (n, s, p) => setState(() =>
-                        cartItems.add({'name': n ?? 'Menu', 'size': s ?? '', 'price': p ?? 0, 'qty': 1, 'image': ''})
-                      ),
-                    ),
+                   // Cari bagian ini dan ganti logic-nya
+AddingMenuScreen(
+  onAddTap: (String? name, String? size, int? price) { // Pastikan tipe data eksplisit
+    setState(() {
+      cartItems.add({
+        'name': name ?? 'Menu',
+        'size': size ?? '',
+        'price': price ?? 0,
+        'qty': 1,
+        'image': ''
+      });
+    });
+  },
+),
 
                   ShoppingBagScreen(
                     isSelected: perluTasBelanja,

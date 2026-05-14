@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import 'package:jamu_saripah/Models/order.dart';
 import 'package:jamu_saripah/common/constasts.dart';
-import 'package:jamu_saripah/Provider/order_provider.dart'; 
-import 'package:jamu_saripah/screens/CheckoutScreen/checkout.screen.dart';
+import 'package:jamu_saripah/Screens/CheckoutScreen/checkout.screen.dart';
 
 class OrderListStateScreen extends StatelessWidget {
-  final List<OrderModel> orders; 
-  
-  const OrderListStateScreen({super.key, required this.orders});
+  final List<OrderModel> orders;
+
+  const OrderListStateScreen(
+    this.orders, {
+    super.key,
+  });
 
   String formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 
   @override
@@ -32,61 +39,69 @@ class OrderListStateScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // TITLE
                     Text(
-                      order.title, 
+                      order.userName,
                       style: const TextStyle(
-                        fontSize: 20, 
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryOlive,
                       ),
                     ),
+
                     const SizedBox(height: 8),
-                    
-                    // --- SECTION DETAIL PESANAN ---
+
+                    // TANGGAL
                     Text(
-                      "Tanggal: ${order.date}",
-                      style: const TextStyle(fontSize: 13, color: Colors.black87),
+                      "Tanggal: ${DateFormat('dd MMM yyyy').format(order.createdAt)}",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
                     ),
+
                     const SizedBox(height: 4),
-                    
-                    // MENAMPILKAN LOKASI OUTLET
+
+                    // LOKASI
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 14, color: Color(0xFF7E8959)),
+                        const Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: Color(0xFF7E8959),
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            "Lokasi: ${order.location}",
-                            style: const TextStyle(fontSize: 13, color: Colors.black87),
+                            "Lokasi: ${order.address}",
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 4),
-                    
+
+                    // TOTAL PEMBAYARAN
                     Text(
-                      "Total Pembayaran: Rp ${formatHarga(order.price)}",
-                      style: const TextStyle(fontSize: 13, color: Colors.black87),
+                      "Total Pembayaran: Rp ${formatHarga(order.totalAmount)}",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
                     ),
-                    // ------------------------------
 
                     const SizedBox(height: 16),
+
+                    // METODE & BUTTON
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              order.method == 'Delivery' ? Icons.delivery_dining : Icons.shopping_bag,
-                              color: Colors.grey[700],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              order.method, 
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
+            
+
                         SizedBox(
                           height: 35,
                           child: ElevatedButton(
@@ -94,18 +109,28 @@ class OrderListStateScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const CheckoutScreen(),
+                                  builder: (context) =>
+                                      const CheckoutScreen(),
                                 ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryOlive,
+                              backgroundColor:
+                                  const Color(0xFF7E8959),
                               elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
                             ),
                             child: Text(
-                              order.status == 'Selesai' ? "Beli Lagi" : "Lihat Pesanan",
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              order.status == 'Selesai'
+                                  ? "Beli Lagi"
+                                  : "Lihat Pesanan",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -114,28 +139,52 @@ class OrderListStateScreen extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // GARIS PEMBATAS
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  "-------------------------------------------------------------------------",
-                  maxLines: 1,
-                  style: TextStyle(color: Colors.grey, letterSpacing: 2),
+                child: Opacity(
+                  opacity: 0.2,
+                  child: Text(
+                    "-------------------------------------------------------------------------",
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      letterSpacing: 2,
+                    ),
+                  ),
                 ),
               ),
+
+              // STATUS
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Status: ${order.status}", 
-                      style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.bold),
+                      "Status: ${order.status}",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
                   ],
                 ),
               ),
-              Container(height: 8, color: const Color(0xFFEEEEEE)), 
+
+              Container(
+                height: 8,
+                color: const Color(0xFFEEEEEE),
+              ),
             ],
           ),
         );

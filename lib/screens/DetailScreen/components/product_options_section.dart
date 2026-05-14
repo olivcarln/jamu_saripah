@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 class ProductOptionsSection extends StatefulWidget {
   final String productName;
   final Function(String)? onSizeChanged;
-  final Function(String)? onOptionChanged; // Tambahkan callback untuk opsi
-  final bool isBundle; // Tambahkan parameter isBundle
+  final Function(String)? onOptionChanged; 
+  final bool isBundle;
 
   const ProductOptionsSection({
     super.key, 
     required this.productName,
     this.onSizeChanged,
-    this.onOptionChanged, // Tambahkan ke constructor
-    this.isBundle = false, // Default false agar UI lama tidak berubah
+    this.onOptionChanged, 
+    this.isBundle = false, 
   });
 
   @override
@@ -19,7 +19,7 @@ class ProductOptionsSection extends StatefulWidget {
 }
 
 class _ProductOptionsSectionState extends State<ProductOptionsSection> {
-  String selectedSize = "250 ml"; // Sesuaikan default ke 250ml agar sinkron
+  String selectedSize = "250 ml"; 
   int selectedOption = 1;        
 
   @override

@@ -3,11 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'package:jamu_saripah/screens/AccountScreen/components/help_center_screen.dart';
 import 'package:jamu_saripah/screens/AccountScreen/components/payment_method_screen.dart';
 import 'package:jamu_saripah/screens/AccountScreen/components/privacy_police_screen.dart';
-import 'package:jamu_saripah/screens/AccountScreen/components/saved_address_screen.dart';
 import 'package:jamu_saripah/screens/SettingsScreen/settings_screen.dart';
 import 'package:jamu_saripah/screens/AccountScreen/components/tems_conditions_screen.dart';
 import 'package:jamu_saripah/screens/DetailProfileScreen/detail_profile_screen.dart';
@@ -114,7 +112,6 @@ class _AccountPageState extends State<AccountPage> {
                 child: ListView(
                   children: [
                     const SizedBox(height: 20),
-                    buildMenuItem("Alamat Tersimpan", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SavedAddress()))),
                     buildMenuItem("Pembayaran", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentMethodScreen()))),
                     buildMenuItem("Pusat Bantuan", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpCenterScreen()))),
                     buildMenuItem("Pengaturan", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()))),

@@ -2,20 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/common/constasts.dart';
 import 'components/cart_header.dart';
 import 'components/cart_item.dart';
 import 'components/cart_empty_state.dart';
 import 'components/cart_button_summary.dart';
 
+
 class CartScreen extends StatefulWidget {
   final List<CartItem> initialItems;
 
+
   const CartScreen({super.key, required this.initialItems});
+
 
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
+
 
 class _CartScreenState extends State<CartScreen> {
   void _showDeleteConfirmation(CartProvider provider) {
@@ -59,11 +64,13 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Consumer<CartProvider>(
       builder: (context, provider, child) {
         final cartItems = provider.items;
+
 
         return Scaffold(
           backgroundColor: const Color(0xFFF9F9F9),
@@ -151,3 +158,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 }
+
+
+

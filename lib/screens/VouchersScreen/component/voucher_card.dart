@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/controllers/voucher_controller.dart';
 
 class VoucherCard extends StatelessWidget {
   final String title;
@@ -136,26 +137,69 @@ class VoucherCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: 35,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          // Jika onClaim null, warna akan otomatis menyesuaikan (disabled)
-                          backgroundColor: onClaim == null ? Colors.white54 : Colors.white,
-                          foregroundColor: const Color(0xFF6B7548),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        onPressed: onClaim, // Menggunakan fungsi dari parameter
-                        child: Text(
-                          buttonText, // Menggunakan teks dari parameter (Gunakan / Telah Terpakai)
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
+                   SizedBox(
+  height: 35,
+  child: ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor:
+          onClaim == null ? Colors.white54 : Colors.white,
+      foregroundColor: const Color(0xFF6B7548),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+    ),
+
+    onPressed: () {
+      // APPLY DISKON
+      VoucherController.discountNotifier.value = 5000;
+
+      // SNACKBAR BAGUS
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF6B7548),
+          elevation: 10,
+          margin: const EdgeInsets.all(20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          duration: const Duration(seconds: 2),
+
+          content: Row(
+            children: const [
+              Icon(
+                Icons.check_circle,
+                color: Colors.white,
+              ),
+
+              SizedBox(width: 12),
+
+              Expanded(
+                child: Text(
+                  "Voucher berhasil digunakan 🎉",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+
+    child: Text(
+      buttonText,
+      style: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+),
                   ],
                 ),
               ],
