@@ -1,5 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Tambah ini
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 
 class CartItemWidget extends StatelessWidget {
@@ -16,8 +18,36 @@ class CartItemWidget extends StatelessWidget {
     required this.onToggle,
   });
 
-  // Helper agar bisa baca SVG tanpa merusak layout
+  /// SUPPORT:
+  /// - BASE64
+  /// - NETWORK
+  /// - SVG
+  /// - ASSET
   Widget _buildProductImage(String imageSource) {
+    /// JIKA KOSONG
+    if (imageSource.isEmpty) {
+      return _errorImage();
+    }
+
+    /// BASE64 IMAGE
+    if (imageSource.length > 100 && !imageSource.startsWith('http')) {
+      try {
+        return Image.memory(
+          base64Decode(imageSource),
+          width: 70,
+          height: 70,
+          fit: BoxFit.cover,
+
+          errorBuilder: (context, error, stackTrace) {
+            return _errorImage();
+          },
+        );
+      } catch (e) {
+        return _errorImage();
+      }
+    }
+
+    /// SVG ASSET
     if (imageSource.toLowerCase().endsWith('.svg')) {
       return SvgPicture.asset(
         imageSource,
@@ -25,31 +55,65 @@ class CartItemWidget extends StatelessWidget {
         height: 70,
         fit: BoxFit.cover,
       );
-    } else {
-      return Image.asset(
+    }
+
+    /// NETWORK IMAGE
+    if (imageSource.startsWith('http')) {
+      return Image.network(
         imageSource,
         width: 70,
         height: 70,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const SizedBox(
-          width: 70,
-          height: 70,
-          child: Icon(Icons.broken_image, color: Colors.grey),
-        ),
+
+        errorBuilder: (context, error, stackTrace) {
+          return _errorImage();
+        },
       );
     }
+
+    /// LOCAL ASSET
+    return Image.asset(
+      imageSource,
+      width: 70,
+      height: 70,
+      fit: BoxFit.cover,
+
+      errorBuilder: (context, error, stackTrace) {
+        return _errorImage();
+      },
+    );
   }
 
-  // Fungsi format rupiah lokal biar nggak error
+  /// IMAGE ERROR PLACEHOLDER
+  Widget _errorImage() {
+    return Container(
+      width: 70,
+      height: 70,
+
+      color: Colors.grey.shade200,
+
+      child: const Icon(Icons.broken_image, color: Colors.grey),
+    );
+  }
+
+  /// FORMAT RUPIAH
   String _formatRupiah(int amount) {
     String strAmount = amount.toString();
+
     String result = "";
+
     int count = 0;
+
     for (int i = strAmount.length - 1; i >= 0; i--) {
       result = strAmount[i] + result;
+
       count++;
-      if (count % 3 == 0 && i != 0) result = ".$result";
+
+      if (count % 3 == 0 && i != 0) {
+        result = ".$result";
+      }
     }
+
     return "Rp $result";
   }
 
@@ -57,64 +121,102 @@ class CartItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+
       padding: const EdgeInsets.all(12),
+
       decoration: BoxDecoration(
         color: Colors.white,
+
         borderRadius: BorderRadius.circular(15),
+
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
+
             blurRadius: 10,
-          )
+          ),
         ],
       ),
+
       child: Row(
         children: [
-          // CHECKBOX
+          /// CHECKBOX
           GestureDetector(
             onTap: onToggle,
+
             child: Icon(
               item.isChecked ? Icons.check_box : Icons.check_box_outline_blank,
+
               color: const Color(0xFF7E8959),
             ),
           ),
+
           const SizedBox(width: 12),
-          // GAMBAR PRODUK
+
+          /// PRODUCT IMAGE
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: _buildProductImage(item.image), // Ganti ke helper
+
+            child: _buildProductImage(item.image),
           ),
+
           const SizedBox(width: 12),
-          // DETAIL TEKS
+
+          /// DETAIL
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
-                Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(item.size, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  item.name,
+
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                Text(
+                  item.size,
+
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+
                 const SizedBox(height: 12),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                   children: [
-                    Text(_formatRupiah(item.price),
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    
-                    // COUNTER PLUS MINUS
+                    /// PRICE
+                    Text(
+                      _formatRupiah(item.price),
+
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+                    /// COUNTER
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3F3F3),
+
                         borderRadius: BorderRadius.circular(20),
                       ),
+
                       child: Row(
                         children: [
                           _buildQtyBtn(Icons.remove, onDecrement),
+
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
+
                             child: Text(
                               "${item.quantity}",
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
+
                           _buildQtyBtn(Icons.add, onIncrement),
                         ],
                       ),
@@ -132,12 +234,15 @@ class CartItemWidget extends StatelessWidget {
   Widget _buildQtyBtn(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
+
       child: Container(
         padding: const EdgeInsets.all(4),
+
         decoration: const BoxDecoration(
           color: Color(0xFF7E8959),
           shape: BoxShape.circle,
         ),
+
         child: Icon(icon, color: Colors.white, size: 16),
       ),
     );

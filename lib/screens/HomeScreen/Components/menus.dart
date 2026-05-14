@@ -8,7 +8,9 @@ import 'package:jamu_saripah/Models/product_cart.dart';
 import 'package:jamu_saripah/Screens/DetailScreen/detail_screen.dart';
 
 class Menus extends StatelessWidget {
-  const Menus({super.key});
+  final Map<String, String> filters;
+
+  const Menus({super.key, this.filters = const {}});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,6 @@ class Menus extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          /// FIRESTORE DATA
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
@@ -32,7 +33,6 @@ class Menus extends StatelessWidget {
                 .snapshots(),
 
             builder: (context, snapshot) {
-              /// LOADING
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: Padding(
@@ -42,15 +42,18 @@ class Menus extends StatelessWidget {
                 );
               }
 
-              /// ERROR
               if (snapshot.hasError) {
                 return const Center(child: Text("Terjadi kesalahan data"));
               }
 
-              final docs = snapshot.data?.docs ?? [];
+              List<QueryDocumentSnapshot> filteredDocs =
+                  snapshot.data?.docs ?? [];
+              for (var doc in filteredDocs) {
+                final data = doc.data() as Map<String, dynamic>;
+                print("name: ${data['name']}, size: ${data['size']}");
+              }
 
-              /// EMPTY
-              if (docs.isEmpty) {
+              if (filteredDocs.isEmpty) {
                 return const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
@@ -59,12 +62,55 @@ class Menus extends StatelessWidget {
                 );
               }
 
+              // Filter kategori (size)
+              if (filters['kategori'] != null &&
+                  filters['kategori']!.isNotEmpty) {
+                filteredDocs = filteredDocs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return (data['size'] ?? '').toString().contains(
+                    filters['kategori']!,
+                  );
+                }).toList();
+              }
+
+              // Filter jenis jamu
+              if (filters['jenis'] != null && filters['jenis']!.isNotEmpty) {
+                filteredDocs = filteredDocs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return (data['name'] ?? '').toString().toLowerCase().contains(
+                    filters['jenis']!.toLowerCase(),
+                  );
+                }).toList();
+              }
+
+              // Sort harga
+              if (filters['harga'] == 'Harga Terendah') {
+                filteredDocs.sort((a, b) {
+                  final aPrice = ((a.data() as Map)['price'] ?? 0) as num;
+                  final bPrice = ((b.data() as Map)['price'] ?? 0) as num;
+                  return aPrice.compareTo(bPrice);
+                });
+              } else if (filters['harga'] == 'Harga Tertinggi') {
+                filteredDocs.sort((a, b) {
+                  final aPrice = ((a.data() as Map)['price'] ?? 0) as num;
+                  final bPrice = ((b.data() as Map)['price'] ?? 0) as num;
+                  return bPrice.compareTo(aPrice);
+                });
+              }
+
+              if (filteredDocs.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text("Produk tidak ditemukan"),
+                  ),
+                );
+              }
+
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-
-                itemCount: docs.length,
-
+                itemCount: filteredDocs.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 15,
@@ -73,17 +119,18 @@ class Menus extends StatelessWidget {
                 ),
 
                 itemBuilder: (context, index) {
-                  final data = docs[index].data() as Map<String, dynamic>;
+                  final data =
+                      filteredDocs[index].data() as Map<String, dynamic>;
 
-                  /// CONVERT FIRESTORE DATA TO PRODUCT MODEL
                   final product = Product(
                     name: data['name'] ?? '',
-                    image: data['imageUrl'] ?? '',
+                    image: data['imageBase64'] ?? '',
                     price: (data['price'] as num?)?.toDouble() ?? 0,
                     size: data['size'] ?? '',
                     description: data['description'] ?? '',
                     stock: (data['stock'] as num?)?.toInt() ?? 0,
                   );
+
                   return _buildProductCard(context, product);
                 },
               );
@@ -106,15 +153,11 @@ class Menus extends StatelessWidget {
           ),
         );
       },
-
       borderRadius: BorderRadius.circular(20),
-
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-
           borderRadius: BorderRadius.circular(20),
-
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -123,74 +166,54 @@ class Menus extends StatelessWidget {
             ),
           ],
         ),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// IMAGE
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(20),
                 ),
-
                 child: _buildProductImage(product.image),
               ),
             ),
-
-            /// INFO
             Padding(
               padding: const EdgeInsets.all(12),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
-                  /// NAME
                   Text(
                     product.name,
-
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
-
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-
-                  /// SIZE
                   Text(
                     product.size,
-
                     style: const TextStyle(color: Colors.grey, fontSize: 11),
                   ),
-
                   const SizedBox(height: 8),
-
-                  /// ORIGINAL PRICE
                   Text(
                     NumberFormat.currency(
                       locale: 'id_ID',
                       symbol: 'Rp ',
                       decimalDigits: 0,
                     ).format(originalPrice),
-
                     style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 10,
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),
-
-                  /// FINAL PRICE
                   Text(
                     NumberFormat.currency(
                       locale: 'id_ID',
                       symbol: 'Rp ',
                       decimalDigits: 0,
                     ).format(product.price),
-
                     style: const TextStyle(
                       color: Color(0xFF7B8D5E),
                       fontWeight: FontWeight.bold,
@@ -207,87 +230,50 @@ class Menus extends StatelessWidget {
   }
 
   Widget _buildProductImage(String imageSource) {
-    /// BASE64
     if (imageSource.length > 100 && !imageSource.startsWith('http')) {
       try {
         return Image.memory(
           base64Decode(imageSource),
-
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Icon(Icons.broken_image, color: Colors.grey),
-            );
-          },
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
         );
       } catch (e) {
         return const Center(
           child: Icon(Icons.broken_image, color: Colors.grey),
         );
       }
-    }
-    /// FIREBASE IMAGE URL
-    else if (imageSource.startsWith('http')) {
+    } else if (imageSource.startsWith('http')) {
       return Image.network(
         imageSource,
-
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-
         loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          }
-
+          if (loadingProgress == null) return child;
           return const Center(child: CircularProgressIndicator());
         },
-
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[100],
-
-            child: const Center(
-              child: Icon(Icons.broken_image, color: Colors.grey),
-            ),
-          );
-        },
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.grey[100],
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.grey),
+          ),
+        ),
       );
-    }
-    /// LOCAL ASSET
-    else {
+    } else {
       return Image.asset(
         imageSource,
-
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          if (wasSynchronouslyLoaded) {
-            return child;
-          }
-
-          return AnimatedOpacity(
-            opacity: frame == null ? 0 : 1,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOut,
-            child: child,
-          );
-        },
-
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[100],
-
-            child: const Center(
-              child: Icon(Icons.broken_image, color: Colors.grey),
-            ),
-          );
-        },
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.grey[100],
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.grey),
+          ),
+        ),
       );
     }
   }

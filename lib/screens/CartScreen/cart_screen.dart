@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/Screens/CheckoutSreen/checkout.screen.dart';
-import 'package:provider/provider.dart'; 
+import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
-import 'package:jamu_saripah/provider/cart_provider.dart'; 
 import 'package:jamu_saripah/common/constasts.dart';
 import 'components/cart_header.dart';
 import 'components/cart_item.dart';
@@ -19,15 +18,19 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  // Fungsi Pop-up Hapus Semua
   void _showDeleteConfirmation(CartProvider provider) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: const Text("Hapus Keranjang?", style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: const Text(
+            "Hapus Keranjang?",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: const Text("Yakin mau hapus semua isi keranjang?"),
           actions: [
             TextButton(
@@ -37,13 +40,18 @@ class _CartScreenState extends State<CartScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brown,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: () {
                 provider.clearCart();
                 Navigator.pop(context);
               },
-              child: const Text("Ya, Hapus Semua", style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "Ya, Hapus Semua",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -60,11 +68,17 @@ class _CartScreenState extends State<CartScreen> {
         return Scaffold(
           backgroundColor: const Color(0xFFF9F9F9),
           appBar: AppBar(
-            iconTheme: const IconThemeData(color: Colors.white),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
             centerTitle: true,
             title: const Text(
               "Keranjang",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             backgroundColor: const Color(0xFF7E8959),
             elevation: 0,
@@ -92,7 +106,11 @@ class _CartScreenState extends State<CartScreen> {
                               alignment: Alignment.centerRight,
                               padding: const EdgeInsets.symmetric(horizontal: 20),
                               color: AppColors.brown,
-                              child: const Icon(Icons.delete_sweep, color: Colors.white, size: 30),
+                              child: const Icon(
+                                Icons.delete_sweep,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                             ),
                             onDismissed: (_) => provider.removeItem(index),
                             child: CartItemWidget(
@@ -108,45 +126,37 @@ class _CartScreenState extends State<CartScreen> {
                   ],
                 ),
           bottomNavigationBar: cartItems.isEmpty
-    ? null
-    : CartButtonSummary(
-        totalPrice: provider.checkedTotalPrice,
-        selectedCount: provider.checkedItemsCount,
-        onCheckout: () {
-          // Logika filter: minimal 1 produk terpilih
-          if (provider.checkedItemsCount > 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CheckoutScreen(
+              ? null
+              : CartButtonSummary(
                   totalPrice: provider.checkedTotalPrice,
                   selectedCount: provider.checkedItemsCount,
+                  onCheckout: () {
+                    if (provider.checkedItemsCount > 0) {
+                      // LANJUT KE CHECKOUT
+                      print("Lanjut Checkout");
+                    } else {
+                      // TAMPILKAN SNACKBAR JIKA NOL
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Row(
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.white),
+                              SizedBox(width: 10),
+                              Text("Pilih produk dulu ya sebelum lanjut!"),
+                            ],
+                          ),
+                          backgroundColor: const Color(0xFF634E34),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 ),
-              ),
-            );
-          } else {
-            // Tampilkan snackbar kalau nol
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text("Pilih produk dulu ya sebelum lanjut!"),
-                  ],
-                ),
-                backgroundColor: const Color(0xFF634E34), // Senada sama tombol lu
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            );
-          }
-        },
-      ),
         );
       },
     );
-  } 
+  }
 }

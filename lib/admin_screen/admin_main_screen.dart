@@ -4,11 +4,11 @@ import 'package:jamu_saripah/admin_screen/screens/admin_dashboard_screen.dart';
 import 'package:jamu_saripah/admin_screen/screens/admin_order_screen.dart';
 import 'package:jamu_saripah/admin_screen/screens/admin_product_screen.dart';
 import 'package:jamu_saripah/admin_screen/screens/admin_voucher_screen.dart';
+import 'package:jamu_saripah/common/constasts.dart'; 
 import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
-
   @override
   State<AdminMainScreen> createState() => _AdminMainScreenState();
 }
@@ -23,53 +23,37 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     const AdminOrderScreen(),
   ];
 
-  /// LOGOUT
+  final List<String> titles = [
+    "Dashboard Admin",
+    "Manajemen Produk",
+    "Manajemen Voucher",
+    "Daftar Pesanan",
+  ];
+
   void _logout() {
     showDialog(
       context: context,
-
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: const Text("Logout"),
-
-        content: const Text(
-          "Apakah kamu yakin ingin keluar?",
-        ),
-
+        content: const Text("Apakah kamu yakin ingin keluar?"),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-
-            child: const Text("Batal"),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal", style: TextStyle(color: Colors.grey)),
           ),
-
           TextButton(
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-
               if (!mounted) return;
-
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      const OnboardingScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const OnboardingScreen()),
                 (route) => false,
               );
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Berhasil logout"),
-                ),
-              );
             },
-
-            child: const Text(
-              "Logout",
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text("Logout",
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -79,111 +63,107 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: pages[currentIndex],
-
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
-
-      /// FLOATING LOGOUT BUTTON
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.red,
-
-        onPressed: _logout,
-
-        child: const Icon(
-          Icons.logout,
-          color: Colors.white,
+      extendBody: true, 
+      appBar: AppBar(
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            titles[currentIndex],
+            key: ValueKey<int>(currentIndex),
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
         ),
+        backgroundColor: AppColors.primaryOlive,
+        centerTitle: true,
+        elevation: 0,
+        actions: [
+          if (currentIndex == 0)
+            IconButton(
+              onPressed: _logout,
+              icon: const Icon(Icons.logout, color: Colors.white),
+            )
+          else
+            const SizedBox(width: 48),
+        ],
       ),
-
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-
-        notchMargin: 8,
-
-        child: SizedBox(
-          height: 65,
-
-          child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceAround,
-
-            children: [
-              /// DASHBOARD
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 0;
-                  });
-                },
-
-                icon: Icon(
-                  Icons.dashboard,
-
-                  color: currentIndex == 0
-                      ? const Color(0xFF7E8959)
-                      : Colors.grey,
+            body: pages[currentIndex],
+      
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(30, 0, 30, 20),
+          child: Container(
+            height: 65,
+            decoration: BoxDecoration(
+              color: AppColors.primaryOlive,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryOlive.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-
-              /// PRODUCT
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 1;
-                  });
-                },
-
-                icon: Icon(
-                  Icons.inventory_2,
-
-                  color: currentIndex == 1
-                      ? const Color(0xFF7E8959)
-                      : Colors.grey,
-                ),
-              ),
-
-              const SizedBox(width: 30),
-
-              /// VOUCHER
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 2;
-                  });
-                },
-
-                icon: Icon(
-                  Icons.discount,
-
-                  color: currentIndex == 2
-                      ? const Color(0xFF7E8959)
-                      : Colors.grey,
-                ),
-              ),
-
-              /// ORDER
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 3;
-                  });
-                },
-
-                icon: Icon(
-                  Icons.receipt_long,
-
-                  color: currentIndex == 3
-                      ? const Color(0xFF7E8959)
-                      : Colors.grey,
-                ),
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(0, Icons.dashboard_rounded, "Ringkasan"),
+                _buildNavItem(1, Icons.inventory_2_rounded, "Produk"),
+                _buildNavItem(2, Icons.discount_rounded, "Promo"),
+                _buildNavItem(3, Icons.receipt_long_rounded, "Order"),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    bool isSelected = currentIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          currentIndex = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : Colors.white70,
+              size: 24,
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              child: isSelected
+                  ? Row(
+                      children: [
+                        const SizedBox(width: 8),
+                        Text(
+                          label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
-
-

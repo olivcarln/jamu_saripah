@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:jamu_saripah/provider/order_provider.dart';
 import 'package:jamu_saripah/screens/CartScreen/cart_screen.dart';
-import 'package:jamu_saripah/screens/NotificationScreen/notification_screen.dart';
-import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeader extends StatefulWidget {
@@ -79,13 +78,15 @@ class _HomeHeaderState extends State<HomeHeader> {
         ),
         Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.notifications, color: Colors.white),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen())),
-            ),
+    
             IconButton(
               icon: const Icon(Icons.shopping_cart, color: Colors.white),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen(initialItems: []))),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CartScreen(initialItems: []),
+                ),
+              ),
             ),
           ],
         ),
@@ -182,72 +183,89 @@ class _HomeHeaderState extends State<HomeHeader> {
     );
   }
 
-  Widget _buildPointCard() {
-    return Consumer<CartProvider>(
-      builder: (context, cart, child) {
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
-            ],
-          ),
-          child: Column(
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    right: 10,
-                    top: 15,
-                    child: SvgPicture.asset(
-                      'assets/coins.svg', 
-                      width: 110,
-                      // Pengaman biar nggak error 404 kalau file belum terbaca
-                      placeholderBuilder: (BuildContext context) => const SizedBox(width: 110, height: 110),
-                    ),
+ Widget _buildPointCard() {
+  // PAKAI OrderProvider, bukan CartProvider lagi
+  return Consumer<OrderProvider>(
+    builder: (context, orderProvider, child) {
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05), 
+              blurRadius: 10, 
+              offset: const Offset(0, 5)
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  right: 10,
+                  top: 15,
+                  child: SvgPicture.asset(
+                    'assets/coins.svg', 
+                    width: 110,
+                    placeholderBuilder: (context) => const SizedBox(width: 110, height: 110),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15, top: 20, bottom: 15),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3E9D2).withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFF8D6E63).withOpacity(0.8), width: 1.0),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 15, top: 20, bottom: 15),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3E9D2).withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF8D6E63).withOpacity(0.8), 
+                          width: 1.0
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.monetization_on, color: Colors.orange, size: 16),
-                            const SizedBox(width: 6),
-                            Text("${cart.totalPoints} Points", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87)),
-                          ],
-                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.monetization_on, color: Colors.orange, size: 16),
+                          const SizedBox(width: 6),
+                          // AMBIL DARI orderProvider
+                          Text(
+                            "${orderProvider.userPoints} Points", 
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold, 
+                              fontSize: 14, 
+                              color: Colors.black87
+                            )
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ),
+              ],
+            ),
+            Divider(height: 1, color: Colors.grey.withOpacity(0.1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Tukarkan poinmu dengan hadiah seru", 
+                    style: TextStyle(fontSize: 12, color: Colors.black54)
+                  ),
                 ],
               ),
-              Divider(height: 1, color: Colors.grey.withOpacity(0.1)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Tukarkan poinmu dengan hadiah seru", style: TextStyle(fontSize: 12, color: Colors.black54)),
-                    Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey[400]),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 }

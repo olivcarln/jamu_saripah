@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/component/voucher_card.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/component/voucher_header.dart';
+import 'package:provider/provider.dart';
 
 class VoucherScreen extends StatelessWidget {
   const VoucherScreen({super.key});
@@ -10,70 +12,49 @@ class VoucherScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-
+    // 1. Definisikan cartProvider di sini agar bisa dipakai di bawah
+    final cartProvider = context.read<CartProvider>(); 
+    
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: Text("Silakan login terlebih dahulu")),
-      );
+      return const Scaffold(body: Center(child: Text("Silakan login terlebih dahulu")));
     }
-
     final userId = user.uid;
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Pilih Voucher", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: Column(
         children: [
-          /// HEADER
           VoucherHeader(isVoucherActive: true, onPaydayTap: () {}),
-
           const Divider(height: 1),
-
-          /// LIST VOUCHER
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('global_vouchers')
-                  .snapshots(),
+              stream: FirebaseFirestore.instance.collection('global_vouchers').snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
+                if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+                
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child: Text("Belum ada voucher tersedia"),
-                  );
+                  return const Center(child: Text("Belum ada voucher tersedia"));
                 }
 
                 final now = DateTime.now();
-
+                final today = DateTime(now.year, now.month, now.day);
+                
                 final filteredDocs = snapshot.data!.docs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
-                  if (data['isUsed'] == true) return false;
-                  if ((data['quota'] ?? 0) <= 0) return false;
-
-                  if (data['expiredAt'] != null) {
+                  if (data['isUsed'] == true || (data['quota'] ?? 0) <= 0) return false;
+                  if (data['expiredAt'] == null) return false;
+                  try {
                     final expiredAt = (data['expiredAt'] as Timestamp).toDate();
-                    final today = DateTime(now.year, now.month, now.day);
-                    final expiryDate = DateTime(
-                      expiredAt.year,
-                      expiredAt.month,
-                      expiredAt.day,
-                    );
-
-                    if (expiryDate.isBefore(today)) return false;
-                  } else {
-                    return false;
-                  }
+                    if (DateTime(expiredAt.year, expiredAt.month, expiredAt.day).isBefore(today)) return false;
+                  } catch (e) { return false; }
                   return true;
                 }).toList();
-
-                if (filteredDocs.isEmpty) {
-                  return const Center(
-                    child: Text("Voucher sudah habis atau expired"),
-                  );
-                }
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -81,7 +62,11 @@ class VoucherScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final doc = filteredDocs[index];
                     final data = doc.data() as Map<String, dynamic>;
-                    final expiredAt = (data['expiredAt'] as Timestamp).toDate();
+                    
+                    DateTime expiredDate = DateTime.now();
+                    if (data['expiredAt'] != null) {
+                      expiredDate = (data['expiredAt'] as Timestamp).toDate();
+                    }
 
                     return StreamBuilder<DocumentSnapshot>(
                       stream: FirebaseFirestore.instance
@@ -91,52 +76,27 @@ class VoucherScreen extends StatelessWidget {
                           .doc(doc.id)
                           .snapshots(),
                       builder: (context, claimSnapshot) {
-                        if (claimSnapshot.hasData && claimSnapshot.data!.exists) {
-                          return const SizedBox.shrink();
-                        }
+                        bool isAlreadyUsed = claimSnapshot.hasData && claimSnapshot.data!.exists;
 
-                        // AMBIL DATA DISKON DARI FIRESTORE
-                        // Gunakan .toDouble() karena VoucherCard minta tipe double
-                        final double diskonNominal = (data['discountAmount'] ?? 0).toDouble();
+                        // ✅ 2. Definisikan totalCart & discPercent di sini (DALAM BUILDER)
+                        double discPercent = double.tryParse(data['discount']?.toString() ?? '0') ?? 0.0;
+                        int totalCart = cartProvider.checkedTotalPrice; // Ambil harga total dari provider
+                        int nominalDiskon = ((discPercent / 100) * totalCart).toInt();
 
-                        return VoucherCard(
-                          title: data['code'] ?? 'PROMO',
-                          subTitle: "Diskon ${data['discount']}%",
-                          expiryDate:
-                              "${expiredAt.day}/${expiredAt.month}/${expiredAt.year}",
-                          minTransaction: "Rp ${data['minPurchase']}",
-                          quota: "Sisa Kuota: ${data['quota']}",
-                          
-                          // ✅ BERESIN ERROR 'discountAmount' DI SINI
-                          discountAmount: diskonNominal, 
-
-                          onClaim: () {
-                            // Feedback Visual
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Row(
-                                  children: [
-                                    Icon(Icons.check_circle, color: Colors.white),
-                                    SizedBox(width: 10),
-                                    Text("Voucher berhasil terpasang!"),
-                                  ],
-                                ),
-                                backgroundColor: const Color(0xFF6B7548),
-                                behavior: SnackBarBehavior.floating,
-                                margin: const EdgeInsets.all(20),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
-
-                            // KIRIM DATA BALIK KE CHECKOUT
-                            Future.delayed(const Duration(milliseconds: 800), () {
-                              // Kirim balik sebagai int agar bisa dikurangi di kalkulasi harga
-                              Navigator.pop(context, diskonNominal.toInt());
-                            });
-                          },
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: VoucherCard(
+                            title: data['code'] ?? 'PROMO',
+                            subTitle: "Diskon ${data['discount']}%",
+                            expiryDate: "${expiredDate.day}/${expiredDate.month}/${expiredDate.year}",
+                            minTransaction: "Min: Rp ${data['minPurchase'] ?? 0}",
+                            quota: "Sisa: ${data['quota'] ?? 0}",
+                            discountAmount: nominalDiskon.toDouble(), 
+                            onClaim: () {  },
+                            
+                            // Pastikan nama ini sesuai dengan yang ada di VoucherCard kamu
+                
+                          ),
                         );
                       },
                     );

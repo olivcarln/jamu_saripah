@@ -61,7 +61,7 @@ class PaymentMethodScreen extends StatelessWidget {
             // DAFTAR E-WALLET
             _buildOtherPaymentItem(
               title: "Gopay",
-              iconPath: 'assets/gopay.png', // Sesuaikan path asset kamu
+              iconPath: 'assets/gopay.png',
               color: Colors.blue,
             ),
             _buildOtherPaymentItem(
