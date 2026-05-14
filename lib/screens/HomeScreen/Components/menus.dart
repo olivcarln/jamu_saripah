@@ -46,7 +46,8 @@ class Menus extends StatelessWidget {
                 return const Center(child: Text("Terjadi kesalahan data"));
               }
 
-              List<QueryDocumentSnapshot> filteredDocs = snapshot.data?.docs ?? [];
+              List<QueryDocumentSnapshot> filteredDocs =
+                  snapshot.data?.docs ?? [];
               for (var doc in filteredDocs) {
                 final data = doc.data() as Map<String, dynamic>;
                 print("name: ${data['name']}, size: ${data['size']}");
@@ -62,10 +63,13 @@ class Menus extends StatelessWidget {
               }
 
               // Filter kategori (size)
-              if (filters['kategori'] != null && filters['kategori']!.isNotEmpty) {
+              if (filters['kategori'] != null &&
+                  filters['kategori']!.isNotEmpty) {
                 filteredDocs = filteredDocs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
-                  return (data['size'] ?? '').toString().contains(filters['kategori']!);
+                  return (data['size'] ?? '').toString().contains(
+                    filters['kategori']!,
+                  );
                 }).toList();
               }
 
@@ -73,7 +77,9 @@ class Menus extends StatelessWidget {
               if (filters['jenis'] != null && filters['jenis']!.isNotEmpty) {
                 filteredDocs = filteredDocs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
-                  return (data['name'] ?? '').toString().toLowerCase().contains(filters['jenis']!.toLowerCase());
+                  return (data['name'] ?? '').toString().toLowerCase().contains(
+                    filters['jenis']!.toLowerCase(),
+                  );
                 }).toList();
               }
 
@@ -111,16 +117,20 @@ class Menus extends StatelessWidget {
                   mainAxisSpacing: 15,
                   childAspectRatio: 0.70,
                 ),
+
                 itemBuilder: (context, index) {
-                  final data = filteredDocs[index].data() as Map<String, dynamic>;
+                  final data =
+                      filteredDocs[index].data() as Map<String, dynamic>;
+
                   final product = Product(
                     name: data['name'] ?? '',
-                    image: data['imageUrl'] ?? '',
+                    image: data['imageBase64'] ?? '',
                     price: (data['price'] as num?)?.toDouble() ?? 0,
                     size: data['size'] ?? '',
                     description: data['description'] ?? '',
                     stock: (data['stock'] as num?)?.toInt() ?? 0,
                   );
+
                   return _buildProductCard(context, product);
                 },
               );
@@ -161,7 +171,9 @@ class Menus extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
                 child: _buildProductImage(product.image),
               ),
             ),
@@ -172,7 +184,10 @@ class Menus extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -182,12 +197,28 @@ class Menus extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(originalPrice),
-                    style: const TextStyle(color: Colors.grey, fontSize: 10, decoration: TextDecoration.lineThrough),
+                    NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol: 'Rp ',
+                      decimalDigits: 0,
+                    ).format(originalPrice),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                      decoration: TextDecoration.lineThrough,
+                    ),
                   ),
                   Text(
-                    NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(product.price),
-                    style: const TextStyle(color: Color(0xFF7B8D5E), fontWeight: FontWeight.bold, fontSize: 14),
+                    NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol: 'Rp ',
+                      decimalDigits: 0,
+                    ).format(product.price),
+                    style: const TextStyle(
+                      color: Color(0xFF7B8D5E),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -206,10 +237,13 @@ class Menus extends StatelessWidget {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
         );
       } catch (e) {
-        return const Center(child: Icon(Icons.broken_image, color: Colors.grey));
+        return const Center(
+          child: Icon(Icons.broken_image, color: Colors.grey),
+        );
       }
     } else if (imageSource.startsWith('http')) {
       return Image.network(
@@ -223,7 +257,9 @@ class Menus extends StatelessWidget {
         },
         errorBuilder: (context, error, stackTrace) => Container(
           color: Colors.grey[100],
-          child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.grey),
+          ),
         ),
       );
     } else {
@@ -234,7 +270,9 @@ class Menus extends StatelessWidget {
         height: double.infinity,
         errorBuilder: (context, error, stackTrace) => Container(
           color: Colors.grey[100],
-          child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.grey),
+          ),
         ),
       );
     }

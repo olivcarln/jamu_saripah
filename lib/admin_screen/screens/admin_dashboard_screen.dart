@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
 
   Future<Map<String, dynamic>> _getDashboardData() async {
-    final productSnapshot =
-        await FirebaseFirestore.instance.collection('products').get();
+    final productSnapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .get();
 
     final voucherSnapshot = await FirebaseFirestore.instance
         .collection('global_vouchers')
@@ -14,8 +16,9 @@ class AdminDashboardScreen extends StatelessWidget {
         .where('isUsed', isEqualTo: false)
         .get();
 
-    final orderSnapshot =
-        await FirebaseFirestore.instance.collection('orders').get();
+    final orderSnapshot = await FirebaseFirestore.instance
+        .collection('orders')
+        .get();
 
           double revenue = 0;
         for (var doc in orderSnapshot.docs) {
@@ -65,8 +68,7 @@ class AdminDashboardScreen extends StatelessWidget {
           final data = snapshot.data!;
 
           return SingleChildScrollView(
-            // Bottom padding ditambahkan agar tidak tertutup floating navbar
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 100), 
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -100,7 +102,6 @@ class AdminDashboardScreen extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                /// TITLE 1
                 const Text(
                   "Ringkasan Bisnis",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -108,11 +109,10 @@ class AdminDashboardScreen extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                /// GRID STATISTIK
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
-                  padding: EdgeInsets.zero, // Hapus padding default GridView
+                  padding: EdgeInsets.zero, 
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 15,
@@ -138,7 +138,11 @@ class AdminDashboardScreen extends StatelessWidget {
                     ),
                     _buildCard(
                       title: "Pemasukan",
-                      value: "Rp ${data['revenue'].toInt()}",
+                      value: NumberFormat.currency(
+                        locale: 'id_ID',
+                        symbol: 'Rp ',
+                        decimalDigits: 0,
+                      ).format(data['revenue']),
                       icon: Icons.attach_money_rounded,
                       color: Colors.purple,
                     ),
@@ -272,10 +276,7 @@ class AdminDashboardScreen extends StatelessWidget {
         title,
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
       ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(fontSize: 12),
-      ),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
     );
   }
 }
