@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // 🔥 Tambahan
@@ -56,7 +57,7 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
                 data?['name'] ?? user?.displayName ?? '';
             _emailController.text =
                 data?['email'] ?? user?.email ?? '';
-            _photoUrl = data?['photoUrl'];
+            _photoUrl = data?['photoBase64'];
 
             if (data?['createdAt'] != null) {
               _createdAt =
@@ -130,56 +131,78 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
   }
 
   /// 🔥 SAVE PROFILE
-  Future<void> _handleSave() async {
-    final user = _service.currentUser;
-    if (user == null) return;
 
-    setState(() => _isSaving = true);
+Future<void> _handleSave() async {
+  final user = _service.currentUser;
+  if (user == null) return;
 
-    try {
-      if (_imageFile != null) {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('profile_images')
-            .child('${user.uid}.jpg');
+  setState(() => _isSaving = true);
 
-        await ref.putFile(_imageFile!);
-        _photoUrl = await ref.getDownloadURL();
-      }
+  try {
+    String? base64Image;
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .set({
-        'name': _nameController.text,
-        'email': _emailController.text,
-        'photoUrl': _photoUrl,
-        'updatedAt': FieldValue.serverTimestamp(),
-        if (_createdAt == null)
-          'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+    // kalau pilih image baru
+    if (_imageFile != null) {
+      List<int> imageBytes =
+          await _imageFile!.readAsBytes();
 
-      setState(() => _imageFile = null);
+      base64Image = base64Encode(imageBytes);
+    }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profil berhasil disimpan ✨"),
-            backgroundColor: Color(0xFF7B8B5C),
-          ),
+    Map<String, dynamic> data = {
+      'name': _nameController.text,
+      'email': _emailController.text,
+      'updatedAt': FieldValue.serverTimestamp(),
+
+      if (_createdAt == null)
+        'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    // hanya update image kalau ada image baru
+    if (base64Image != null) {
+      data['photoBase64'] = base64Image;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .set(
+          data,
+          SetOptions(merge: true),
         );
-      }
-    } catch (e) {
+
+    // update state local supaya langsung tampil
+    if (base64Image != null) {
+      setState(() {
+        _photoUrl = base64Image;
+      });
+    }
+
+    setState(() {
+      _imageFile = null;
+    });
+
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Gagal simpan profil"),
-          backgroundColor: Colors.red,
+          content: Text(
+            "Profil berhasil disimpan ✨",
+          ),
+          backgroundColor: Color(0xFF7B8B5C),
         ),
       );
     }
-
-    setState(() => _isSaving = false);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Gagal simpan profil"),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+
+  setState(() => _isSaving = false);
+}
 
   /// 🔥 LOGOUT
   Future<void> _handleLogout() async {
@@ -279,8 +302,8 @@ class _DetailProfileScreenState extends State<DetailProfileScreen> {
                     const SizedBox(height: 30),
 
                     ProfileAvatar(
+                      base64Image: _photoUrl,
                       imageFile: _imageFile,
-                      photoUrl: _photoUrl,
                       onTap: _showPicker,
                     ),
 

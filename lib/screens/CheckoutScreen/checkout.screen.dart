@@ -1,788 +1,186 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:jamu_saripah/Models/cart_item.dart';
-import 'package:jamu_saripah/Models/order.dart';
-import 'package:jamu_saripah/provider/order_provider.dart';
-import 'package:jamu_saripah/provider/user_provider.dart';
+import 'package:jamu_saripah/Screens/CheckoutScreen/component/select_method_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/component/adding_menu_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/component/payment_screen.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
-import 'package:jamu_saripah/screens/main_screen.dart';
-import 'package:provider/provider.dart';
+
 
 class CheckoutScreen extends StatefulWidget {
-  final List<CartItem> cartItems;
+  final int totalPrice;
+  final int selectedCount;
 
-  const CheckoutScreen({super.key, required this.cartItems});
+  const CheckoutScreen({
+    super.key,
+    required this.totalPrice,
+    required this.selectedCount,
+  });
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  String currentMethod = 'Pick Up';
+  int diskonVoucher = 0;
+  int ongkir = 15000;
 
-  bool showSpecialPackage = true;
-  bool perluTasBelanja = false;
-
-  int hargaTas = 3000;
-
-  String selectedBooth = 'Plaza Atria Jakarta';
-
-  List<String> booths = [
-    'Plaza Atria Jakarta',
-    'Gedung Jamsostek',
-    'Lippo Mal Karawaci',
-  ];
-
-  Map<String, dynamic>? selectedPayment;
-  Map<String, dynamic>? appliedVoucher;
-
-  late List<Map<String, dynamic>> cartItems;
-
-  @override
-  @override
-  void initState() {
-    super.initState();
-
-    cartItems = widget.cartItems.map((item) {
-      return {
-        'name': item.name,
-        'size': item.size,
-        'price': item.price,
-        'qty': item.quantity,
-        'image': item.image,
-      };
-    }).toList();
-  }
-
-  String formatHarga(int harga) {
-    return harga.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    );
-  }
-
-  int calculateTotal() {
-    int subtotal = cartItems.fold(
-      0,
-      (sum, item) => sum + ((item['price'] as int) * (item['qty'] as int)),
-    );
-
-    int discount = appliedVoucher != null
-        ? (appliedVoucher!['discount'] as int)
-        : 0;
-
-    int serviceFee = 2000;
-
-    int shoppingBagFee = perluTasBelanja ? hargaTas : 0;
-
-    int total = subtotal + serviceFee + shoppingBagFee - discount;
-
-    return total > 0 ? total : 0;
+  String _formatRupiah(int amount) {
+    String str = amount.toString();
+    String res = "";
+    int count = 0;
+    for (int i = str.length - 1; i >= 0; i--) {
+      res = str[i] + res;
+      count++;
+      if (count % 3 == 0 && i != 0) res = "." + res;
+    }
+    return "Rp $res";
   }
 
   @override
   Widget build(BuildContext context) {
+    int totalBayar = (widget.totalPrice + ongkir) - diskonVoucher;
+    if (totalBayar < 0) totalBayar = 0;
+
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF7E8959)),
-          onPressed: () => Navigator.pop(context),
-        ),
-
-        title: const Text(
-          'Checkout',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-
         centerTitle: true,
-        backgroundColor: Colors.white,
+        title: const Text('Checkout', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF7E8959),
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            const SelectMethodScreen(),
+            const Divider(thickness: 1),
+            
+            const SizedBox(height: 10),
+            ShoppingBagScreen(
+              isSelected: true,
+              harga: widget.totalPrice,
+              onChanged: (bool value) {},
+            ),
 
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
+            const SizedBox(height: 20),
+            
+            AddingMenuScreen(
+              onAddTap: (
+  String? nama,
+  String? size,
+  int? harga,
+  String? image,
+) {
+  Navigator.pop(context);
+},
+            ),
+
+            const Divider(thickness: 1),
+
+            // FIXED: Membatasi trailing agar tidak menyebabkan infinite size
+            ListTile(
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const VoucherScreen()),
+                );
+                if (result != null && result is int) {
+                  setState(() { diskonVoucher = result; });
+                }
+              },
+              leading: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF7E8959)),
+              title: const Text('Voucher Jamu Saripah'),
+              trailing: IntrinsicWidth( // Agar Row tidak mengambil lebar tak terhingga
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      diskonVoucher > 0 ? "- ${_formatRupiah(diskonVoucher)}" : "Pakai Voucher",
+                      style: TextStyle(
+                        color: diskonVoucher > 0 ? Colors.red : Colors.grey,
+                        fontWeight: diskonVoucher > 0 ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(thickness: 1),
+
+            const PaymentScreen(),
+            
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _buildDeliveryMode(),
-
-                  _buildLocationInfo(),
-
-                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
-
-                  _buildDetailPesananSection(),
-
-                  if (showSpecialPackage)
-                    AddingMenuScreen(
-                      onAddTap: (String? n, String? s, int? p, String? img) {
-                        setState(() {
-                          cartItems.add({
-                            'name': n ?? 'Menu Spesial',
-                            'size': s ?? '',
-                            'price': p ?? 0,
-                            'qty': 1,
-                            'image': img ?? '',
-                          });
-                        });
-                      },
-                    ),
-
-                  ShoppingBagScreen(
-                    isSelected: perluTasBelanja,
-                    harga: hargaTas,
-                    onChanged: (val) {
-                      setState(() {
-                        perluTasBelanja = val;
-                      });
-                    },
-                  ),
-
-                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
-
-                  _buildClickableSection(
-                    title: appliedVoucher != null
-                        ? 'Voucher Dipakai'
-                        : 'Voucher Diskon',
-
-                    subtitle: appliedVoucher != null
-                        ? 'Potongan Rp ${formatHarga(appliedVoucher!['discount'])}'
-                        : 'yuk lebih hemat dengan voucher',
-
-                    icon: Icons.confirmation_num_outlined,
-
-                    onTap: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (c) => const VoucherScreen(),
-                        ),
-                      );
-
-                      if (result != null) {
-                        setState(() {
-                          appliedVoucher = result;
-                        });
-                      }
-                    },
-                  ),
-
-                  const Divider(thickness: 1, color: Color(0xFFF1F1F1)),
-
-                  _buildClickableSection(
-                    title: 'Metode Pembayaran',
-
-                    subtitle: selectedPayment != null
-                        ? selectedPayment!['name']
-                        : 'Pilih pembayaranmu',
-
-                    icon: Icons.account_balance_wallet_outlined,
-
-                    onTap: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PaymentScreen(),
-                        ),
-                      );
-
-                      if (result != null) {
-                        setState(() {
-                          selectedPayment = result;
-                        });
-                      }
-                    },
-                  ),
-
-                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
+                  _rowPrice("Subtotal", _formatRupiah(widget.totalPrice)),
+                  const SizedBox(height: 8),
+                  _rowPrice("Ongkir", _formatRupiah(ongkir)),
+                  if (diskonVoucher > 0) ...[
+                    const SizedBox(height: 8),
+                    _rowPrice("Diskon Voucher", "- ${_formatRupiah(diskonVoucher)}", isRed: true),
+                  ],
                 ],
               ),
             ),
-          ),
-
-          const Divider(height: 1, color: Color(0xFFF1F1F1)),
-
-          _buildRincianSection(),
-        ],
+            
+            const SizedBox(height: 120), 
+          ],
+        ),
       ),
-
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: _buildBottomBar(totalBayar),
     );
   }
 
-  Widget _buildDetailPesananSection() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          const Text(
-            'Detail Pesanan',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-
-          const SizedBox(height: 20),
-
-          for (int i = 0; i < cartItems.length; i++)
-            _buildCartItem(cartItems[i], i),
-
-          const Divider(height: 30, thickness: 1, color: Color(0xFFEEEEEE)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCartItem(Map<String, dynamic> item, int index) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          /// DETAIL KIRI
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  item['name'] ?? 'No Name',
-
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  item['size'] ?? '',
-
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  "Rp ${formatHarga(item['price'] ?? 0)}",
-
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF7E8959),
-                    fontSize: 14,
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                /// BUTTON QTY
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (item['qty'] > 1) {
-                            item['qty']--;
-                          } else {
-                            cartItems.removeAt(index);
-                          }
-                        });
-                      },
-
-                      child: Container(
-                        width: 36,
-                        height: 36,
-
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color(0xFF7E8959),
-                            width: 2,
-                          ),
-
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-
-                        child: const Icon(
-                          Icons.remove,
-                          color: Color(0xFF7E8959),
-                        ),
-                      ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-
-                      child: Text(
-                        "${item['qty']}",
-
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Color(0xFF7E8959),
-                        ),
-                      ),
-                    ),
-
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          item['qty']++;
-                        });
-                      },
-
-                      child: Container(
-                        width: 36,
-                        height: 36,
-
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color(0xFF7E8959),
-                            width: 2,
-                          ),
-
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-
-                        child: const Icon(Icons.add, color: Color(0xFF7E8959)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 14),
-
-          /// IMAGE KANAN
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-
-            child: _buildProductImage(item['image'] ?? ''),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// IMAGE BUILDER
-  Widget _buildProductImage(String imageSource) {
-    if (imageSource.isEmpty) {
-      return _errorImage();
-    }
-
-    /// BASE64
-    if (imageSource.length > 100 && !imageSource.startsWith('http')) {
-      try {
-        return Image.memory(
-          base64Decode(imageSource),
-
-          width: 80,
-          height: 80,
-
-          fit: BoxFit.cover,
-
-          errorBuilder: (context, error, stackTrace) {
-            return _errorImage();
-          },
-        );
-      } catch (e) {
-        return _errorImage();
-      }
-    }
-
-    /// NETWORK
-    if (imageSource.startsWith('http')) {
-      return Image.network(
-        imageSource,
-
-        width: 80,
-        height: 80,
-
-        fit: BoxFit.cover,
-
-        errorBuilder: (context, error, stackTrace) {
-          return _errorImage();
-        },
-      );
-    }
-
-    /// SVG
-    if (imageSource.toLowerCase().endsWith('.svg')) {
-      return SvgPicture.asset(
-        imageSource,
-
-        width: 80,
-        height: 80,
-
-        fit: BoxFit.cover,
-      );
-    }
-
-    /// ASSET
-    return Image.asset(
-      imageSource,
-
-      width: 80,
-      height: 80,
-
-      fit: BoxFit.cover,
-
-      errorBuilder: (context, error, stackTrace) {
-        return _errorImage();
-      },
-    );
-  }
-
-  Widget _errorImage() {
-    return Container(
-      width: 80,
-      height: 80,
-
-      color: Colors.grey.shade200,
-
-      child: const Icon(Icons.broken_image, color: Colors.grey),
-    );
-  }
-
-  Widget _buildDeliveryMode() {
-    return Container(
-      color: const Color(0xFFF9FCF3),
-
-      padding: const EdgeInsets.all(16),
-
-      child: const Row(
-        children: [
-          Icon(Icons.person_pin_circle, color: Color(0xFF7E8959), size: 24),
-
-          SizedBox(width: 12),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  'Pick Up',
-
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF7E8959),
-                    fontSize: 16,
-                  ),
-                ),
-
-                Text(
-                  'Datang, ambil, beres!',
-
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationInfo() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          const Text(
-            "Pesananmu siap diambil di sini",
-
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-
-          const SizedBox(height: 10),
-
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9F9F9),
-
-              borderRadius: BorderRadius.circular(12),
-
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedBooth,
-
-                isExpanded: true,
-
-                items: booths.map((val) {
-                  return DropdownMenuItem(value: val, child: Text(val));
-                }).toList(),
-
-                onChanged: (nv) {
-                  setState(() {
-                    selectedBooth = nv!;
-                  });
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildClickableSection({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: const Color(0xFF7E8959)),
-
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-
-      subtitle: Text(subtitle),
-
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-
-      onTap: onTap,
-    );
-  }
-
-  Widget _buildRincianSection() {
-    int subtotal = cartItems.fold(
-      0,
-      (sum, item) => sum + ((item['price'] as int) * (item['qty'] as int)),
-    );
-
-    int discount = appliedVoucher != null
-        ? (appliedVoucher!['discount'] as int)
-        : 0;
-
-    int serviceFee = 2000;
-
-    int shoppingBagFee = perluTasBelanja ? hargaTas : 0;
-
-    int total = subtotal + serviceFee + shoppingBagFee - discount;
-
-    if (total < 0) total = 0;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-
-      decoration: const BoxDecoration(
-        color: Colors.white,
-
-        border: Border(top: BorderSide(color: Color(0xFFEAEAEA))),
-      ),
-
-      child: Column(
-        children: [
-          /// SUBTOTAL
-          _buildPriceRow("Subtotal", "Rp ${formatHarga(subtotal)}"),
-
-          const SizedBox(height: 10),
-
-          /// SERVICE FEE
-          _buildPriceRow("Biaya Layanan", "Rp ${formatHarga(serviceFee)}"),
-
-          const SizedBox(height: 10),
-
-          /// TAS BELANJA
-          if (perluTasBelanja)
-            Column(
-              children: [
-                _buildPriceRow(
-                  "Tas Belanja",
-                  "Rp ${formatHarga(shoppingBagFee)}",
-                ),
-
-                const SizedBox(height: 10),
-              ],
-            ),
-
-          /// DISCOUNT
-          if (discount > 0)
-            Column(
-              children: [
-                _buildPriceRow(
-                  "Diskon Voucher",
-                  "- Rp ${formatHarga(discount)}",
-                  valueColor: Colors.green,
-                ),
-
-                const SizedBox(height: 10),
-              ],
-            ),
-
-          const Divider(height: 24),
-
-          /// TOTAL
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-            children: [
-              const Text(
-                'Total Pembayaran',
-
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-              ),
-
-              Text(
-                'Rp ${formatHarga(total)}',
-
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Color(0xFF7E8959),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPriceRow(
-    String title,
-    String value, {
-    Color valueColor = Colors.black87,
-  }) {
+  Widget _rowPrice(String label, String value, {bool isRed = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
       children: [
-        Text(title, style: TextStyle(color: Colors.grey[700], fontSize: 14)),
-
-        Text(
-          value,
-
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-            color: valueColor,
-          ),
-        ),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        Text(value, style: TextStyle(
+          fontSize: 14,
+          color: isRed ? Colors.red : Colors.black,
+          fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
+        )),
       ],
     );
   }
 
-  Widget _buildBottomBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-
-      child: ElevatedButton(
-        onPressed: () async {
-          if (cartItems.isEmpty) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Keranjang kosong')));
-
-            return;
-          }
-
-          if (selectedPayment == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Pilih metode pembayaran')),
-            );
-
-            return;
-          }
-
-          try {
-            final orderProvider = Provider.of<OrderProvider>(
-              context,
-              listen: false,
-            );
-
-            final userProvider = Provider.of<UserProvider>(
-              context,
-              listen: false,
-            );
-
-            await orderProvider.addOrder(
-              OrderModel(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-
-                userName: userProvider.name,
-
-                totalAmount: calculateTotal(),
-
-                status: "Menunggu",
-
-                paymentMethod: selectedPayment!['name'],
-
-                address: selectedBooth,
-
-                createdAt: DateTime.now(),
-
-                items: List.from(cartItems),
-
-                image: cartItems.first['image'],
-
-                paymentConfirmed: false,
+  Widget _buildBottomBar(int total) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Total Tagihan", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(_formatRupiah(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF7E8959))),
+              ],
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF634E34),
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-            );
-
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Pesanan berhasil dibuat')),
-              );
-            }
-
-            if (mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-
-                MaterialPageRoute(builder: (context) => const MainScreen()),
-
-                (route) => false,
-              );
-            }
-          } catch (e) {
-            debugPrint("Error checkout: $e");
-
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: $e')));
-          }
-        },
-
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF7E8959),
-
-          minimumSize: const Size(double.infinity, 54),
-
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-
-        child: const Text(
-          'Pesan Sekarang',
-
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+              onPressed: () {
+                // Logika proses pesanan
+              },
+              child: const Text("Buat Pesanan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
         ),
       ),
     );

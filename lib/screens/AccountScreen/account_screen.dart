@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -69,13 +72,54 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.transparent,
-                        child: ClipOval(
-                          child: SvgPicture.asset('assets/profile.svg', fit: BoxFit.cover, width: 60, height: 60),
-                        ),
-                      ),
+                   StreamBuilder<DocumentSnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('users')
+      .doc(user?.uid)
+      .snapshots(),
+  builder: (context, snapshot) {
+
+    String? base64Image;
+
+    if (snapshot.hasData && snapshot.data!.exists) {
+      final data =
+          snapshot.data!.data() as Map<String, dynamic>?;
+
+      base64Image = data?['photoBase64'];
+    }
+
+    Uint8List? imageBytes;
+
+    if (base64Image != null &&
+        base64Image.isNotEmpty) {
+      try {
+        imageBytes = base64Decode(base64Image);
+      } catch (e) {
+        imageBytes = null;
+      }
+    }
+
+    return CircleAvatar(
+      radius: 30,
+      backgroundColor: Colors.transparent,
+
+      backgroundImage: imageBytes != null
+          ? MemoryImage(imageBytes)
+          : null,
+
+      child: imageBytes == null
+          ? ClipOval(
+              child: SvgPicture.asset(
+                'assets/profile.svg',
+                fit: BoxFit.cover,
+                width: 60,
+                height: 60,
+              ),
+            )
+          : null,
+    );
+  },
+),
                       const SizedBox(width: 12),
                       StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance.collection('users').doc(user?.uid).snapshots(),
