@@ -356,7 +356,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
 
                            return const SizedBox();
-                         }).toList(),
+                         }),
 
 
                          const Divider(height: 24),

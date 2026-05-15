@@ -3,10 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jamu_saripah/Models/order.dart';
 
-export 'package:jamu_saripah/Models/order.dart';
-
 class OrderProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   List<OrderModel> _orders = [];
   int _userPoints = 0;
 
@@ -29,24 +28,29 @@ class OrderProvider extends ChangeNotifier {
           .collection('orders')
           .orderBy('createdAt', descending: true)
           .get();
+
       _orders = snapshot.docs
           .map((doc) => OrderModel.fromFirestore(doc))
           .toList();
+
       notifyListeners();
     } catch (e) {
-      print("Error: $e");
+      debugPrint("Error fetchOrders: $e");
     }
   }
 
   Future<void> addOrder(OrderModel order) async {
     try {
-      await _firestore.collection('orders').add({
-        ...order.toJson(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      await _firestore
+          .collection('orders')
+          .doc(order.id)
+          .set(order.toJson());
+
       _userPoints += 4;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('user_points', _userPoints);
+
+      _orders.insert(0, order);
       notifyListeners();
     } catch (e) {
       rethrow;
@@ -55,10 +59,16 @@ class OrderProvider extends ChangeNotifier {
 
   Future<void> updateStatus(String orderId, String status) async {
     try {
-      await _firestore.collection('orders').doc(orderId).update({
-        'status': status,
-      });
-      await fetchOrders();
+      await _firestore
+          .collection('orders')
+          .doc(orderId)
+          .update({'status': status});
+
+      final index = _orders.indexWhere((o) => o.id == orderId);
+      if (index != -1) {
+        _orders[index] = _orders[index].copyWith(status: status);
+        notifyListeners();
+      }
     } catch (e) {
       rethrow;
     }
@@ -66,10 +76,22 @@ class OrderProvider extends ChangeNotifier {
 
   Future<void> confirmPayment(String orderId) async {
     try {
-      await _firestore.collection('orders').doc(orderId).update({
+      await _firestore
+          .collection('orders')
+          .doc(orderId)
+          .update({
         'paymentConfirmed': true,
+        'status': 'Dikonfirmasi',
       });
-      await fetchOrders();
+
+      final index = _orders.indexWhere((o) => o.id == orderId);
+      if (index != -1) {
+        _orders[index] = _orders[index].copyWith(
+          paymentConfirmed: true,
+          status: 'Dikonfirmasi',
+        );
+        notifyListeners();
+      }
     } catch (e) {
       rethrow;
     }

@@ -111,8 +111,7 @@ class CartButtonSummary extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => CheckoutScreen(
-                           totalPrice: totalPrice,
-                           selectedCount: selectedCount,
+                           cartItems: selectedItems,
                           ),
                         ),
                       );

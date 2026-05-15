@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AddingMenuScreen extends StatelessWidget {
-   final Function(
-    String?,
-    String?,
-    int?,
-    String?,
-  ) onAddTap;
+  final Function(
+    String name,
+    String size,
+    int price,
+    String image,
+  ) onAddTap; // Diubah jadi non-nullable agar tidak error di checkout
 
   const AddingMenuScreen({super.key, required this.onAddTap});
 
@@ -57,11 +57,11 @@ class AddingMenuScreen extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(
-                    color: const Color(0xFF7E8959).withValues(alpha: 0.2),
+                    color: const Color(0xFF7E8959).withOpacity(0.2),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withOpacity(0.05),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),
@@ -69,24 +69,24 @@ class AddingMenuScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                ClipRRect(
-  borderRadius: BorderRadius.circular(10),
-  child: _buildProductImage(menu['image']),
-),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: _buildProductImage(menu['image'] ?? ''),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(menu['name'], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          Text(menu['size'], style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                          Text(menu['name'] ?? '', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(menu['size'] ?? '', style: const TextStyle(fontSize: 10, color: Colors.grey)),
                           const SizedBox(height: 6),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Rp ${formatHarga(menu['price'])}', // Panggil fungsi format di sini
+                                'Rp ${formatHarga(menu['price'] ?? 0)}',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -95,10 +95,10 @@ class AddingMenuScreen extends StatelessWidget {
                               ),
                               GestureDetector(
                                 onTap: () => onAddTap(
-                                  menu['name'],
-                                  menu['size'],
-                                  menu['price'],
-                                  menu['image'],
+                                  menu['name'] ?? '',
+                                  menu['size'] ?? '',
+                                  menu['price'] ?? 0,
+                                  menu['image'] ?? '',
                                 ),
                                 child: const Icon(Icons.add_circle, color: Color(0xFF7E8959), size: 26),
                               ),
@@ -117,100 +117,15 @@ class AddingMenuScreen extends StatelessWidget {
     );
   }
 
- Widget _buildProductImage(String imageSource) {
-
-  debugPrint("IMAGE SOURCE => $imageSource");
-
-  // KALAU KOSONG
-  if (imageSource.isEmpty) {
-    return _errorImage();
+  Widget _buildProductImage(String imageSource) {
+    if (imageSource.isEmpty) return _errorImage();
+    if (imageSource.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(imageSource, width: 60, height: 60, fit: BoxFit.cover);
+    }
+    return Image.asset(imageSource, width: 60, height: 60, fit: BoxFit.cover, errorBuilder: (c, e, s) => _errorImage());
   }
 
-  /// =========================
-  /// NETWORK IMAGE
-  /// =========================
-  if (imageSource.startsWith('http')) {
-    return Image.network(
-      imageSource,
-      width: 60,
-      height: 60,
-      fit: BoxFit.cover,
-
-      loadingBuilder: (
-        BuildContext context,
-        Widget child,
-        ImageChunkEvent? loadingProgress,
-      ) {
-        if (loadingProgress == null) return child;
-
-        return Container(
-          width: 60,
-          height: 60,
-          alignment: Alignment.center,
-          child: const CircularProgressIndicator(strokeWidth: 2),
-        );
-      },
-
-      errorBuilder: (context, error, stackTrace) {
-        debugPrint("NETWORK IMAGE ERROR => $error");
-        return _errorImage();
-      },
-    );
+  Widget _errorImage() {
+    return Container(width: 60, height: 60, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.broken_image, color: Colors.grey));
   }
-
-  /// =========================
-  /// SVG ASSET
-  /// =========================
-  if (imageSource.toLowerCase().endsWith('.svg')) {
-    return SvgPicture.asset(
-      imageSource,
-      width: 60,
-      height: 60,
-      fit: BoxFit.cover,
-
-      placeholderBuilder: (context) {
-        return Container(
-          width: 60,
-          height: 60,
-          color: Colors.grey.shade100,
-          alignment: Alignment.center,
-          child: const CircularProgressIndicator(strokeWidth: 2),
-        );
-      },
-    );
-  }
-
-  /// =========================
-  /// PNG / JPG ASSET
-  /// =========================
-  return Image.asset(
-    imageSource,
-    width: 60,
-    height: 60,
-    fit: BoxFit.cover,
-
-    errorBuilder: (context, error, stackTrace) {
-      debugPrint("ASSET IMAGE ERROR => $error");
-      return _errorImage();
-    },
-  );
-}
-
-/// =========================
-/// ERROR IMAGE
-/// =========================
-Widget _errorImage() {
-  return Container(
-    width: 60,
-    height: 60,
-    decoration: BoxDecoration(
-      color: Colors.grey.shade200,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: const Icon(
-      Icons.broken_image,
-      color: Colors.grey,
-    ),
-  );
-}
 }
