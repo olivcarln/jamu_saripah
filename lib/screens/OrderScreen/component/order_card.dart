@@ -238,7 +238,7 @@ Align(
               }
 
               return const SizedBox();
-            }).toList(),
+            }),
 
             const SizedBox(height: 16),
 
