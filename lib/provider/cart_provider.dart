@@ -3,40 +3,54 @@ import '../Models/cart_item.dart';
 
 class CartProvider with ChangeNotifier {
   final List<CartItem> _items = [];
+
   bool _isAllChecked = false;
-  double _discount = 0;
+
+  /// DISKON VOUCHER
+  double _voucherDiscount = 0;
 
   List<CartItem> get items => _items;
 
   List<Map<String, dynamic>> get cartItems {
     return _items
         .where((item) => item.isChecked)
-        .map((item) => {
-              'name': item.name,
-              'size': item.size,
-              'price': item.price,
-              'qty': item.quantity,
-              'image': item.image,
-            })
+        .map(
+          (item) => {
+            'name': item.name,
+            'size': item.size,
+            'price': item.price,
+            'qty': item.quantity,
+            'image': item.image,
+          },
+        )
         .toList();
   }
 
   bool get isAllChecked => _isAllChecked;
-  double get discount => _discount;
+
+  /// GETTER DISKON
+  double get voucherDiscount => _voucherDiscount;
 
   int get checkedItemsCount =>
       _items.where((item) => item.isChecked).length;
 
-  /// SUBTOTAL (Harga barang yang dicentang)
+  /// SUBTOTAL
   int get checkedTotalPrice => _items
       .where((item) => item.isChecked)
       .fold(0, (sum, item) => sum + (item.price * item.quantity));
 
-  double get totalPrice => checkedTotalPrice - _discount;
+  /// TOTAL SETELAH DISKON
+  double get totalPrice {
+    double total = checkedTotalPrice - _voucherDiscount;
 
-  // Baris "totalPoints" gue hapus dari sini karena poin sekarang
-  // dihitung di OrderProvider setelah pesanan selesai.
+    if (total < 0) {
+      total = 0;
+    }
 
+    return total;
+  }
+
+  /// TAMBAH KE CART
   void addToCart(CartItem newItem) {
     int index = _items.indexWhere(
       (i) => i.name == newItem.name && i.size == newItem.size,
@@ -50,17 +64,21 @@ class CartProvider with ChangeNotifier {
     }
 
     _isAllChecked = _items.every((item) => item.isChecked);
+
     notifyListeners();
   }
 
+  /// CHECK ITEM
   void checkItem(int index, bool value) {
     _items[index].isChecked = value;
+
     _isAllChecked =
         _items.isNotEmpty && _items.every((item) => item.isChecked);
 
     notifyListeners();
   }
 
+  /// CHECK ALL
   void checkAll(bool value) {
     _isAllChecked = value;
 
@@ -71,18 +89,23 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// TAMBAH QTY
   void incrementQuantity(int index) {
     _items[index].quantity++;
+
     notifyListeners();
   }
 
+  /// KURANG QTY
   void decrementQuantity(int index) {
     if (_items[index].quantity > 1) {
       _items[index].quantity--;
+
       notifyListeners();
     }
   }
 
+  /// HAPUS ITEM
   void removeItem(int index) {
     if (index >= 0 && index < _items.length) {
       _items.removeAt(index);
@@ -95,25 +118,35 @@ class CartProvider with ChangeNotifier {
     }
   }
 
+  /// CLEAR CART
   void clearCart() {
     _items.clear();
+
     _isAllChecked = false;
-    _discount = 0;
+
+    _voucherDiscount = 0;
+
     notifyListeners();
   }
 
+  /// APPLY VOUCHER NOMINAL
   void applyVoucher(double amount) {
-    _discount = amount;
+    _voucherDiscount = amount;
+
     notifyListeners();
   }
 
+  /// APPLY VOUCHER PERSEN
   void applyVoucherPercent(double percent) {
-    _discount = checkedTotalPrice * (percent / 100);
+    _voucherDiscount = checkedTotalPrice * (percent / 100);
+
     notifyListeners();
   }
 
+  /// HAPUS VOUCHER
   void removeVoucher() {
-    _discount = 0;
+    _voucherDiscount = 0;
+
     notifyListeners();
   }
 }

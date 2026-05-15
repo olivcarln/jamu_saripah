@@ -62,18 +62,17 @@ class VoucherScreen extends StatelessWidget {
 
                 final now = DateTime.now();
 
-                // FILTER VOUCHER VALID
                 final filteredDocs =
                     snapshot.data!.docs.where((doc) {
                   final data =
                       doc.data() as Map<String, dynamic>;
 
-                  // CEK QUOTA
+                  /// QUOTA HABIS
                   if ((data['quota'] ?? 0) <= 0) {
                     return false;
                   }
 
-                  // CEK TANGGAL
+                  /// TIDAK ADA EXPIRED
                   if (data['expiredAt'] == null) {
                     return false;
                   }
@@ -95,7 +94,9 @@ class VoucherScreen extends StatelessWidget {
                       expiredAt.day,
                     );
 
-                    if (expiredDateOnly.isBefore(today)) {
+                    /// EXPIRED
+                    if (expiredDateOnly
+                        .isBefore(today)) {
                       return false;
                     }
                   } catch (e) {
@@ -114,7 +115,8 @@ class VoucherScreen extends StatelessWidget {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
+                  padding:
+                      const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 10,
                   ),
@@ -127,7 +129,6 @@ class VoucherScreen extends StatelessWidget {
                     final data =
                         doc.data() as Map<String, dynamic>;
 
-                    // FORMAT TANGGAL
                     DateTime expiredDate =
                         DateTime.now();
 
@@ -150,13 +151,14 @@ class VoucherScreen extends StatelessWidget {
 
                       builder:
                           (context, claimSnapshot) {
-                        // SUDAH DIGUNAKAN?
+
+                        /// SUDAH CLAIM / USED
                         bool isAlreadyUsed =
                             claimSnapshot.hasData &&
                                 claimSnapshot
                                     .data!.exists;
 
-                        // HITUNG NOMINAL DISKON
+                        /// NOMINAL DISKON
                         int nominalDiskon =
                             ((data['discount'] ?? 0)
                                         .toDouble() *
@@ -166,111 +168,146 @@ class VoucherScreen extends StatelessWidget {
                                     100)
                                 .toInt();
 
-                        return Padding(
-                          padding:
-                              const EdgeInsets.only(
-                            bottom: 12,
-                          ),
+                        return Opacity(
+                          opacity:
+                              isAlreadyUsed
+                                  ? 0.5
+                                  : 1,
 
-                          child: VoucherCard(
-                            title:
-                                data['code'] ??
-                                    'PROMO',
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(
+                              bottom: 12,
+                            ),
 
-                            subTitle:
-                                "Diskon ${data['discount']}%",
+                            child: VoucherCard(
+                              title:
+                                  data['code'] ??
+                                      'PROMO',
 
-                            expiryDate:
-                                "${expiredDate.day}/${expiredDate.month}/${expiredDate.year}",
+                              subTitle:
+                                  isAlreadyUsed
+                                      ? "Voucher sudah digunakan"
+                                      : "Diskon ${data['discount']}%",
 
-                            minTransaction:
-                                "Rp ${data['minPurchase'] ?? 0}",
+                              expiryDate:
+                                  "${expiredDate.day}/${expiredDate.month}/${expiredDate.year}",
 
-                            quota:
-                                "Sisa ${data['quota'] ?? 0}",
+                              minTransaction:
+                                  "Rp ${data['minPurchase'] ?? 0}",
 
-                            discountAmount:
-                                nominalDiskon
-                                    .toDouble(),
+                              quota:
+                                  isAlreadyUsed
+                                      ? "Voucher Expired"
+                                      : "Sisa ${data['quota'] ?? 0}",
 
-                            // TOMBOL
-                            buttonText:
-                                isAlreadyUsed
-                                    ? "Terpakai"
-                                    : "Gunakan",
+                              discountAmount:
+                                  nominalDiskon
+                                      .toDouble(),
 
-                            onClaim:
-                                isAlreadyUsed
-                                    ? null
-                                    : () async {
-                                        // APPLY KE CART
-                                        context
-                                            .read<
-                                                CartProvider>()
-                                            .applyVoucher(
-                                              nominalDiskon
-                                                  .toDouble(),
-                                            );
+                              /// BUTTON
+                              buttonText:
+                                  isAlreadyUsed
+                                      ? "Expired"
+                                      : "Gunakan",
 
-                                        // SIMPAN KE FIRESTORE
-                                        await FirebaseFirestore
-                                            .instance
-                                            .collection(
-                                                'users')
-                                            .doc(userId)
-                                            .collection(
-                                                'claimed_vouchers')
-                                            .doc(doc.id)
-                                            .set({
-                                          'usedAt':
-                                              FieldValue
-                                                  .serverTimestamp(),
-                                        });
+                              onClaim:
+                                  isAlreadyUsed
+                                      ? null
+                                      : () async {
 
-                                        // KURANGI QUOTA
-                                        await FirebaseFirestore
-                                            .instance
-                                            .collection(
-                                                'global_vouchers')
-                                            .doc(doc.id)
-                                            .update({
-                                          'quota':
-                                              FieldValue
-                                                  .increment(
-                                                      -1),
-                                        });
+                                          /// APPLY KE CART
+                                          context
+                                              .read<
+                                                  CartProvider>()
+                                              .applyVoucher(
+                                                nominalDiskon
+                                                    .toDouble(),
+                                              );
 
-                                        // SNACKBAR
-                                        ScaffoldMessenger.of(
-                                                context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            behavior:
-                                                SnackBarBehavior
-                                                    .floating,
-                                            backgroundColor:
-                                                const Color(
-                                                    0xFF6B7548),
-                                            shape:
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      16),
+                                          /// SIMPAN KE USER
+                                          await FirebaseFirestore
+                                              .instance
+                                              .collection(
+                                                  'users')
+                                              .doc(
+                                                  userId)
+                                              .collection(
+                                                  'claimed_vouchers')
+                                              .doc(doc.id)
+                                              .set({
+                                            'voucherId':
+                                                doc.id,
+
+                                            'voucherCode':
+                                                data['code'],
+
+                                            'discount':
+                                                data['discount'],
+
+                                            'usedAt':
+                                                FieldValue
+                                                    .serverTimestamp(),
+
+                                            'status':
+                                                'used',
+                                          });
+
+                                          /// KURANGI QUOTA
+                                          await FirebaseFirestore
+                                              .instance
+                                              .collection(
+                                                  'global_vouchers')
+                                              .doc(doc.id)
+                                              .update({
+                                            'quota':
+                                                FieldValue
+                                                    .increment(
+                                              -1,
                                             ),
-                                            content:
-                                                Text(
-                                              "Voucher ${data['code']} berhasil digunakan",
-                                              style:
-                                                  const TextStyle(
-                                                color: Colors
-                                                    .white,
-                                                fontWeight:
-                                                    FontWeight.bold,
+                                          });
+
+                                          if (!context
+                                              .mounted) {
+                                            return;
+                                          }
+
+                                          /// SNACKBAR
+                                          ScaffoldMessenger.of(
+                                                  context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              behavior:
+                                                  SnackBarBehavior
+                                                      .floating,
+
+                                              backgroundColor:
+                                                  const Color(
+                                                      0xFF6B7548),
+
+                                              shape:
+                                                  RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        16),
+                                              ),
+
+                                              content:
+                                                  Text(
+                                                "Voucher ${data['code']} berhasil digunakan",
+                                                style:
+                                                    const TextStyle(
+                                                  color:
+                                                      Colors.white,
+
+                                                  fontWeight:
+                                                      FontWeight.bold,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      },
+                                          );
+                                        },
+                            ),
                           ),
                         );
                       },

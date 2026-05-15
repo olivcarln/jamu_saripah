@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:jamu_saripah/Models/product_cart.dart';
 import 'package:jamu_saripah/Screens/DetailScreen/detail_screen.dart';
 import 'package:jamu_saripah/controllers/voucher_controller.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class Menus extends StatelessWidget {
   final Map<String, String> filters;
@@ -168,9 +170,9 @@ class Menus extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.all(12),
-              child: ValueListenableBuilder<int>(
-                valueListenable: VoucherController.discountNotifier,
-                builder: (context, discount, child) {
+              child: Consumer<CartProvider>(
+                builder: (context, cartProvider, child) {
+                  final discount = cartProvider.voucherDiscount.toInt();
                   double finalPrice = product.price - discount;
 
                   if (finalPrice < 0) {
