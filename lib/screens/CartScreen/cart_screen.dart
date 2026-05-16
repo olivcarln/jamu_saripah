@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/Provider/cart_provider.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/common/constasts.dart';
@@ -8,14 +8,18 @@ import 'components/cart_item.dart';
 import 'components/cart_empty_state.dart';
 import 'components/cart_button_summary.dart';
 
+
 class CartScreen extends StatefulWidget {
   final List<CartItem> initialItems;
 
+
   const CartScreen({super.key, required this.initialItems});
+
 
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
+
 
 class _CartScreenState extends State<CartScreen> {
   void _showDeleteConfirmation(CartProvider provider) {
@@ -59,19 +63,22 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Consumer<CartProvider>(
       builder: (context, provider, child) {
         final cartItems = provider.items;
 
+
         return Scaffold(
           backgroundColor: const Color(0xFFF9F9F9),
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(context), 
             ),
+            iconTheme: const IconThemeData(color: Colors.white),
             centerTitle: true,
             title: const Text(
               "Keranjang",
@@ -90,7 +97,8 @@ class _CartScreenState extends State<CartScreen> {
                     CartHeader(
                       isAllSelected: provider.isAllChecked,
                       canDelete: provider.checkedItemsCount > 0,
-                      onToggleAll: () => provider.checkAll(!provider.isAllChecked),
+                      onToggleAll: () =>
+                          provider.checkAll(!provider.isAllChecked),
                       onDeleteAll: () => _showDeleteConfirmation(provider),
                     ),
                     const Divider(height: 1),
@@ -100,11 +108,13 @@ class _CartScreenState extends State<CartScreen> {
                         itemBuilder: (context, index) {
                           final item = cartItems[index];
                           return Dismissible(
-                            key: ObjectKey(item),
+                            key: ObjectKey(item), // Pakai ObjectKey biar lebih stabil
                             direction: DismissDirection.endToStart,
                             background: Container(
                               alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
                               color: AppColors.brown,
                               child: const Icon(
                                 Icons.delete_sweep,
@@ -112,12 +122,15 @@ class _CartScreenState extends State<CartScreen> {
                                 size: 30,
                               ),
                             ),
-                            onDismissed: (_) => provider.removeItem(index),
+                            onDismissed: (_) => provider.removeItem(index), // ✅ Pake removeItem lu
                             child: CartItemWidget(
                               item: item,
-                              onToggle: () => provider.checkItem(index, !item.isChecked),
-                              onIncrement: () => provider.incrementQuantity(index),
-                              onDecrement: () => provider.decrementQuantity(index),
+                              onToggle: () =>
+                                  provider.checkItem(index, !item.isChecked),
+                              onIncrement: () =>
+                                  provider.incrementQuantity(index),
+                              onDecrement: () =>
+                                  provider.decrementQuantity(index),
                             ),
                           );
                         },
@@ -128,32 +141,20 @@ class _CartScreenState extends State<CartScreen> {
           bottomNavigationBar: cartItems.isEmpty
               ? null
               : CartButtonSummary(
-                  totalPrice: provider.checkedTotalPrice,
+                  totalPrice: provider.checkedTotalPrice, // ✅ Sesuaikan nama fungsi provider lu
                   selectedCount: provider.checkedItemsCount,
-                  onCheckout: () {
-                    if (provider.checkedItemsCount > 0) {
-                      // LANJUT KE CHECKOUT
-                      print("Lanjut Checkout");
-                    } else {
-                      // TAMPILKAN SNACKBAR JIKA NOL
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Row(
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.white),
-                              SizedBox(width: 10),
-                              Text("Pilih produk dulu ya sebelum lanjut!"),
-                            ],
-                          ),
-                          backgroundColor: const Color(0xFF634E34),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                onCheckout: provider.checkedItemsCount == 0
+    ? () {} // Berikan fungsi kosong, bukan null, agar tombol tetap sinkron dengan widget-mu
+    : () {
+        provider.checkoutSelectedItems();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Pesanan berhasil dibuat!"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
                 ),
         );
       },

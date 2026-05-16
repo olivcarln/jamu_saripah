@@ -158,22 +158,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
-                     children: [
-  Checkbox(
-    value: _rememberMe,
-    activeColor: const Color(0xFF7E8959),
-    onChanged: (value) {
-      setState(() => _rememberMe = value ?? false);
-    },
-  ),
-  const Text(
-    "Ingat saya",
-    style: TextStyle(
-      color: Colors.grey,
-      fontSize: 14,
-    ),
-  ),
-],
+                          children: [
+                            Checkbox(
+                              value: _rememberMe,
+                              activeColor: const Color(0xFF7E8959),
+                              onChanged: (value) {
+                                setState(() => _rememberMe = value ?? false);
+                              },
+                            ),
+                            const Text(
+                              "Ingat saya",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
                         GestureDetector(
                           onTap: () {

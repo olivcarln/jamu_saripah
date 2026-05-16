@@ -16,7 +16,7 @@ class TermsConditionsScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: primaryColor),
+          icon: Icon(Icons.arrow_back_ios_new, color: primaryColor),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -90,6 +90,7 @@ class TermsConditionsScreen extends StatelessWidget {
           color: Color(0xFF8DA05E),
           fontSize: 14,
           fontWeight: FontWeight.bold,
+             fontFamily: 'Montserrat',
         ),
       ),
     );

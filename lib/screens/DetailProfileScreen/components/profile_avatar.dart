@@ -1,23 +1,41 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class ProfileAvatar extends StatelessWidget {
   final File? imageFile;
-  final String? photoUrl;
+  final String? base64Image;
   final VoidCallback onTap;
 
   const ProfileAvatar({
     super.key,
     required this.imageFile,
-    required this.photoUrl,
+    required this.base64Image,
     required this.onTap,
   });
 
   ImageProvider? _getImage() {
-    if (imageFile != null) return FileImage(imageFile!);
-    if (photoUrl != null && photoUrl!.isNotEmpty) {
-      return NetworkImage(photoUrl!);
+
+    // preview image baru
+    if (imageFile != null) {
+      return FileImage(imageFile!);
     }
+
+    // image dari firestore
+    if (base64Image != null &&
+        base64Image!.isNotEmpty) {
+      try {
+        Uint8List bytes =
+            base64Decode(base64Image!);
+
+        return MemoryImage(bytes);
+      } catch (e) {
+        return null;
+      }
+    }
+
     return null;
   }
 
@@ -31,9 +49,14 @@ class ProfileAvatar extends StatelessWidget {
           backgroundColor: const Color(0xFFEDEDED),
           backgroundImage: _getImage(),
           child: _getImage() == null
-              ? const Icon(Icons.person, size: 40, color: Colors.grey)
+              ? const Icon(
+                  Icons.person,
+                  size: 40,
+                  color: Colors.grey,
+                )
               : null,
         ),
+
         GestureDetector(
           onTap: onTap,
           child: Container(

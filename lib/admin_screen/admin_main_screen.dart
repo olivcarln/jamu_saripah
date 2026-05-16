@@ -4,8 +4,8 @@ import 'package:jamu_saripah/admin_screen/screens/admin_dashboard_screen.dart';
 import 'package:jamu_saripah/admin_screen/screens/admin_order_screen.dart';
 import 'package:jamu_saripah/admin_screen/screens/admin_product_screen.dart';
 import 'package:jamu_saripah/admin_screen/screens/admin_voucher_screen.dart';
-import 'package:jamu_saripah/common/constasts.dart'; 
-import 'package:jamu_saripah/screens/hooks/onBoarding/onboarding_screen.dart';
+import 'package:jamu_saripah/common/constasts.dart';
+import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart'; 
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});

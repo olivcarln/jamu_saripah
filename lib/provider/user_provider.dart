@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider extends ChangeNotifier {
-  String _name = "Guest";
+  String _name = "User";
   final _phone = "";
 
   String get name => _name;
@@ -12,7 +12,7 @@ class UserProvider extends ChangeNotifier {
   // Load dari storage
   Future<void> loadUser() async {
     final prefs = await SharedPreferences.getInstance();
-    _name = prefs.getString('name') ?? "Guest";
+    _name = prefs.getString('name') ?? "User";
     notifyListeners();
   }
 

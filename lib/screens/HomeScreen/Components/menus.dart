@@ -1,11 +1,12 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'package:jamu_saripah/Models/product_cart.dart';
 import 'package:jamu_saripah/Screens/DetailScreen/detail_screen.dart';
+import 'package:jamu_saripah/controllers/voucher_controller.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class Menus extends StatelessWidget {
   final Map<String, String> filters;
@@ -31,7 +32,6 @@ class Menus extends StatelessWidget {
                 .collection('products')
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
-
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
@@ -48,52 +48,45 @@ class Menus extends StatelessWidget {
 
               List<QueryDocumentSnapshot> filteredDocs =
                   snapshot.data?.docs ?? [];
-              for (var doc in filteredDocs) {
-                final data = doc.data() as Map<String, dynamic>;
-                print("name: ${data['name']}, size: ${data['size']}");
-              }
 
-              if (filteredDocs.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text("Belum ada produk"),
-                  ),
-                );
-              }
-
-              // Filter kategori (size)
+              // FILTER KATEGORI
               if (filters['kategori'] != null &&
                   filters['kategori']!.isNotEmpty) {
                 filteredDocs = filteredDocs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
+
                   return (data['size'] ?? '').toString().contains(
                     filters['kategori']!,
                   );
                 }).toList();
               }
 
-              // Filter jenis jamu
+              // FILTER JENIS
               if (filters['jenis'] != null && filters['jenis']!.isNotEmpty) {
                 filteredDocs = filteredDocs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
+
                   return (data['name'] ?? '').toString().toLowerCase().contains(
                     filters['jenis']!.toLowerCase(),
                   );
                 }).toList();
               }
 
-              // Sort harga
+              // SORT HARGA
               if (filters['harga'] == 'Harga Terendah') {
                 filteredDocs.sort((a, b) {
                   final aPrice = ((a.data() as Map)['price'] ?? 0) as num;
+
                   final bPrice = ((b.data() as Map)['price'] ?? 0) as num;
+
                   return aPrice.compareTo(bPrice);
                 });
               } else if (filters['harga'] == 'Harga Tertinggi') {
                 filteredDocs.sort((a, b) {
                   final aPrice = ((a.data() as Map)['price'] ?? 0) as num;
+
                   final bPrice = ((b.data() as Map)['price'] ?? 0) as num;
+
                   return bPrice.compareTo(aPrice);
                 });
               }
@@ -117,7 +110,6 @@ class Menus extends StatelessWidget {
                   mainAxisSpacing: 15,
                   childAspectRatio: 0.70,
                 ),
-
                 itemBuilder: (context, index) {
                   final data =
                       filteredDocs[index].data() as Map<String, dynamic>;
@@ -142,8 +134,6 @@ class Menus extends StatelessWidget {
   }
 
   Widget _buildProductCard(BuildContext context, Product product) {
-    final double originalPrice = product.price + 5000;
-
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -177,50 +167,96 @@ class Menus extends StatelessWidget {
                 child: _buildProductImage(product.image),
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    product.size,
-                    style: const TextStyle(color: Colors.grey, fontSize: 11),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    NumberFormat.currency(
-                      locale: 'id_ID',
-                      symbol: 'Rp ',
-                      decimalDigits: 0,
-                    ).format(originalPrice),
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 10,
-                      decoration: TextDecoration.lineThrough,
-                    ),
-                  ),
-                  Text(
-                    NumberFormat.currency(
-                      locale: 'id_ID',
-                      symbol: 'Rp ',
-                      decimalDigits: 0,
-                    ).format(product.price),
-                    style: const TextStyle(
-                      color: Color(0xFF7B8D5E),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+              child: Consumer<CartProvider>(
+                builder: (context, cartProvider, child) {
+                  final discount = cartProvider.voucherDiscount.toInt();
+                  double finalPrice = product.price - discount;
+
+                  if (finalPrice < 0) {
+                    finalPrice = 0;
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                      Text(
+                        product.size,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 11,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // HARGA LAMA (dicoret)
+                      if (discount > 0)
+                        Text(
+                          NumberFormat.currency(
+                            locale: 'id_ID',
+                            symbol: 'Rp ',
+                            decimalDigits: 0,
+                          ).format(product.price),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+
+                      // HARGA BARU
+                      Text(
+                        NumberFormat.currency(
+                          locale: 'id_ID',
+                          symbol: 'Rp ',
+                          decimalDigits: 0,
+                        ).format(finalPrice),
+                        style: const TextStyle(
+                          color: Color(0xFF7B8D5E),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+
+                      // LABEL VOUCHER
+                      if (discount > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE7F4E4),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              "Voucher -Rp $discount",
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF6B7548),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
           ],
@@ -252,7 +288,10 @@ class Menus extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
+          if (loadingProgress == null) {
+            return child;
+          }
+
           return const Center(child: CircularProgressIndicator());
         },
         errorBuilder: (context, error, stackTrace) => Container(

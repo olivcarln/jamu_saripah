@@ -8,10 +8,7 @@ import 'package:jamu_saripah/Screens/CheckoutScreen/checkout.screen.dart';
 class OrderListStateScreen extends StatelessWidget {
   final List<OrderModel> orders;
 
-  const OrderListStateScreen(
-    this.orders, {
-    super.key,
-  });
+  const OrderListStateScreen(this.orders, {super.key});
 
   String formatHarga(int harga) {
     return harga.toString().replaceAllMapped(
@@ -100,8 +97,6 @@ class OrderListStateScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-            
-
                         SizedBox(
                           height: 35,
                           child: ElevatedButton(
@@ -109,14 +104,14 @@ class OrderListStateScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      CheckoutScreen(cartItems: const []),
+                                  builder: (context) => const CheckoutScreen(
+                               cartItems: [],
+                                  ), // Ganti dengan CheckoutScreen yang sesuai
                                 ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFF7E8959),
+                              backgroundColor: const Color(0xFF7E8959),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
@@ -149,10 +144,7 @@ class OrderListStateScreen extends StatelessWidget {
                     "-------------------------------------------------------------------------",
                     maxLines: 1,
                     overflow: TextOverflow.clip,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      letterSpacing: 2,
-                    ),
+                    style: TextStyle(color: Colors.grey, letterSpacing: 2),
                   ),
                 ),
               ),
@@ -161,8 +153,7 @@ class OrderListStateScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "Status: ${order.status}",
@@ -181,10 +172,7 @@ class OrderListStateScreen extends StatelessWidget {
                 ),
               ),
 
-              Container(
-                height: 8,
-                color: const Color(0xFFEEEEEE),
-              ),
+              Container(height: 8, color: const Color(0xFFEEEEEE)),
             ],
           ),
         );

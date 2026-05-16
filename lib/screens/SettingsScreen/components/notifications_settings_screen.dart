@@ -65,7 +65,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           ),
           _buildNotificationItem(
             title: "Status Pesanan",
-            subtitle: "Dapatkan update real-time tentang paketmu.",
+            subtitle: "Dapatkan update real-time tentang pesananmu.",
             icon: Icons.local_shipping_outlined,
             value: _orderUpdate,
             onChanged: (val) => setState(() => _orderUpdate = val),

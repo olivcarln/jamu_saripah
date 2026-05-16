@@ -97,7 +97,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text("Butuh bantuan?", style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text("Hubungi tim privasi kami", style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                        Text("Hubungi pusat bantuan kami", style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                       ],
                     ),
                   ),

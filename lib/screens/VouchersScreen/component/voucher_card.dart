@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/controllers/voucher_controller.dart';
 
 class VoucherCard extends StatelessWidget {
   final String title;
@@ -8,228 +7,258 @@ class VoucherCard extends StatelessWidget {
   final String minTransaction;
   final String quota;
   final double discountAmount;
-  final String buttonText; // Digunakan untuk label tombol
-  final VoidCallback? onClaim; // Jika null, tombol otomatis disabled
+  final String buttonText;
+  final bool isSelected;
+  final VoidCallback? onClaim;
 
   const VoucherCard({
-  super.key,
-  required this.title,
-  required this.subTitle,
-  required this.expiryDate,
-  required this.minTransaction,
-  required this.quota,
-  required this.discountAmount,
-  this.buttonText = "Gunakan", // Default label
-  this.onClaim,
-});
+    super.key,
+    required this.title,
+    required this.subTitle,
+    required this.expiryDate,
+    required this.minTransaction,
+    required this.quota,
+    required this.discountAmount,
+    required this.buttonText,
+    required this.isSelected,
+    this.onClaim,
+  });
+
+  String formatHarga(int harga) {
+    return harga.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      constraints: const BoxConstraints(minHeight: 160), 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF8B6B4D),
-            Color(0xFF6B7548),
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 250),
+      opacity: isSelected ? 1 : 0.88,
+
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+
+        constraints: const BoxConstraints(minHeight: 160),
+
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF8B6B4D),
+              Color(0xFF6B7548),
+            ],
+          ),
+
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: -15,
-            top: 0,
-            bottom: 0,
-            child: Center(child: _buildNotch()),
-          ),
-          Positioned(
-            right: -15,
-            top: 0,
-            bottom: 0,
-            child: Center(child: _buildNotch()),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min, 
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            /// NOTCH KIRI
+            Positioned(
+              left: -15,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: _buildNotch(context),
+              ),
+            ),
+
+            /// NOTCH KANAN
+            Positioned(
+              right: -15,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: _buildNotch(context),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  /// TOP
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                subTitle,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                            ),
+
+                            const SizedBox(height: 4),
+
+                            Text(
+                              subTitle,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        _buildBrandIcon(),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Min. Pembelian $minTransaction",
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Potongan Rp ${discountAmount.toInt()}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
                       ),
+
+                      _buildBrandIcon(),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    "Min. Pembelian $minTransaction",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  height: 1,
-                  color: Colors.white30,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Column(
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    "Potongan Rp ${formatHarga(discountAmount.toInt())}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  Container(
+                    height: 1,
+                    color: Colors.white24,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  /// BOTTOM
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    children: [
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+
                         children: [
                           const Text(
-                            'Berlaku Sampai',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                            "Berlaku Sampai",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
-                          const SizedBox(height: 2),
+
+                          const SizedBox(height: 3),
+
                           Text(
                             expiryDate,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 15,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                   SizedBox(
-  height: 35,
-  child: ElevatedButton(
-    style: ElevatedButton.styleFrom(
-      backgroundColor:
-          onClaim == null ? Colors.white54 : Colors.white,
-      foregroundColor: const Color(0xFF6B7548),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-    ),
 
-    onPressed: () {
-      // APPLY DISKON
-      VoucherController.discountNotifier.value = 5000;
+                      ElevatedButton(
+                        onPressed: onClaim,
 
-      // SNACKBAR BAGUS
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFF6B7548),
-          elevation: 10,
-          margin: const EdgeInsets.all(20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          duration: const Duration(seconds: 2),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isSelected
+                              ? const Color(0xFFE7ECD9)
+                              : Colors.white,
 
-          content: Row(
-            children: const [
-              Icon(
-                Icons.check_circle,
-                color: Colors.white,
-              ),
+                          foregroundColor: const Color(0xFF6B7548),
 
-              SizedBox(width: 12),
+                          elevation: 0,
 
-              Expanded(
-                child: Text(
-                  "Voucher berhasil digunakan 🎉",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+
+                        child: Text(
+                          buttonText,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
-      );
-    },
-
-    child: Text(
-      buttonText,
-      style: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-),
-                  ],
-                ),
-              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildNotch() {
+  /// NOTCH TRANSPARAN IKUT BACKGROUND
+  Widget _buildNotch(BuildContext context) {
     return Container(
-      height: 30,
       width: 30,
-      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+      height: 30,
+
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        shape: BoxShape.circle,
+      ),
     );
   }
 
   Widget _buildBrandIcon() {
     return Container(
-      height: 45,
       width: 45,
+      height: 45,
+
       decoration: BoxDecoration(
         color: Colors.white24,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white30, width: 1),
+        border: Border.all(
+          color: Colors.white30,
+        ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(25),
-        child: const Icon(Icons.shopping_bag, color: Colors.white),
+
+      child: const Icon(
+        Icons.shopping_bag,
+        color: Colors.white,
       ),
     );
   }

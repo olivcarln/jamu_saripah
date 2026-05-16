@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/Models/order.dart';
 import 'package:jamu_saripah/provider/order_provider.dart';
@@ -13,15 +16,10 @@ import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
 import 'package:provider/provider.dart';
 
-
 class CheckoutScreen extends StatefulWidget {
-
   final List<CartItem> cartItems;
 
-  const CheckoutScreen({
-    super.key,
-    required this.cartItems,
-  });
+  const CheckoutScreen({super.key, required this.cartItems});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -31,6 +29,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String currentMethod = 'Pick Up';
 
   bool showSpecialPackage = true;
+
   bool perluTasBelanja = false;
 
   int hargaTas = 3000;
@@ -44,23 +43,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   ];
 
   Map<String, dynamic>? selectedPayment;
+
+  /// VOUCHER
   Map<String, dynamic>? appliedVoucher;
 
-  late List<Map<String, dynamic>> cartItems;
+  late List<Map<String, dynamic>> localCartItems;
 
   @override
   void initState() {
     super.initState();
 
-    cartItems = [
-      {
-        'name': 'Jamu Beras Kencur',
-        'size': '350 ml',
-        'price': widget.cartItems.isNotEmpty ? widget.cartItems.first.price : 19500,
-        'qty': 1,
-        'image': 'assets/images/beras_kencur.png',
-      },
-    ];
+    loadCompressedImages();
+  }
+
+  Future<void> loadCompressedImages() async {
+    List<Map<String, dynamic>> tempItems = [];
+
+    for (var item in widget.cartItems) {
+      String compressedImage = item.image;
+
+      /// JIKA BASE64
+      if (!item.image.startsWith('assets')) {
+        compressedImage = await compressBase64Image(item.image);
+      }
+
+      tempItems.add({
+        'name': item.name,
+        'price': item.price,
+        'qty': item.quantity,
+        'size': item.size,
+        'image': compressedImage,
+      });
+    }
+
+    setState(() {
+      localCartItems = tempItems;
+    });
   }
 
   String formatHarga(int harga) {
@@ -70,20 +88,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  int calculateTotal() {
-    int totalProduk = cartItems.fold(
+  /// SUBTOTAL
+  int calculateSubtotal() {
+    return localCartItems.fold(
       0,
-      (sum, item) =>
-          sum + ((item['price'] as int) * (item['qty'] as int)),
+      (sum, item) => sum + ((item['price'] as int) * (item['qty'] as int)),
     );
+  }
 
-    int total = perluTasBelanja
-        ? totalProduk + hargaTas
-        : totalProduk;
+  /// DISKON VOUCHER
+  int calculateVoucherDiscount() {
+    if (appliedVoucher == null) return 0;
 
-    if (appliedVoucher != null) {
-      total -= (appliedVoucher!['discount'] as int);
+    final subtotal = calculateSubtotal();
+
+    final minPurchase = (appliedVoucher!['minPurchase'] ?? 0) as int;
+
+    final discountPercent = (appliedVoucher!['discountPercent'] ?? 0) as int;
+
+    /// BELUM MEMENUHI MINIMUM PEMBELIAN
+    if (subtotal < minPurchase) {
+      return 0;
     }
+
+    return ((subtotal * discountPercent) / 100).toInt();
+  }
+
+  /// TOTAL AKHIR
+  int calculateTotal() {
+    int subtotal = calculateSubtotal();
+
+    int total = perluTasBelanja ? subtotal + hargaTas : subtotal;
+
+    total -= calculateVoucherDiscount();
 
     return total > 0 ? total : 0;
   }
@@ -95,23 +132,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: Color(0xFF7E8959),
-          ),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
 
         title: const Text(
           'Checkout',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
 
         centerTitle: true,
-        backgroundColor: Colors.white,
+
+        backgroundColor: const Color(0xFF7E8959),
+
         elevation: 0,
       ),
 
@@ -125,36 +158,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                   _buildLocationInfo(),
 
-                  const Divider(
-                    thickness: 8,
-                    color: Color(0xFFF1F1F1),
-                  ),
+                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
 
                   _buildDetailPesananSection(),
 
-          if (showSpecialPackage)
-  AddingMenuScreen(
-    onAddTap: (
-      String? n,
-      String? s,
-      int? p,
-      String? img,
-    ) {
-      setState(() {
-        cartItems.add({
-          'name': n ?? 'Menu Spesial',
-          'size': s ?? '',
-          'price': p ?? 0,
-          'qty': 1,
-          'image': img ?? '',
-        });
-      });
-    },
-  ),
+                  if (showSpecialPackage)
+                    AddingMenuScreen(
+                      onAddTap: (name, size, price, image) {
+                        setState(() {
+                          localCartItems.add({
+                            'name': name,
+                            'size': size,
+                            'price': price,
+                            'qty': 1,
+                            'image': image,
+                          });
+                        });
+                      },
+                    ),
 
                   ShoppingBagScreen(
                     isSelected: perluTasBelanja,
+
                     harga: hargaTas,
+
                     onChanged: (val) {
                       setState(() {
                         perluTasBelanja = val;
@@ -162,43 +189,65 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     },
                   ),
 
-                  const Divider(
-                    thickness: 8,
-                    color: Color(0xFFF1F1F1),
-                  ),
+                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
 
+                  /// VOUCHER
                   _buildClickableSection(
                     title: appliedVoucher != null
                         ? 'Voucher Dipakai'
                         : 'Voucher Diskon',
 
                     subtitle: appliedVoucher != null
-                        ? 'Potongan Rp ${formatHarga(appliedVoucher!['discount'])}'
-                        : 'yuk lebih hemat dengan voucher',
+                        ? '${appliedVoucher!['code']} • Diskon ${appliedVoucher!['discountPercent']}%'
+                        : 'Yuk lebih hemat dengan voucher',
 
                     icon: Icons.confirmation_num_outlined,
 
                     onTap: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (c) => const VoucherScreen(),
-                        ),
+                      final result = await showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+
+                        builder: (context) {
+                          return VoucherScreen(
+                            selectedVoucher: appliedVoucher,
+
+                            /// KIRIM SUBTOTAL
+                            subtotal: calculateSubtotal(),
+
+                            /// MULTIPLE VOUCHER
+                            selectedVouchers: appliedVoucher != null
+                                ? [appliedVoucher!]
+                                : [],
+                          );
+                        },
                       );
 
-                      if (result != null) {
+                      if (result != null && result is List) {
                         setState(() {
-                          appliedVoucher = result;
+                          /// AMBIL VOUCHER PERTAMA
+                          if (result.isNotEmpty) {
+                            appliedVoucher = result.first;
+                          }
                         });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: const Color(0xFF7E8959),
+
+                            content: Text(
+                              "${result.length} voucher berhasil digunakan",
+                            ),
+                          ),
+                        );
                       }
                     },
                   ),
 
-                  const Divider(
-                    thickness: 1,
-                    color: Color(0xFFF1F1F1),
-                  ),
+                  const Divider(thickness: 1, color: Color(0xFFF1F1F1)),
 
+                  /// PAYMENT
                   _buildClickableSection(
                     title: 'Metode Pembayaran',
 
@@ -212,8 +261,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const PaymentScreen(),
+                          builder: (context) => const PaymentScreen(),
                         ),
                       );
 
@@ -225,212 +273,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     },
                   ),
 
-                  const Divider(
-                    thickness: 8,
-                    color: Color(0xFFF1F1F1),
-                  ),
+                  const Divider(thickness: 8, color: Color(0xFFF1F1F1)),
                 ],
               ),
             ),
           ),
 
-          const Divider(
-            height: 1,
-            color: Color(0xFFF1F1F1),
-          ),
-
-          _buildRincianSection(),
-        ],
-      ),
-
-      bottomNavigationBar: _buildBottomBar(),
-    );
-  }
-
-  Widget _buildDetailPesananSection() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          const Text(
-            'Detail Pesanan',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          for (int i = 0; i < cartItems.length; i++)
-            _buildCartItem(cartItems[i], i),
-
-          const Divider(
-            height: 30,
-            thickness: 1,
-            color: Color(0xFFEEEEEE),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCartItem(
-    Map<String, dynamic> item,
-    int index,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: _buildProductImage(item['image'] ?? ''),
-          ),
-
-          const SizedBox(width: 14),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  item['name'] ?? 'No Name',
-
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  item['size'] ?? '',
-
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  "Qty: ${item['qty']}",
-
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  "Rp ${formatHarga(item['price'] ?? 0)}",
-
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF7E8959),
-                    fontSize: 14,
-                  ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+
+              children: [_buildRincianBayar(), _buildBottomBar()],
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// IMAGE BUILDER
-  Widget _buildProductImage(String imageSource) {
-    if (imageSource.isEmpty) {
-      return _errorImage();
-    }
-
-    /// BASE64
-    if (imageSource.length > 100 &&
-        !imageSource.startsWith('http')) {
-      try {
-        return Image.memory(
-          base64Decode(imageSource),
-
-          width: 80,
-          height: 80,
-
-          fit: BoxFit.cover,
-
-          errorBuilder: (context, error, stackTrace) {
-            return _errorImage();
-          },
-        );
-      } catch (e) {
-        return _errorImage();
-      }
-    }
-
-    /// NETWORK
-    if (imageSource.startsWith('http')) {
-      return Image.network(
-        imageSource,
-
-        width: 80,
-        height: 80,
-
-        fit: BoxFit.cover,
-
-        errorBuilder: (context, error, stackTrace) {
-          return _errorImage();
-        },
-      );
-    }
-
-    /// SVG
-    if (imageSource.toLowerCase().endsWith('.svg')) {
-      return SvgPicture.asset(
-        imageSource,
-
-        width: 80,
-        height: 80,
-
-        fit: BoxFit.cover,
-      );
-    }
-
-    /// ASSET
-    return Image.asset(
-      imageSource,
-
-      width: 80,
-      height: 80,
-
-      fit: BoxFit.cover,
-
-      errorBuilder: (context, error, stackTrace) {
-        return _errorImage();
-      },
-    );
-  }
-
-  Widget _errorImage() {
-    return Container(
-      width: 80,
-      height: 80,
-
-      color: Colors.grey.shade200,
-
-      child: const Icon(
-        Icons.broken_image,
-        color: Colors.grey,
       ),
     );
   }
@@ -441,24 +308,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       padding: const EdgeInsets.all(16),
 
-      child: const Row(
+      child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.person_pin_circle,
             color: Color(0xFF7E8959),
             size: 24,
           ),
 
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
 
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
 
-              children: [
+              children: const [
                 Text(
                   'Pick Up',
-
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF7E8959),
@@ -468,11 +334,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                 Text(
                   'Datang, ambil, beres!',
-
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
             ),
@@ -492,11 +354,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           const Text(
             "Pesananmu siap diambil di sini",
-
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
 
           const SizedBox(height: 10),
@@ -509,9 +367,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
               borderRadius: BorderRadius.circular(12),
 
-              border: Border.all(
-                color: Colors.grey.shade300,
-              ),
+              border: Border.all(color: Colors.grey.shade300),
             ),
 
             child: DropdownButtonHideUnderline(
@@ -520,12 +376,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                 isExpanded: true,
 
-                items: booths.map((val) {
-                  return DropdownMenuItem(
-                    value: val,
-                    child: Text(val),
-                  );
-                }).toList(),
+                items: booths
+                    .map(
+                      (val) => DropdownMenuItem(value: val, child: Text(val)),
+                    )
+                    .toList(),
 
                 onChanged: (nv) {
                   setState(() {
@@ -540,6 +395,111 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  Widget _buildDetailPesananSection() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+
+        children: [
+          const Text(
+            'Detail Pesanan',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+
+          const SizedBox(height: 20),
+
+          for (var item in localCartItems) _buildCartItem(item),
+
+          const Divider(height: 30, thickness: 1, color: Color(0xFFEEEEEE)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCartItem(Map<String, dynamic> item) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+
+            child: item['image'] != null
+                ? item['image'].toString().startsWith('assets')
+                      ? Image.asset(
+                          item['image'],
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.memory(
+                          base64Decode(item['image']),
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                        )
+                : Container(
+                    width: 60,
+                    height: 60,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image, color: Colors.grey),
+                  ),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                Text(
+                  item['name'] ?? '',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+
+                Text(
+                  item['size'] ?? '350 ml',
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+
+                const SizedBox(height: 8),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                  children: [
+                    Text(
+                      "Qty: ${item['qty']}",
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+
+                    Text(
+                      "Rp ${formatHarga(item['price'])}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF7E8959),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildClickableSection({
     required String title,
     required String subtitle,
@@ -547,54 +507,195 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: const Color(0xFF7E8959),
-      ),
+      leading: Icon(icon, color: const Color(0xFF7E8959)),
 
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
 
-      subtitle: Text(subtitle),
+      subtitle: Text(subtitle, overflow: TextOverflow.ellipsis),
 
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
 
       onTap: onTap,
     );
   }
 
-  Widget _buildRincianSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+  Widget _buildRincianBayar() {
+    final subtotal = calculateSubtotal();
 
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final voucherDiscount = calculateVoucherDiscount();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-          const Text(
-            'Total Pembayaran',
+          /// BOX VOUCHER
+          if (appliedVoucher != null && voucherDiscount > 0) ...[
+            Container(
+              width: double.infinity,
 
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+              padding: const EdgeInsets.all(14),
+
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F9ED),
+
+                borderRadius: BorderRadius.circular(14),
+
+                border: Border.all(color: const Color(0xFFD8E5BE)),
+              ),
+
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE7F0D5),
+
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+
+                    child: const Icon(
+                      Icons.discount,
+                      color: Color(0xFF7E8959),
+                      size: 20,
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        Text(
+                          appliedVoucher!['code'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Color(0xFF7E8959),
+                          ),
+                        ),
+
+                        const SizedBox(height: 3),
+
+                        Text(
+                          "Voucher ${appliedVoucher!['discountPercent']}% berhasil dipakai",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Text(
+                    "-Rp ${formatHarga(voucherDiscount)}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
             ),
+
+            const SizedBox(height: 18),
+          ],
+
+          /// SUBTOTAL
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+            children: [
+              Text(
+                "Subtotal",
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+              ),
+
+              Text(
+                "Rp ${formatHarga(subtotal)}",
+                style: const TextStyle(fontSize: 14),
+              ),
+            ],
           ),
 
-          Text(
-            'Rp ${formatHarga(calculateTotal())}',
+          /// TAS
+          if (perluTasBelanja) ...[
+            const SizedBox(height: 10),
 
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Color(0xFF7E8959),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+              children: [
+                Text(
+                  "Tas Belanja",
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                ),
+
+                Text(
+                  "Rp ${formatHarga(hargaTas)}",
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
             ),
+          ],
+
+          /// DISKON
+          if (voucherDiscount > 0) ...[
+            const SizedBox(height: 10),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+              children: [
+                const Text(
+                  "Diskon Voucher",
+                  style: TextStyle(fontSize: 14, color: Colors.green),
+                ),
+
+                Text(
+                  "-Rp ${formatHarga(voucherDiscount)}",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+
+            child: Divider(height: 1),
+          ),
+
+          /// TOTAL
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+            children: [
+              const Text(
+                "Total Pembayaran",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+
+              Text(
+                "Rp ${formatHarga(calculateTotal())}",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF7E8959),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -607,72 +708,146 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       child: ElevatedButton(
         onPressed: () async {
-          if (cartItems.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Keranjang kosong'),
-              ),
-            );
-
-            return;
-          }
-
-          if (selectedPayment == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Pilih metode pembayaran'),
-              ),
-            );
-
-            return;
-          }
-
           try {
-            final orderProvider =
-                Provider.of<OrderProvider>(
+            /// VALIDASI PAYMENT
+            if (selectedPayment == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Pilih metode pembayaran terlebih dahulu"),
+                  backgroundColor: Colors.red,
+                ),
+              );
+
+              return;
+            }
+
+            /// LOADING
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              useRootNavigator: true,
+
+              builder: (context) {
+                return const Center(child: CircularProgressIndicator());
+              },
+            );
+
+            final orderProvider = Provider.of<OrderProvider>(
               context,
               listen: false,
             );
 
-            final userProvider =
-                Provider.of<UserProvider>(
+            final userProvider = Provider.of<UserProvider>(
               context,
               listen: false,
             );
 
-            
+            final user = FirebaseAuth.instance.currentUser;
 
+            /// ORDER
+          /// ORDER
+final newOrder = OrderModel(
+  id: DateTime.now().millisecondsSinceEpoch.toString(),
+
+  /// USER
+  userEmail: user?.email ?? '',
+  userId: user?.uid ?? '',
+  userName: userProvider.name.isNotEmpty
+      ? userProvider.name
+      : "Customer",
+
+  /// TOTAL
+  totalAmount: calculateTotal(),
+
+  /// STATUS WAJIB SAMA
+  status: "Diproses",
+
+  /// PAYMENT
+  paymentMethod: selectedPayment!['name'],
+
+  /// OUTLET
+  address: selectedBooth,
+
+  /// DATE
+  createdAt: DateTime.now(),
+
+  /// ITEMS
+  items: localCartItems.map((item) {
+    return {
+      'name': item['name'] ?? '',
+      'price': item['price'] ?? 0,
+      'qty': item['qty'] ?? 1,
+      'size': item['size'] ?? '',
+      'image': item['image'] ?? '',
+    };
+  }).toList(),
+
+  /// IMAGE THUMBNAIL
+  image: localCartItems.isNotEmpty
+      ? localCartItems.first['image'] ?? ''
+      : '',
+
+  /// PAYMENT STATUS
+  paymentConfirmed: false,
+);
+
+            /// SIMPAN ORDER
+            await orderProvider.addOrder(newOrder);
+
+            /// SIMPAN VOUCHER
+            if (appliedVoucher != null && user != null) {
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .collection('claimed_vouchers')
+                  .doc(appliedVoucher!['id'])
+                  .set({
+                    'voucherId': appliedVoucher!['id'],
+                    'usedAt': Timestamp.now(),
+                  });
+
+              /// KURANGI QUOTA
+              await FirebaseFirestore.instance
+                  .collection('global_vouchers')
+                  .doc(appliedVoucher!['id'])
+                  .update({'quota': FieldValue.increment(-1)});
+            }
+
+            /// TUTUP LOADING
+            if (mounted && Navigator.canPop(context)) {
+              Navigator.of(context, rootNavigator: true).pop();
+            }
+
+            /// SUCCESS
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text(
-                    'Pesanan berhasil dibuat',
-                  ),
+                  content: Text("Pesanan berhasil dibuat"),
+                  backgroundColor: Color(0xFF7E8959),
                 ),
               );
             }
 
+            /// PINDAH KE HISTORY SCREEN
             if (mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
-
                 MaterialPageRoute(
-                  builder: (context) =>
-                      const MainScreen(),
+                  builder: (context) => const MainScreen(initialIndex: 1),
                 ),
 
+                /// HAPUS SEMUA STACK
                 (route) => false,
               );
             }
           } catch (e) {
-            debugPrint("Error checkout: $e");
+            /// TUTUP LOADING
+            if (mounted && Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
 
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Terjadi kesalahan: $e',
-                ),
-              ),
+              SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red),
             );
           }
         },
@@ -680,10 +855,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF7E8959),
 
-          minimumSize: const Size(
-            double.infinity,
-            54,
-          ),
+          minimumSize: const Size(double.infinity, 54),
 
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -692,7 +864,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
         child: const Text(
           'Pesan Sekarang',
-
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -701,5 +872,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       ),
     );
+  }
+
+  /// COMPRESS BASE64 IMAGE
+  Future<String> compressBase64Image(String base64String) async {
+    try {
+      /// HAPUS PREFIX DATA IMAGE JIKA ADA
+      String cleanBase64 = base64String;
+
+      if (base64String.contains(',')) {
+        cleanBase64 = base64String.split(',').last;
+      }
+
+      /// BASE64 -> UINT8LIST
+      Uint8List imageBytes = base64Decode(cleanBase64);
+
+      /// COMPRESS IMAGE
+      final compressedBytes = await FlutterImageCompress.compressWithList(
+        imageBytes,
+        quality: 40, // semakin kecil semakin hemat
+        minWidth: 600,
+        minHeight: 600,
+      );
+
+      /// UINT8LIST -> BASE64
+      return base64Encode(compressedBytes);
+    } catch (e) {
+      debugPrint("Compress image error: $e");
+
+      return base64String;
+    }
   }
 }

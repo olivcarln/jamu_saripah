@@ -38,16 +38,11 @@ class BottomNav extends StatelessWidget {
               ),
               _buildNavItem(
                 index: 1,
-                icon: Icons.confirmation_number_outlined,
-                label: "Vouchers",
-              ),
-              _buildNavItem(
-                index: 2,
                 icon: Icons.assignment_outlined,
                 label: "Your order",
               ),
               _buildNavItem(
-                index: 3,
+                index: 2,
                 icon: Icons.person_outline,
                 label: "Account",
               ),
