@@ -74,10 +74,10 @@ class _CartScreenState extends State<CartScreen> {
         return Scaffold(
           backgroundColor: const Color(0xFFF9F9F9),
           appBar: AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context), // ← cukup pop saja
-              ),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context), 
+            ),
             iconTheme: const IconThemeData(color: Colors.white),
             centerTitle: true,
             title: const Text(
@@ -108,9 +108,7 @@ class _CartScreenState extends State<CartScreen> {
                         itemBuilder: (context, index) {
                           final item = cartItems[index];
                           return Dismissible(
-                            key: ObjectKey(
-                              item,
-                            ), // Pakai ObjectKey biar lebih stabil
+                            key: ObjectKey(item), // Pakai ObjectKey biar lebih stabil
                             direction: DismissDirection.endToStart,
                             background: Container(
                               alignment: Alignment.centerRight,
@@ -124,9 +122,7 @@ class _CartScreenState extends State<CartScreen> {
                                 size: 30,
                               ),
                             ),
-                            onDismissed: (_) => provider.removeItem(
-                              index,
-                            ), // ✅ Pake removeItem lu
+                            onDismissed: (_) => provider.removeItem(index), // ✅ Pake removeItem lu
                             child: CartItemWidget(
                               item: item,
                               onToggle: () =>
@@ -145,18 +141,23 @@ class _CartScreenState extends State<CartScreen> {
           bottomNavigationBar: cartItems.isEmpty
               ? null
               : CartButtonSummary(
-                  totalPrice: provider
-                      .checkedTotalPrice, // ✅ Sesuaikan nama fungsi provider lu
+                  totalPrice: provider.checkedTotalPrice, // ✅ Sesuaikan nama fungsi provider lu
                   selectedCount: provider.checkedItemsCount,
-                  onCheckout: () {
-                    print("Checkout ${provider.checkedItemsCount} item");
-                  },
+                onCheckout: provider.checkedItemsCount == 0
+    ? () {} // Berikan fungsi kosong, bukan null, agar tombol tetap sinkron dengan widget-mu
+    : () {
+        provider.checkoutSelectedItems();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Pesanan berhasil dibuat!"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
                 ),
         );
       },
     );
   }
 }
-
-
-

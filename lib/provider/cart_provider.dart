@@ -129,6 +129,22 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// HAPUS ITEM YANG DICHECKOUT (PILIH)
+  void checkoutSelectedItems() {
+    // Menghapus hanya item yang dicentang
+    _items.removeWhere((item) => item.isChecked);
+
+    // Update status checkbox global setelah sisa item berubah
+    if (_items.isEmpty) {
+      _isAllChecked = false;
+      _voucherDiscount = 0; // Reset voucher jika keranjang benar-benar kosong
+    } else {
+      _isAllChecked = _items.every((item) => item.isChecked);
+    }
+
+    notifyListeners();
+  }
+
   /// APPLY VOUCHER NOMINAL
   void applyVoucher(double amount) {
     _voucherDiscount = amount;

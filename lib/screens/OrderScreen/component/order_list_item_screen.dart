@@ -105,8 +105,7 @@ class OrderListStateScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => const CheckoutScreen(
-                                    totalPrice: 0,
-                                    selectedCount: 0,
+                               cartItems: [],
                                   ), // Ganti dengan CheckoutScreen yang sesuai
                                 ),
                               );
