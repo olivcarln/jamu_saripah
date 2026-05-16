@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/component/adding_menu_screen.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/component/shopping_bag_screen.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/component/payment_screen.dart';
-import 'package:jamu_saripah/screens/CheckoutSreen/component/select_method_screen.dart';
+import 'package:jamu_saripah/Screens/CheckoutScreen/component/select_method_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/component/adding_menu_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/component/payment_screen.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/component/shopping_bag_screen.dart';
 import 'package:jamu_saripah/screens/VouchersScreen/voucher_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -23,6 +23,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int diskonVoucher = 0;
   int ongkir = 15000;
 
+  // Helper format rupiah agar rapi
   String _formatRupiah(int amount) {
     String str = amount.toString();
     String res = "";
@@ -37,6 +38,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Logika perhitungan total
     int totalBayar = (widget.totalPrice + ongkir) - diskonVoucher;
     if (totalBayar < 0) totalBayar = 0;
 
@@ -44,7 +46,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Checkout', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Checkout',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF7E8959),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
@@ -53,10 +58,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
+            // Pilih Metode (Ambil di tempat / Delivery)
             const SelectMethodScreen(),
             const Divider(thickness: 1),
-            
+
             const SizedBox(height: 10),
+
+            // Komponen Tas Belanja
             ShoppingBagScreen(
               isSelected: true,
               harga: widget.totalPrice,
@@ -64,49 +72,75 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
 
             const SizedBox(height: 20),
-            
+
+            // COMPONENT: AddingMenuScreen
+            // Pastikan di dalam file adding_menu_screen.dart TIDAK ADA Scaffold
             AddingMenuScreen(
-              onAddTap: (String nama, String size, int harga) {
-                Navigator.pop(context); 
+              onAddTap: (String? nama, String? size, int? harga, String? image) {
+                // Tambahin parameter 'image'
+                // Navigasi atau logika tambah item bisa ditaruh di sini
+                print(
+                  "Menambahkan: $nama, Size: $size, Harga: $harga, Image: $image",
+                );
               },
             ),
 
             const Divider(thickness: 1),
 
-            // FIXED: Membatasi trailing agar tidak menyebabkan infinite size
+            // Bagian Voucher
             ListTile(
               onTap: () async {
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const VoucherScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const VoucherScreen(),
+                  ),
                 );
+                // Jika voucher mengembalikan nilai int (nominal diskon)
                 if (result != null && result is int) {
-                  setState(() { diskonVoucher = result; });
+                  setState(() {
+                    diskonVoucher = result;
+                  });
                 }
               },
-              leading: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF7E8959)),
+              leading: const Icon(
+                Icons.confirmation_number_outlined,
+                color: Color(0xFF7E8959),
+              ),
               title: const Text('Voucher Jamu Saripah'),
-              trailing: IntrinsicWidth( // Agar Row tidak mengambil lebar tak terhingga
+              trailing: IntrinsicWidth(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      diskonVoucher > 0 ? "- ${_formatRupiah(diskonVoucher)}" : "Pakai Voucher",
+                      diskonVoucher > 0
+                          ? "- ${_formatRupiah(diskonVoucher)}"
+                          : "Pakai Voucher",
                       style: TextStyle(
                         color: diskonVoucher > 0 ? Colors.red : Colors.grey,
-                        fontWeight: diskonVoucher > 0 ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: diskonVoucher > 0
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                    const SizedBox(width: 5),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
                   ],
                 ),
               ),
             ),
             const Divider(thickness: 1),
 
+            // Ringkasan Pembayaran (Metode Bayar)
             const PaymentScreen(),
-            
+
             const SizedBox(height: 20),
+
+            // Detail Rincian Harga
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -116,13 +150,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   _rowPrice("Ongkir", _formatRupiah(ongkir)),
                   if (diskonVoucher > 0) ...[
                     const SizedBox(height: 8),
-                    _rowPrice("Diskon Voucher", "- ${_formatRupiah(diskonVoucher)}", isRed: true),
+                    _rowPrice(
+                      "Diskon Voucher",
+                      "- ${_formatRupiah(diskonVoucher)}",
+                      isRed: true,
+                    ),
                   ],
                 ],
               ),
             ),
-            
-            const SizedBox(height: 120), 
+
+            const SizedBox(height: 120), // Spasi agar tidak tertutup bottom bar
           ],
         ),
       ),
@@ -130,26 +168,38 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  // Widget pembantu untuk baris harga
   Widget _rowPrice(String label, String value, {bool isRed = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-        Text(value, style: TextStyle(
-          fontSize: 14,
-          color: isRed ? Colors.red : Colors.black,
-          fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
-        )),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            color: isRed ? Colors.red : Colors.black,
+            fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ],
     );
   }
 
+  // Widget Bottom Navigation Bar
   Widget _buildBottomBar(int total) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -159,20 +209,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Total Tagihan", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                Text(_formatRupiah(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF7E8959))),
+                const Text(
+                  "Total Tagihan",
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+                Text(
+                  _formatRupiah(total),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Color(0xFF7E8959),
+                  ),
+                ),
               ],
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF634E34),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
-                // Logika proses pesanan
+                // Tambahkan fungsi Provider buat simpan order ke Firebase di sini
+                // Contoh: context.read<OrderProvider>().addOrder(...)
               },
-              child: const Text("Buat Pesanan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text(
+                "Buat Pesanan",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),

@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/Models/product_cart.dart';
-import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:jamu_saripah/Provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 import 'components/add_to_cart_bottom_sheet.dart';
 import 'components/product_options_section.dart';

@@ -640,32 +640,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               listen: false,
             );
 
-            await orderProvider.addOrder(
-              OrderModel(
-                id: DateTime.now()
-                    .millisecondsSinceEpoch
-                    .toString(),
-
-                userName: userProvider.name,
-
-                totalAmount: calculateTotal(),
-
-                status: "Menunggu",
-
-                paymentMethod:
-                    selectedPayment!['name'],
-
-                address: selectedBooth,
-
-                createdAt: DateTime.now(),
-
-                items: List.from(cartItems),
-
-                image: cartItems.first['image'],
-
-                paymentConfirmed: false,
-              ),
-            );
+            
 
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/common/constasts.dart';
-import 'package:jamu_saripah/Provider/order_provider.dart'; 
-import 'package:jamu_saripah/screens/CheckoutSreen/checkout.screen.dart';
+import 'package:jamu_saripah/Models/order.dart';
+
+import '../../CheckoutSreen/checkout.screen.dart'; // ✅ Import Model agar tidak merah
 
 class OrderListStateScreen extends StatelessWidget {
   final List<OrderModel> orders; 
@@ -33,7 +34,8 @@ class OrderListStateScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      order.title, 
+                      // ✅ Sesuaikan ke model baru: userName
+                      order.userName, 
                       style: const TextStyle(
                         fontSize: 20, 
                         fontWeight: FontWeight.bold,
@@ -42,7 +44,8 @@ class OrderListStateScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Tanggal: ${order.date}\nTotal Pembayaran: Rp ${formatHarga(order.price)}", 
+                      // ✅ Sesuaikan ke model baru: createdAt dan totalAmount
+                      "Tanggal: ${order.createdAt.day}/${order.createdAt.month}/${order.createdAt.year}\nTotal Pembayaran: Rp ${formatHarga(order.totalAmount)}", 
                       style: const TextStyle(fontSize: 13, color: Colors.black87),
                     ),
                     const SizedBox(height: 16),
@@ -52,12 +55,14 @@ class OrderListStateScreen extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              order.method == 'Delivery' ? Icons.delivery_dining : Icons.shopping_bag,
+                              // ✅ Sesuaikan ke model baru: paymentMethod
+                              order.paymentMethod == 'Delivery' ? Icons.delivery_dining : Icons.shopping_bag,
                               color: Colors.grey[700],
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              order.method, 
+                              // ✅ Sesuaikan ke model baru: paymentMethod
+                              order.paymentMethod, 
                               style: const TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ],
@@ -66,12 +71,12 @@ class OrderListStateScreen extends StatelessWidget {
                           height: 35,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Navigasi ke Checkout dengan data
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => CheckoutScreen(
-                                    totalPrice: order.price, 
+                                    // ✅ Sesuaikan ke model baru: totalAmount
+                                    totalPrice: order.totalAmount, 
                                     selectedCount: 1, 
                                   ),
                                 ),

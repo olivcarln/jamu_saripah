@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:jamu_saripah/Provider/cart_provider.dart';
 import 'package:jamu_saripah/screens/CheckoutScreen/checkout.screen.dart';
 import 'package:provider/provider.dart';
 

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-// ✅ IMPORT MODEL DAN PROVIDER DENGAN BENAR
-import 'package:jamu_saripah/Models/order.dart'; 
 import 'package:jamu_saripah/provider/auth_user_provider.dart';
-import 'package:jamu_saripah/provider/order_provider.dart' hide OrderModel; // Sembunyikan hantu OrderModel
+import 'package:jamu_saripah/provider/order_provider.dart';
 
 class AdminOrderScreen extends StatefulWidget {
   const AdminOrderScreen({super.key});
@@ -15,27 +13,76 @@ class AdminOrderScreen extends StatefulWidget {
 }
 
 class _AdminOrderScreenState extends State<AdminOrderScreen> {
+  /// FILTER
   String selectedFilter = "Semua";
 
-  // Sesuaikan status dengan logic bisnis kamu
+  /// LIST STATUS
   final List<String> orderStatuses = [
-    "Menunggu",
     "Diproses",
     "Menunggu Pengambilan",
-    "Selesai",
+    "Sudah Diambil",
     "Dibatalkan",
   ];
 
   @override
   void initState() {
     super.initState();
+
     Future.microtask(() {
       Provider.of<OrderProvider>(context, listen: false).fetchOrders();
     });
   }
 
-  // ... (Method _updateStatus dan _confirmPayment tetap sama)
+  /// UPDATE STATUS
+  Future<void> _updateStatus(
+    BuildContext context,
+    String orderId,
+    String newStatus,
+  ) async {
+    try {
+      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
 
+      // await orderProvider.updateOrderStatus(
+      //   orderId: orderId,
+      //   newStatus: newStatus,
+      // );
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Status berhasil diubah menjadi $newStatus")),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal update status: $e")));
+    }
+  }
+
+  /// KONFIRMASI PEMBAYARAN
+  Future<void> _confirmPayment(BuildContext context, String orderId) async {
+    try {
+      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+
+      await orderProvider.confirmPayment(orderId);
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Pembayaran berhasil dikonfirmasi")),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal konfirmasi pembayaran: $e")),
+      );
+    }
+  }
+
+  /// FORMAT RUPIAH
   String formatRupiah(dynamic value) {
     return NumberFormat.currency(
       locale: 'id_ID',
@@ -44,55 +91,133 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     ).format(value ?? 0);
   }
 
+  /// WARNA STATUS
   Color _statusColor(String status) {
     switch (status) {
-      case 'Diproses': return Colors.blue;
-      case 'Menunggu Pengambilan': return Colors.purple;
-      case 'Selesai': return Colors.green;
-      case 'Dibatalkan': return Colors.red;
-      default: return Colors.orange; // Untuk status 'Menunggu'
+      case 'Diproses':
+        return Colors.blue;
+
+      case 'Menunggu Pengambilan':
+        return Colors.purple;
+
+      case 'Sudah Diambil':
+        return Colors.green;
+
+      case 'Dibatalkan':
+        return Colors.red;
+
+      default:
+        return Colors.grey;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthUserProvider>(context);
+
+    final String? emailLogin = authProvider.user?.email;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
+
       appBar: AppBar(
-        title: const Text("Admin - Kelola Pesanan", style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: const Color(0xFF7E8959),
+        title: Text(
+          emailLogin == null ? "Admin Order" : "Admin Order - $emailLogin",
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
+
       body: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
-          // ✅ Sekarang allOrders tipenya adalah OrderModel dari Models/order.dart
-          final List<OrderModel> allOrders = orderProvider.orders;
+          /// AMBIL ORDER
+          final allOrders = orderProvider.orders;
 
+          /// FILTER ORDER
           final filteredOrders = selectedFilter == "Semua"
               ? allOrders
               : allOrders.where((order) {
-                  if (selectedFilter == "Sukses") return order.status == "Selesai";
-                  return order.status == selectedFilter;
+                  switch (selectedFilter) {
+                    case "Diproses":
+                      return order.status == "Diproses";
+
+                    case "Sukses":
+                      return order.status == "Sudah Diambil";
+
+                    case "Dibatalkan":
+                      return order.status == "Dibatalkan";
+
+                    default:
+                      return true;
+                  }
                 }).toList();
 
+          /// KOSONG
           if (filteredOrders.isEmpty) {
             return const Center(child: Text("Tidak ada pesanan"));
           }
 
           return Column(
             children: [
-              // ... (Dropdown Filter tetap sama)
+              /// FILTER DROPDOWN
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedFilter,
+                      isExpanded: true,
+                      items: const [
+                        DropdownMenuItem(
+                          value: "Semua",
+                          child: Text("Semua Pesanan"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Diproses",
+                          child: Text("Sedang Diproses"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Sukses",
+                          child: Text("Pesanan Sukses"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Dibatalkan",
+                          child: Text("Pesanan Dibatalkan"),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            selectedFilter = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+
+              /// LIST ORDER
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: filteredOrders.length,
                   itemBuilder: (context, index) {
                     final order = filteredOrders[index];
-                    
-                    // Pastikan status dropdown sinkron
-                    String currentStatus = orderStatuses.contains(order.status) 
-                        ? order.status 
-                        : "Menunggu";
+
+                    final status = orderStatuses.contains(order.status)
+                        ? order.status
+                        : orderStatuses.first;
+
+                    final isConfirmed = order.paymentConfirmed;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -100,53 +225,224 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          /// HEADER
                           Row(
                             children: [
-                              _statusBadge(order.status),
-                              const Spacer(),
-                              Text(
-                                DateFormat('dd MMM yyyy').format(order.createdAt),
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _statusColor(status).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Icon(
+                                  Icons.shopping_bag,
+                                  color: _statusColor(status),
+                                ),
                               ),
+
+                              const SizedBox(width: 12),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      order.userName,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 5),
+
+                                    Text(
+                                      order.userEmail ?? '-',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              _statusBadge(status),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          Text(order.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          Text(order.address, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                          const Divider(height: 30),
-                          
-                          // Menampilkan Items
+
+                          const SizedBox(height: 20),
+
+                          /// TOTAL
+                          Text("Total: ${formatRupiah(order.totalAmount)}"),
+
+                          const SizedBox(height: 10),
+
+                          /// STATUS
+                          Text("Status: ${order.status}"),
+
+                          const SizedBox(height: 10),
+
+                          /// METODE
+                          Text("Metode: ${order.paymentMethod}"),
+
+                          const SizedBox(height: 10),
+
+                          /// ALAMAT
+                          Text("Alamat: ${order.address}"),
+
+                          const SizedBox(height: 20),
+
+                          /// MENU PESANAN
+                          const Text(
+                            "Menu Pesanan",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
                           ...order.items.map((item) {
-                            final data = item as Map<String, dynamic>;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: Text("• ${data['name']} (x${data['qty']})"),
-                            );
+                            if (item is Map) {
+                              final String name =
+                                  item['name']?.toString() ?? 'Menu';
+
+                              final String image =
+                                  item['image']?.toString() ?? '';
+
+                              final int qty =
+                                  int.tryParse(item['qty'].toString()) ?? 0;
+
+                              final int price =
+                                  int.tryParse(item['price'].toString()) ?? 0;
+
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 14),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    /// IMAGE
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: image.isNotEmpty
+                                          ? Image.network(
+                                              image,
+                                              width: 60,
+                                              height: 60,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return Container(
+                                                      width: 60,
+                                                      height: 60,
+                                                      color: Colors.grey[300],
+                                                      child: const Icon(
+                                                        Icons.image,
+                                                      ),
+                                                    );
+                                                  },
+                                            )
+                                          : Container(
+                                              width: 60,
+                                              height: 60,
+                                              color: Colors.grey[300],
+                                              child: const Icon(Icons.image),
+                                            ),
+                                    ),
+
+                                    const SizedBox(width: 12),
+
+                                    /// DETAIL ITEM
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 4),
+
+                                          Text("Qty: $qty"),
+
+                                          const SizedBox(height: 4),
+
+                                          Text(
+                                            formatRupiah(price),
+                                            style: const TextStyle(
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            return const SizedBox();
                           }).toList(),
 
-                          const Divider(height: 30),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Total Pembayaran", style: TextStyle(fontWeight: FontWeight.bold)),
-                              Text(formatRupiah(order.totalAmount), style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          const SizedBox(height: 15),
-                          
-                          // Dropdown Update Status
-                          DropdownButtonFormField<String>(
-                            value: currentStatus,
-                            decoration: const InputDecoration(labelText: "Update Status"),
-                            items: orderStatuses.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                            onChanged: (val) {
-                              if (val != null) _updateStatus(context, order.id, val);
+                          const SizedBox(height: 10),
+
+                          /// UPDATE STATUS
+                          DropdownButton<String>(
+                            value: status,
+                            isExpanded: true,
+                            items: orderStatuses.map((item) {
+                              return DropdownMenuItem(
+                                value: item,
+                                child: Text(item),
+                              );
+                            }).toList(),
+
+                            onChanged: (value) async {
+                              if (value != null) {
+                                await _updateStatus(context, order.id, value);
+                              }
                             },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          /// BUTTON KONFIRMASI
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: isConfirmed
+                                  ? null
+                                  : () async {
+                                      await _confirmPayment(context, order.id);
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF7E8959),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: Text(
+                                isConfirmed
+                                    ? "Sudah Konfirmasi"
+                                    : "Konfirmasi Pembayaran",
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -161,6 +457,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     );
   }
 
+  /// BADGE STATUS
   Widget _statusBadge(String status) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -168,7 +465,14 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         color: _statusColor(status).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(status, style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold)),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: _statusColor(status),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }
+
