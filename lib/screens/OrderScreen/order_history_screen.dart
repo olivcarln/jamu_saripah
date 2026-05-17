@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/Models/order.dart';
 import 'package:jamu_saripah/common/constasts.dart';
@@ -60,9 +59,14 @@ class _OrderHistoryScreenState
   Widget build(BuildContext context) {
     final orderProvider =
         Provider.of<OrderProvider>(context);
+    
+    // Ambil user yang login aktif untuk filter data background
+    final user = FirebaseAuth.instance.currentUser;
 
-    final List<OrderModel> orders =
-        orderProvider.orders;
+    // UI TETAP SAKLEK, Cuma bagian list data ini kita saring sesuai userId
+    final List<OrderModel> myOrders = orderProvider.orders
+        .where((order) => order.userId == user?.uid)
+        .toList();
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -82,7 +86,7 @@ class _OrderHistoryScreenState
             AppColors.primaryOlive,
       ),
 
-      body: orders.isEmpty
+      body: myOrders.isEmpty
           ? const Center(
               child: Column(
                 mainAxisAlignment:
@@ -121,12 +125,12 @@ class _OrderHistoryScreenState
                 padding:
                     const EdgeInsets.all(16),
 
-                itemCount: orders.length,
+                itemCount: myOrders.length,
 
                 itemBuilder:
                     (context, index) {
                   final order =
-                      orders[index];
+                      myOrders[index];
 
                   debugPrint(
                     "ORDER ID: ${order.id}",
@@ -137,18 +141,17 @@ class _OrderHistoryScreenState
 
                     /// CANCEL HANYA
                     /// SAAT MASIH DIPROSES
-           onCancel:
-    order.status == 'Diproses'
-        ? () {
-            Provider.of<OrderProvider>(
-              context,
-              listen: false,
-            ).updateStatus(
-              order.id,
-              'Dibatalkan',
-            );
-          }
-        : null,
+                    onCancel: order.status == 'Diproses'
+                        ? () {
+                            Provider.of<OrderProvider>(
+                              context,
+                              listen: false,
+                            ).updateStatus(
+                              order.id,
+                              'Dibatalkan',
+                            );
+                          }
+                        : null,
                   );
                 },
               ),

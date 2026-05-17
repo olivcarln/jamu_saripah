@@ -28,10 +28,9 @@ class OrderProvider extends ChangeNotifier {
   /// =========================
   Future<void> fetchOrders() async {
     try {
-      // DISESUAIKAN: Koleksi 'orders' dan field 'created_at' sesuai screenshot
       final snapshot = await _firestore
           .collection('orders') 
-          .orderBy('created_at', descending: true) 
+          .orderBy('createdAt', descending: true) 
           .get();
 
       _orders = snapshot.docs
@@ -45,38 +44,49 @@ class OrderProvider extends ChangeNotifier {
   }
 
   /// =========================
-  /// ADD ORDER
-  /// =========================
-  /// =========================
-  /// ADD ORDER
+  /// ADD ORDER (FIXED MAPPING)
   /// =========================
   Future<void> addOrder(OrderModel order) async {
     try {
+      // FIX UTAMA: Memaksa pemetaan ulang array ke List<Map> murni tepat sebelum menyentuh Firestore.
+      // Langkah ini wajib agar Firebase tidak mendeteksi objek lokal Dart dan mengosongkan field 'items'.
+      final List<Map<String, dynamic>> cleanItemsForFirebase = [];
+      for (var item in order.items) {
+        if (item is Map) {
+          cleanItemsForFirebase.add({
+            'name': (item['name'] ?? '').toString(),
+            'price': (item['price'] ?? 0) as int,
+            'qty': (item['qty'] ?? 1) as int,
+            'size': (item['size'] ?? '').toString(),
+            'image': (item['image'] ?? '').toString(),
+          });
+        }
+      }
+
       final orderData = {
         'id': order.id,
         'userId': order.userId,
-        'userName': order.userName, // <--- Pastikan ini ada
+        'userName': order.userName, 
         'userEmail': order.userEmail,
         'totalAmount': order.totalAmount,
         'status': order.status,
         'paymentMethod': order.paymentMethod,
         'address': order.address,
-        'created_at': Timestamp.fromDate(order.createdAt), 
-        'items': order.items,
+        'createdAt': Timestamp.fromDate(order.createdAt), 
+        'items': cleanItemsForFirebase, // <--- Menggunakan list yang sudah steril murni JSON primitif
         'image': order.image,
         'paymentConfirmed': order.paymentConfirmed,
       };
 
       await _firestore
-          .collection('orders') // Sesuai koleksi di screenshot kamu
+          .collection('orders') 
           .doc(order.id)
           .set(orderData);
 
-      // ... sisa kode poin dan local insert
       notifyListeners();
       await fetchOrders();
     } catch (e) {
-      debugPrint("Add order error: $e");
+      debugPrint("Add order error di Provider: $e");
       rethrow;
     }
   }
@@ -88,7 +98,6 @@ class OrderProvider extends ChangeNotifier {
     try {
       if (orderId.trim().isEmpty) return;
 
-      // DISESUAIKAN: Koleksi 'orders'
       await _firestore
           .collection('orders')
           .doc(orderId)
@@ -108,9 +117,9 @@ class OrderProvider extends ChangeNotifier {
   /// =========================
   /// CONFIRM PAYMENT
   /// =========================
-  Future<void> confirmPayment(String orderId) async {
+ Future<void> confirmPayment(String orderId) async {
     try {
-      // DISESUAIKAN: Koleksi 'orders'
+      // FIX: Tanda petik disamakan menggunakan tunggal 'orders'
       await _firestore
           .collection('orders')
           .doc(orderId)
@@ -134,15 +143,14 @@ class OrderProvider extends ChangeNotifier {
   }
 
   /// =========================
-  /// GET USER ORDERS
+  /// GET USER ORDERS (HISTORY USER)
   /// =========================
   Future<List<OrderModel>> getOrdersByUser(String userId) async {
     try {
-      // DISESUAIKAN: Koleksi 'orders' dan field 'created_at'
       QuerySnapshot snapshot = await _firestore
           .collection('orders')
           .where('userId', isEqualTo: userId)
-          .orderBy('created_at', descending: true)
+          .orderBy('createdAt', descending: true)
           .get();
 
       return snapshot.docs

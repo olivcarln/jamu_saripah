@@ -21,7 +21,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   ];
 
   String formatRupiah(dynamic value) {
-    return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(value ?? 0);
+    // Memastikan value dikonversi ke angka (int/double) sebelum diformat
+    final num price = (value is num) ? value : (num.tryParse(value.toString()) ?? 0);
+    return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(price);
   }
 
   Color _statusColor(String status) {
@@ -34,12 +36,35 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     }
   }
 
+  /// FIX UTAMA 1: Fungsi render gambar yang kebal error (Bulletproof Image Loader)
   Widget buildOrderImage(String image) {
     try {
-      if (image.startsWith('http')) return Image.network(image, width: 60, height: 60, fit: BoxFit.cover);
-      if (image.isNotEmpty) return Image.memory(base64Decode(image), width: 60, height: 60, fit: BoxFit.cover);
-      return Container(width: 60, height: 60, color: Colors.grey[200], child: const Icon(Icons.image));
-    } catch (e) { return Container(width: 60, height: 60, color: Colors.grey[200], child: const Icon(Icons.broken_image)); }
+      if (image.isEmpty) {
+        return Container(width: 60, height: 60, color: Colors.grey[200], child: const Icon(Icons.image, color: Colors.grey));
+      }
+      if (image.startsWith('http')) {
+        return Image.network(image, width: 60, height: 60, fit: BoxFit.cover);
+      }
+      if (image.startsWith('assets/')) {
+        return Image.asset(image, width: 60, height: 60, fit: BoxFit.cover);
+      }
+      
+      // Jika string berupa base64 murni
+      String cleanBase64 = image;
+      if (image.contains(',')) {
+        cleanBase64 = image.split(',').last;
+      }
+      return Image.memory(
+        base64Decode(cleanBase64),
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+      );
+    } catch (e) { 
+      debugPrint("Admin gagal load gambar: $e");
+      return Container(width: 60, height: 60, color: Colors.grey[200], child: const Icon(Icons.broken_image, color: Colors.red)); 
+    }
   }
 
   Future<void> updateStatus(String orderId, String status) async {
@@ -108,9 +133,24 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('orders').orderBy('created_at', descending: true).snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                if (snapshot.hasError) {
+                  return Center(child: Text("Terjadi error: ${snapshot.error}"));
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
                 final docs = snapshot.data!.docs;
-                final filteredDocs = selectedFilter == "Semua" ? docs : docs.where((d) => d['status'] == selectedFilter).toList();
+                final filteredDocs = selectedFilter == "Semua" 
+                    ? docs 
+                    : docs.where((d) {
+                        final mapData = d.data() as Map<String, dynamic>;
+                        return mapData['status'] == selectedFilter;
+                      }).toList();
+
+                if (filteredDocs.isEmpty) {
+                  return const Center(child: Text("Tidak ada pesanan", style: TextStyle(color: Colors.grey)));
+                }
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -118,7 +158,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                   itemBuilder: (context, index) {
                     final data = filteredDocs[index].data() as Map<String, dynamic>;
                     final id = filteredDocs[index].id;
-                    final List items = data['items'] ?? [];
+                    
+                    // Ambil list items dengan aman
+                    final List<dynamic> items = data['items'] is List ? data['items'] : [];
                     bool isConfirmed = data['paymentConfirmed'] ?? false;
                     String status = data['status'] ?? "Diproses";
 
@@ -136,7 +178,10 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           /// Header Info
                           Row(
                             children: [
-                              CircleAvatar(backgroundColor: _statusColor(status).withOpacity(0.1), child: Icon(Icons.person, color: _statusColor(status))),
+                              CircleAvatar(
+                                backgroundColor: _statusColor(status).withOpacity(0.1), 
+                                child: Icon(Icons.person, color: _statusColor(status)),
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
@@ -159,7 +204,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           
                           const SizedBox(height: 15),
 
-                          /// DAFTAR MENU PESANAN (INI YANG TADI KELEWAT)
+                          /// DAFTAR MENU PESANAN
                           if (items.isNotEmpty) ...[
                             const Text("Menu Pesanan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 8),
@@ -168,7 +213,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: items.length,
                               itemBuilder: (context, i) {
-                                final item = items[i];
+                                final item = items[i] is Map ? items[i] as Map<String, dynamic> : {};
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 8),
                                   child: Row(
@@ -183,11 +228,11 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(item['name'] ?? "Menu", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                            Text("${item['size']} | Qty: ${item['qty']}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                            Text("${item['size'] ?? '350 ml'} | Qty: ${item['qty'] ?? 1}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                           ],
                                         ),
                                       ),
-                                      Text(formatRupiah(item['price']), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                                      Text(formatRupiah(item['price'] ?? 0), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
                                     ],
                                   ),
                                 );

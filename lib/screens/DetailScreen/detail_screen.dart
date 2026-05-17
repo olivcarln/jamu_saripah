@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/Models/product_cart.dart';
-import 'package:jamu_saripah/Provider/cart_provider.dart';
+
+// FIX IMPORT: Diubah ke huruf kecil semua agar sinkron dengan main.dart dan index Git
+import 'package:jamu_saripah/provider/cart_provider.dart'; 
 import 'package:provider/provider.dart';
 import 'components/add_to_cart_bottom_sheet.dart';
 import 'components/product_options_section.dart';
@@ -80,7 +82,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     bool isLowStock = widget.product.stock < 5;
-    Color badgeBgColor = isLowStock ? const Color(0xFFFDE8E8) : Color(0xFF7E8959);
+    Color badgeBgColor = isLowStock ? const Color(0xFFFDE8E8) : const Color(0xFF7E8959);
     Color badgeTextColor = isLowStock ? const Color(0xFFC53030) : Colors.white;
 
     bool isMix = widget.product.name.toLowerCase().contains("paket") || 
@@ -171,7 +173,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 children: [
                   IconButton(onPressed: () { if (quantity > 1) setState(() => quantity--); }, icon: const Icon(Icons.remove)),
                   Text("$quantity", style: const TextStyle(fontWeight: FontWeight.bold)),
-                  IconButton(onPressed: () => setState(() => quantity++), icon: const Icon(Icons.add, color: Color(0xFF7E8959))),
+                  IconButton(onPressed: () => setState(() => quantity++), icon: const Icon(Icons.add, color: const Color(0xFF7E8959))),
                 ],
               ),
             ),
@@ -184,47 +186,35 @@ class _DetailScreenState extends State<DetailScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
-                  try {
-                    // Mendaftarkan item ke keranjang melalui Provider
-                    // listen: false wajib digunakan di dalam fungsi/callback
-                    Provider.of<CartProvider>(context, listen: false).addToCart(
-                      CartItem(
-                        name: "${widget.product.name} ($selectedOption)",
-                        price: currentPrice,
-                        quantity: quantity,
-                        image: widget.product.image,
-                        size: selectedSize,
-                      ),
-                    );
+                  // Sekarang jalurnya dipastikan lurus ke provider/cart_provider.dart bawaan main.dart
+                  Provider.of<CartProvider>(context, listen: false).addToCart(
+                    CartItem(
+                      name: "${widget.product.name} ($selectedOption)",
+                      price: currentPrice,
+                      quantity: quantity,
+                      image: widget.product.image,
+                      size: selectedSize,
+                    ),
+                  );
 
-                    // Menampilkan Bottom Sheet setelah berhasil add to cart
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => AddToCartBottomSheet(
-                        product: Product(
-                          name: widget.product.name,
-                          price: currentPrice.toDouble(),
-                          image: widget.product.image,
-                          description: widget.product.description,
-                          size: selectedSize,
-                          stock: widget.product.stock,
-                        ),
-                        quantity: quantity,
+                  // Munculkan modal pelengkap belanjaan
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (sheetContext) => AddToCartBottomSheet(
+                      product: Product(
+                        name: widget.product.name,
+                        price: currentPrice.toDouble(),
+                        image: widget.product.image,
+                        description: widget.product.description,
                         size: selectedSize,
+                        stock: widget.product.stock,
                       ),
-                    );
-                  } catch (e) {
-                    // Log error jika Provider tidak ditemukan
-                    debugPrint("Kesalahan Provider: $e");
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Error: CartProvider tidak ditemukan di Widget Tree."),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
+                      quantity: quantity,
+                      size: selectedSize,
+                    ),
+                  );
                 },
                 child: Text("Tambah - ${formatIDR(totalPrice)}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),

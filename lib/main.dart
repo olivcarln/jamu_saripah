@@ -4,19 +4,20 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:jamu_saripah/admin_screen/admin_main_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Pastikan path import ini sesuai dengan folder kamu
+// Import Provider (Sudah dipastikan menggunakan huruf kecil semua agar tidak conflict Git)
 import 'package:jamu_saripah/provider/auth_user_provider.dart';
 import 'package:jamu_saripah/provider/order_provider.dart';
 import 'package:jamu_saripah/provider/cart_provider.dart';
 import 'package:jamu_saripah/provider/user_provider.dart';
 
+// Import Screens & Hooks
 import 'package:jamu_saripah/hooks/onBoarding/onboarding_screen.dart';
 import 'package:jamu_saripah/hooks/auth/login_screen.dart';
 import 'package:jamu_saripah/screens/main_screen.dart';
-import 'package:jamu_saripah/admin_screen/admin_main_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -55,6 +56,7 @@ class JamuSaripah extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Jamu Saripah',
       theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
         textTheme: GoogleFonts.montserratTextTheme(Theme.of(context).textTheme),
       ),
       home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
