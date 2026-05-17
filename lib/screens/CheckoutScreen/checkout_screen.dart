@@ -32,6 +32,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   bool perluTasBelanja = false;
 
+  bool isPopping = false;
+
   int hargaTas = 3000;
 
   String selectedBooth = 'Plaza Atria Jakarta';
@@ -48,10 +50,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Map<String, dynamic>? appliedVoucher;
 
   late List<Map<String, dynamic>> localCartItems;
-
   @override
   void initState() {
     super.initState();
+
+    localCartItems = [];
 
     loadCompressedImages();
   }
@@ -131,10 +134,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       backgroundColor: Colors.white,
 
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+      leading: IconButton(
+  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+  onPressed: () {
+
+    if (isPopping) return;
+
+    isPopping = true;
+
+    Navigator.pop(context);
+  },
+),
 
         title: const Text(
           'Checkout',
@@ -707,150 +717,170 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       padding: const EdgeInsets.all(16),
 
       child: ElevatedButton(
-        onPressed: () async {
-          try {
-            /// VALIDASI PAYMENT
-            if (selectedPayment == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Pilih metode pembayaran terlebih dahulu"),
-                  backgroundColor: Colors.red,
-                ),
-              );
+       onPressed: () async {
 
-              return;
-            }
+  /// CEGAH DOUBLE CLICK / DATA BELUM SIAP
+  if (localCartItems.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Data produk belum siap"),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
 
-            /// LOADING
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              useRootNavigator: true,
+  try {
 
-              builder: (context) {
-                return const Center(child: CircularProgressIndicator());
-              },
-            );
+    /// VALIDASI PAYMENT
+    if (selectedPayment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Pilih metode pembayaran terlebih dahulu"),
+          backgroundColor: Colors.red,
+        ),
+      );
 
-            final orderProvider = Provider.of<OrderProvider>(
-              context,
-              listen: false,
-            );
+      return;
+    }
 
-            final userProvider = Provider.of<UserProvider>(
-              context,
-              listen: false,
-            );
+    /// LOADING
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
 
-            final user = FirebaseAuth.instance.currentUser;
+    final orderProvider = Provider.of<OrderProvider>(
+      context,
+      listen: false,
+    );
 
-            /// ORDER
-          /// ORDER
-final newOrder = OrderModel(
-  id: DateTime.now().millisecondsSinceEpoch.toString(),
+    final userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
 
-  /// USER
-  userEmail: user?.email ?? '',
-  userId: user?.uid ?? '',
-  userName: userProvider.name.isNotEmpty
-      ? userProvider.name
-      : "Customer",
+    final user = FirebaseAuth.instance.currentUser;
 
-  /// TOTAL
-  totalAmount: calculateTotal(),
+    /// ORDER
+    final newOrder = OrderModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
 
-  /// STATUS WAJIB SAMA
-  status: "Diproses",
+      /// USER
+      userEmail: user?.email ?? '',
+      userId: user?.uid ?? '',
+      userName: userProvider.name.isNotEmpty
+          ? userProvider.name
+          : "Customer",
 
-  /// PAYMENT
-  paymentMethod: selectedPayment!['name'],
+      /// TOTAL
+      totalAmount: calculateTotal(),
 
-  /// OUTLET
-  address: selectedBooth,
+      /// STATUS
+      status: "Diproses",
 
-  /// DATE
-  createdAt: DateTime.now(),
+      /// PAYMENT
+      paymentMethod: selectedPayment!['name'],
 
-  /// ITEMS
-  items: localCartItems.map((item) {
-    return {
-      'name': item['name'] ?? '',
-      'price': item['price'] ?? 0,
-      'qty': item['qty'] ?? 1,
-      'size': item['size'] ?? '',
-      'image': item['image'] ?? '',
-    };
-  }).toList(),
+      /// OUTLET
+      address: selectedBooth,
 
-  /// IMAGE THUMBNAIL
-  image: localCartItems.isNotEmpty
-      ? localCartItems.first['image'] ?? ''
-      : '',
+      /// DATE
+      createdAt: DateTime.now(),
 
-  /// PAYMENT STATUS
-  paymentConfirmed: false,
-);
+      /// ITEMS
+      items: localCartItems.map((item) {
+        return {
+          'name': item['name'] ?? '',
+          'price': item['price'] ?? 0,
+          'qty': item['qty'] ?? 1,
+          'size': item['size'] ?? '',
+          'image': item['image'] ?? '',
+        };
+      }).toList(),
 
-            /// SIMPAN ORDER
-            await orderProvider.addOrder(newOrder);
+      /// THUMBNAIL
+      image: localCartItems.isNotEmpty
+          ? localCartItems.first['image'] ?? ''
+          : '',
 
-            /// SIMPAN VOUCHER
-            if (appliedVoucher != null && user != null) {
-              await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(user.uid)
-                  .collection('claimed_vouchers')
-                  .doc(appliedVoucher!['id'])
-                  .set({
-                    'voucherId': appliedVoucher!['id'],
-                    'usedAt': Timestamp.now(),
-                  });
+      /// PAYMENT STATUS
+      paymentConfirmed: false,
+    );
 
-              /// KURANGI QUOTA
-              await FirebaseFirestore.instance
-                  .collection('global_vouchers')
-                  .doc(appliedVoucher!['id'])
-                  .update({'quota': FieldValue.increment(-1)});
-            }
+    /// SIMPAN ORDER
+    await orderProvider.addOrder(newOrder);
 
-            /// TUTUP LOADING
-            if (mounted && Navigator.canPop(context)) {
-              Navigator.of(context, rootNavigator: true).pop();
-            }
+    /// SIMPAN VOUCHER
+    if (appliedVoucher != null && user != null) {
 
-            /// SUCCESS
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Pesanan berhasil dibuat"),
-                  backgroundColor: Color(0xFF7E8959),
-                ),
-              );
-            }
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('claimed_vouchers')
+          .doc(appliedVoucher!['id'])
+          .set({
+        'voucherId': appliedVoucher!['id'],
+        'usedAt': Timestamp.now(),
+      });
 
-            /// PINDAH KE HISTORY SCREEN
-            if (mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MainScreen(initialIndex: 1),
-                ),
+      /// KURANGI QUOTA
+      await FirebaseFirestore.instance
+          .collection('global_vouchers')
+          .doc(appliedVoucher!['id'])
+          .update({
+        'quota': FieldValue.increment(-1),
+      });
+    }
 
-                /// HAPUS SEMUA STACK
-                (route) => false,
-              );
-            }
-          } catch (e) {
-            /// TUTUP LOADING
-            if (mounted && Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
+    /// TUTUP LOADING
+    if (mounted && Navigator.canPop(context)) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red),
-            );
-          }
-        },
+    /// SUCCESS
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Pesanan berhasil dibuat"),
+          backgroundColor: Color(0xFF7E8959),
+        ),
+      );
+    }
+
+    /// PINDAH KE HISTORY
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              const MainScreen(initialIndex: 1),
+        ),
+        (route) => false,
+      );
+    }
+
+  } catch (e) {
+
+    /// TUTUP LOADING
+    if (mounted && Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Gagal: $e"),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+},
 
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF7E8959),

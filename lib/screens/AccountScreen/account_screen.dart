@@ -190,8 +190,8 @@ class _AccountPageState extends State<AccountPage> {
           trailing: isInstagram
               ? Container(
                   padding: const EdgeInsets.all(2),
-                  child: Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/600px-Instagram_icon.png',
+                  child: Image.asset(
+                      'assets/images/instagram_logo.jpeg',
                     width: 24,
                     height: 24,
                   ),

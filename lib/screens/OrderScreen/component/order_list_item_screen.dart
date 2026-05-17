@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:jamu_saripah/Models/order.dart';
 import 'package:jamu_saripah/common/constasts.dart';
-import 'package:jamu_saripah/Screens/CheckoutScreen/checkout.screen.dart';
+import 'package:jamu_saripah/Screens/CheckoutScreen/checkout_screen.dart';
 
 class OrderListStateScreen extends StatelessWidget {
   final List<OrderModel> orders;

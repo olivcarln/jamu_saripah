@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:jamu_saripah/screens/CheckoutScreen/checkout_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:jamu_saripah/Models/cart_item.dart';
 import 'package:jamu_saripah/common/constasts.dart';
@@ -143,15 +144,20 @@ class _CartScreenState extends State<CartScreen> {
               : CartButtonSummary(
                   totalPrice: provider.checkedTotalPrice, // ✅ Sesuaikan nama fungsi provider lu
                   selectedCount: provider.checkedItemsCount,
-                onCheckout: provider.checkedItemsCount == 0
-    ? () {} // Berikan fungsi kosong, bukan null, agar tombol tetap sinkron dengan widget-mu
+            onCheckout: provider.checkedItemsCount == 0
+    ? () {}
     : () {
-        provider.checkoutSelectedItems();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Pesanan berhasil dibuat!"),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+
+        final selectedItems = provider.items
+            .where((item) => item.isChecked)
+            .toList();
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CheckoutScreen(
+              cartItems: selectedItems,
+            ),
           ),
         );
       },

@@ -20,6 +20,94 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     "Dibatalkan",
   ];
 
+  /// 1. FUNGSI HAPUS DATA LAMA (Berdasarkan jumlah hari ke belakang)
+  Future<void> _deleteOldOrders(int days) async {
+    try {
+      final DateTime threshold = DateTime.now().subtract(Duration(days: days));
+      final Timestamp thresholdTimestamp = Timestamp.fromDate(threshold);
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('created_at', isLessThan: thresholdTimestamp)
+          .get();
+
+      await _executeBatchDelete(snapshot, "Data lama (> $days hari)");
+    } catch (e) {
+      _showSnackBar("Gagal menghapus data lama: $e");
+    }
+  }
+
+  /// 2. FUNGSI HAPUS RIWAYAT SPESIFIK (Minggu Ini / Bulan Ini)
+  Future<void> _deleteHistory(String type) async {
+    try {
+      final DateTime now = DateTime.now();
+      DateTime startRange;
+      String label = "";
+
+      if (type == "minggu") {
+        startRange = now.subtract(Duration(days: now.weekday - 1));
+        startRange = DateTime(startRange.year, startRange.month, startRange.day);
+        label = "Minggu Ini";
+      } else {
+        startRange = DateTime(now.year, now.month, 1);
+        label = "Bulan Ini";
+      }
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(startRange))
+          .get();
+
+      await _executeBatchDelete(snapshot, "Riwayat $label");
+    } catch (e) {
+      _showSnackBar("Gagal menghapus riwayat: $e");
+    }
+  }
+
+  /// HELPER: Eksekusi penghapusan massal
+  Future<void> _executeBatchDelete(QuerySnapshot snapshot, String label) async {
+    if (snapshot.docs.isEmpty) {
+      _showSnackBar("Tidak ada data $label untuk dihapus.");
+      return;
+    }
+
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+    for (var doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+    _showSnackBar("$label berhasil dibersihkan (${snapshot.docs.length} data).");
+  }
+
+  void _showSnackBar(String msg) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
+
+  /// DIALOG KONFIRMASI
+  void _showConfirmDialog({required String title, required String content, required VoidCallback onConfirm}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            child: const Text("Hapus", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   String formatRupiah(dynamic value) {
     return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(value ?? 0);
   }
@@ -63,6 +151,12 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
+      appBar: AppBar(
+        title: const Text("Daftar Pesanan", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: Column(
         children: [
           /// FILTER HEADER
@@ -73,7 +167,11 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                    decoration: BoxDecoration(
+                      color: Colors.white, 
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                    ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: selectedFilter,
@@ -91,26 +189,53 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                PopupMenuButton<int>(
+                
+                /// POPUP MENU UNTUK HAPUS DATA
+                PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Color(0xFF7E8959)),
+                  onSelected: (value) {
+                    if (value == "minggu" || value == "bulan") {
+                      _showConfirmDialog(
+                        title: "Hapus Riwayat?",
+                        content: "Semua pesanan pada ${value == 'minggu' ? 'minggu ini' : 'bulan ini'} akan dihapus.",
+                        onConfirm: () => _deleteHistory(value),
+                      );
+                    } else {
+                      int days = int.parse(value);
+                      _showConfirmDialog(
+                        title: "Bersihkan Data Lama?",
+                        content: "Pesanan yang sudah lebih dari $days hari akan dihapus permanen.",
+                        onConfirm: () => _deleteOldOrders(days),
+                      );
+                    }
+                  },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(value: 1, child: Text("Hapus > 1 Hari")),
-                    const PopupMenuItem(value: 7, child: Text("Hapus > 1 Minggu")),
-                    const PopupMenuItem(value: 30, child: Text("Hapus > 1 Bulan")),
+                    const PopupMenuItem(enabled: false, child: Text("Bersihkan Riwayat", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                    const PopupMenuItem(value: "minggu", child: Text("Hapus Minggu Ini")),
+                    const PopupMenuItem(value: "bulan", child: Text("Hapus Bulan Ini")),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(enabled: false, child: Text("Hapus Data Lama", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                    const PopupMenuItem(value: "1", child: Text("> 1 Hari")),
+                    const PopupMenuItem(value: "7", child: Text("> 1 Minggu")),
+                    const PopupMenuItem(value: "30", child: Text("> 1 Bulan")),
                   ],
                 ),
               ],
             ),
           ),
 
-          /// LIST PESANAN
+          /// LIST PESANAN (STREAM)
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('orders').orderBy('created_at', descending: true).snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                if (snapshot.hasError) return Center(child: Text("Error: ${snapshot.error}"));
+                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: Color(0xFF7E8959)));
+                
                 final docs = snapshot.data!.docs;
                 final filteredDocs = selectedFilter == "Semua" ? docs : docs.where((d) => d['status'] == selectedFilter).toList();
+
+                if (filteredDocs.isEmpty) return const Center(child: Text("Tidak ada pesanan."));
 
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -133,7 +258,6 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /// Header Info
                           Row(
                             children: [
                               CircleAvatar(backgroundColor: _statusColor(status).withOpacity(0.1), child: Icon(Icons.person, color: _statusColor(status))),
@@ -151,15 +275,11 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             ],
                           ),
                           const Divider(height: 30),
-                          
-                          /// Info Ringkas
                           _buildInfoRow("Total", formatRupiah(data['totalAmount']), isBold: true),
                           _buildInfoRow("Metode", data['paymentMethod'] ?? "-"),
                           _buildInfoRow("Outlet", data['address'] ?? "-"),
-                          
                           const SizedBox(height: 15),
 
-                          /// DAFTAR MENU PESANAN (INI YANG TADI KELEWAT)
                           if (items.isNotEmpty) ...[
                             const Text("Menu Pesanan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 8),
@@ -196,8 +316,6 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           ],
 
                           const SizedBox(height: 15),
-
-                          /// Update Status Dropdown
                           DropdownButtonFormField<String>(
                             value: orderStatuses.contains(status) ? status : "Diproses",
                             decoration: InputDecoration(
@@ -208,10 +326,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             items: orderStatuses.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                             onChanged: (val) => updateStatus(id, val!),
                           ),
-
                           const SizedBox(height: 12),
-
-                          /// Tombol Konfirmasi
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
