@@ -42,21 +42,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Map<String, dynamic>? selectedPayment;
   Map<String, dynamic>? appliedVoucher;
   
-  // FIX 1: Langsung inisialisasi list di awal agar data produk langsung mengunci di memori UI sejak detik pertama halaman dibuka
   late List<Map<String, dynamic>> localCartItems = widget.cartItems.map((item) {
     return {
       'name': item.name,
       'price': item.price,
       'qty': item.quantity,
       'size': item.size,
-      'image': item.image, // Menggunakan gambar bawaan keranjang sebagai penahan
+      'image': item.image,
     };
   }).toList();
 
   @override
   void initState() {
     super.initState();
-    // FIX 2: Jalankan kompresi gambar di background tanpa menunda alur inisialisasi data produk
     loadCompressedImages();
   }
 
@@ -563,6 +561,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  /// ===================================================
+  /// LOGIC FIX DI SINI (UI BAWAAN TETAP UTUH SAKLEK 100%)
+  /// ===================================================
   Widget _buildBottomBar() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -589,11 +590,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               return;
             }
 
+            // FIX UTAMA 1: Mengunci reference target dialog loader root biar pop-nya 100% mati total
+            BuildContext? dialogContext;
             showDialog(
               context: context,
               barrierDismissible: false,
               useRootNavigator: true,
-              builder: (context) {
+              builder: (ctx) {
+                dialogContext = ctx;
                 return const Center(child: CircularProgressIndicator());
               },
             );
@@ -602,8 +606,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             final userProvider = Provider.of<UserProvider>(context, listen: false);
             final user = FirebaseAuth.instance.currentUser;
 
-            // FIX 3: Memaksa pembersihan data list produk secara manual (for-in loop murni)
-            // Hal ini menjamin tipe datanya murni berupa List<Map<String, dynamic>> primitif yang disukai Firebase SDK
             final List<Map<String, dynamic>> finalizedItems = [];
             for (var item in localCartItems) {
               finalizedItems.add({
@@ -615,8 +617,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               });
             }
 
+            // FIX UTAMA 2: Auto-ID murni dari Firestore SDK biar orderan ke-2 dst gak tabrakan milidetik mampet
+            String autoDocId = FirebaseFirestore.instance.collection('orders').doc().id;
+
             final newOrder = OrderModel(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              id: autoDocId, 
               userEmail: user?.email ?? '',
               userId: user?.uid ?? '',
               userName: userProvider.name.isNotEmpty ? userProvider.name : "Customer",
@@ -625,7 +630,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               paymentMethod: selectedPayment!['name'],
               address: selectedBooth,
               createdAt: DateTime.now(), 
-              items: finalizedItems, // <--- Memasukkan array steril murni
+              items: finalizedItems, 
               image: finalizedItems.isNotEmpty ? finalizedItems.first['image'] ?? '' : '',
               paymentConfirmed: false,
             );
@@ -651,8 +656,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   .update({'quota': FieldValue.increment(-1)});
             }
 
-            if (mounted && Navigator.canPop(context)) {
-              Navigator.of(context, rootNavigator: true).pop(); // Loader hilang dengan aman
+            // FIX UTAMA 3: Menutup root dialog loader secara paksa dan akurat sebelum berganti halaman
+            if (dialogContext != null) {
+              Navigator.of(dialogContext!).pop();
             }
 
             if (mounted) {
@@ -672,11 +678,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               );
             }
           } catch (e) {
+            // Safety handler: jika gagal, matikan loader biar tombol gak ngunci hang
             if (mounted && Navigator.canPop(context)) {
               Navigator.of(context, rootNavigator: true).pop();
             }
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red),
+              SnackBar(content: Text("Gagal Simpan: $e"), backgroundColor: Colors.red),
             );
           }
         },

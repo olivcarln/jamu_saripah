@@ -36,28 +36,47 @@ class OrderModel {
     required this.paymentConfirmed,
   });
 
-  /// TOTAL ITEM
+  /// TOTAL ITEM (Tetap Utuh Bawaan Lu)
   int get totalItem {
     int total = 0;
 
     for (var item in items) {
-      total += (item['qty'] ?? 0) as int;
+      // Ditambahkan safety check dikit biar ga crash kalau itemnya ternyata bertipe objek kelas
+      if (item is Map) {
+        total += (item['qty'] ?? 0) as int;
+      } else {
+        try {
+          total += (item.qty ?? 0) as int;
+        } catch (_) {}
+      }
     }
 
     return total;
   }
 
+  /// FACTORY FROMFIRESTORE (ANTI-CRASH)
   factory OrderModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+
+    // Penjinak konversi tanggal createdAt agar tidak crash tipe data String / Timestamp / Null
+    DateTime parsedDate = DateTime.now();
+    // Cek field 'createdAt' atau cadangan 'created_at'
+    var rawDate = data['createdAt'] ?? data['created_at'];
+    if (rawDate is Timestamp) {
+      parsedDate = rawDate.toDate();
+    } else if (rawDate is String) {
+      parsedDate = DateTime.tryParse(rawDate) ?? DateTime.now();
+    }
 
     return OrderModel(
       id: doc.id,
 
       userId: data['userId'] ?? '',
-      userName: data['userName'] ?? '',
-      userEmail: data['userEmail'] ?? '',
+      userName: data['userName'] ?? data['customerName'] ?? '',
+      userEmail: data['userEmail'] ?? data['email'] ?? '',
 
-      totalAmount: data['totalAmount'] ?? 0,
+      // Menampung 'totalAmount' baru atau 'totalPrice' dari data lama biar ga Rp 0
+      totalAmount: (data['totalAmount'] ?? data['totalPrice'] ?? 0) as int,
 
       status: data['status'] ?? '',
 
@@ -65,16 +84,13 @@ class OrderModel {
 
       address: data['address'] ?? '',
 
-      createdAt:
-          (data['createdAt'] as Timestamp?)?.toDate() ??
-          DateTime.now(),
+      createdAt: parsedDate,
 
-      items: data['items'] ?? [],
+      items: data['items'] is List ? data['items'] as List : [],
 
       image: data['image'] ?? '',
 
-      paymentConfirmed:
-          data['paymentConfirmed'] ?? false,
+      paymentConfirmed: data['paymentConfirmed'] ?? false,
     );
   }
 
@@ -104,6 +120,7 @@ class OrderModel {
     };
   }
 
+  // COPY WITH (Tetap Utuh Sesuai Parameter Asli Lu)
   OrderModel copyWith({
     String? status,
     bool? paymentConfirmed,
