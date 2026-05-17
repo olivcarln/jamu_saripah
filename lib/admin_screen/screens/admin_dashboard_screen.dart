@@ -1,57 +1,57 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:jamu_saripah/admin_screen/screens/admin_finance_screen.dart';
-
-// Import sesuai struktur folder project kamu
-import 'package:jamu_saripah/admin_screen/screens/admin_order_screen.dart';
-import 'package:jamu_saripah/admin_screen/screens/admin_product_screen.dart';
-import 'package:jamu_saripah/admin_screen/screens/admin_voucher_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
 
   /// Fungsi untuk mengambil data dinamis dari Firestore
-  /// Fungsi untuk mengambil data dinamis dari Firestore
   Future<Map<String, dynamic>> _getDashboardData() async {
     final now = DateTime.now();
     final firstDayOfMonth = DateTime(now.year, now.month, 1);
 
-    // 1. Fetch Produk
-    final productSnapshot = await FirebaseFirestore.instance.collection('products').get();
+    try {
+      // 1. Fetch Produk
+      final productSnapshot =
+          await FirebaseFirestore.instance.collection('products').get();
 
-    // 2. Fetch Voucher (Hanya yang AKTIF - belum expired)
-    final voucherSnapshot = await FirebaseFirestore.instance
-        .collection('global_vouchers')
-        .where('expiredAt', isGreaterThan: Timestamp.now()) 
-        .get();
-   
-// Ubah bagian ini agar filter waktunya sama dengan Pemasukan
-    final orderSnapshot = await FirebaseFirestore.instance
-        .collection('orders')
-        .where('status', isEqualTo: 'Selesai')
-        .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(firstDayOfMonth))
-        .get();
+      // 2. Fetch Voucher Aktif
+      final voucherSnapshot = await FirebaseFirestore.instance
+          .collection('global_vouchers')
+          .where('expiredAt', isGreaterThan: Timestamp.now())
+          .get();
 
-    // 4. Hitung Pemasukan (Tetap ambil dari semua yang 'Selesai' di bulan ini)
-    final revenueSnapshot = await FirebaseFirestore.instance
-        .collection('orders')
-        .where('status', isEqualTo: 'Selesai')
-        .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(firstDayOfMonth))
-        .get();
+      // 3. Fetch Total Pesanan Bulan Ini (Semua Status)
+      final orderSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('created_at',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(firstDayOfMonth))
+          .get();
 
-    double monthlyRevenue = 0;
-    for (var doc in revenueSnapshot.docs) {
-      final data = doc.data();
-      monthlyRevenue += (data['totalPrice'] ?? 0).toDouble();
+      // 4. Fetch Pemasukan (Hanya yang Selesai)
+      final revenueSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .where('status', isEqualTo: 'Selesai')
+          .where('created_at',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(firstDayOfMonth))
+          .get();
+
+      double monthlyRevenue = 0;
+      for (var doc in revenueSnapshot.docs) {
+        final data = doc.data();
+        monthlyRevenue += (data['totalAmount'] ?? 0).toDouble();
+      }
+
+      return {
+        'totalProducts': productSnapshot.docs.length,
+        'totalVouchers': voucherSnapshot.docs.length,
+        'totalOrders': orderSnapshot.docs.length,
+        'revenue': monthlyRevenue,
+      };
+    } catch (e) {
+      debugPrint("Error fetching dashboard data: $e");
+      rethrow;
     }
-
-    return {
-      'totalProducts': productSnapshot.docs.length,
-      'totalVouchers': voucherSnapshot.docs.length,
-      'totalOrders': orderSnapshot.docs.length, // Jumlah pesanan aktif
-      'revenue': monthlyRevenue,
-    };
   }
 
   @override
@@ -68,7 +68,15 @@ class AdminDashboardScreen extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
+                  "Terjadi kesalahan: ${snapshot.error}",
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
           }
 
           final data = snapshot.data!;
@@ -81,7 +89,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 /// HEADER
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(22),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: const Color(0xFF7E8959),
                     borderRadius: BorderRadius.circular(24),
@@ -100,7 +108,7 @@ class AdminDashboardScreen extends StatelessWidget {
                       SizedBox(height: 6),
                       Text(
                         "Pantau statistik bisnis Jamu Saripah",
-                        style: TextStyle(color: Colors.white70),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ],
                   ),
@@ -117,34 +125,31 @@ class AdminDashboardScreen extends StatelessWidget {
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
-                  padding: EdgeInsets.zero, 
+                  padding: EdgeInsets.zero,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 15,
                   childAspectRatio: 1.1,
                   children: [
-                    _buildCard(
+                    _buildStaticCard(
                       title: "Produk",
                       value: "${data['totalProducts']}",
                       icon: Icons.inventory_2_rounded,
                       color: Colors.blue,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminProductScreen())),
                     ),
-                    _buildCard(
+                    _buildStaticCard(
                       title: "Voucher",
-                      value: "${data['totalVouchers']}", // Hanya yang aktif
+                      value: "${data['totalVouchers']}",
                       icon: Icons.discount_rounded,
                       color: Colors.green,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminVoucherScreen())),
                     ),
-                    _buildCard(
+                    _buildStaticCard(
                       title: "Pesanan",
                       value: "${data['totalOrders']}",
                       icon: Icons.receipt_long_rounded,
                       color: Colors.orange,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminOrderScreen())),
                     ),
-                    _buildCard(
+                    _buildStaticCard(
                       title: "Pemasukan",
                       value: NumberFormat.currency(
                         locale: 'id_ID',
@@ -153,22 +158,21 @@ class AdminDashboardScreen extends StatelessWidget {
                       ).format(data['revenue']),
                       icon: Icons.attach_money_rounded,
                       color: Colors.purple,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminFinanceScreen())),
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 30),
                 const Text(
-                  "Insight Hari Ini",
+                  "Insight Bisnis",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
 
-                /// BOX INSIGHT
+                /// BOX INSIGHT (STATIS)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -182,25 +186,22 @@ class AdminDashboardScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _buildInsightTile(
+                      _buildStaticInsightTile(
                         icon: Icons.trending_up,
-                        title: "Revenue meningkat",
-                        subtitle: "Pantau penjualan harian produk",
-                        onTap: () {},
+                        title: "Revenue Meningkat",
+                        subtitle: "Pantau performa penjualan harian kamu",
                       ),
-                      const Divider(indent: 50, endIndent: 10, height: 1),
-                      _buildInsightTile(
+                      const Divider(indent: 70, endIndent: 20, height: 1),
+                      _buildStaticInsightTile(
                         icon: Icons.local_offer,
-                        title: "Voucher aktif",
-                        subtitle: "Cek voucher user yang masih berlaku",
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminVoucherScreen())),
+                        title: "Voucher Aktif",
+                        subtitle: "Terdapat ${data['totalVouchers']} promo yang bisa digunakan",
                       ),
-                      const Divider(indent: 50, endIndent: 10, height: 1),
-                      _buildInsightTile(
+                      const Divider(indent: 70, endIndent: 20, height: 1),
+                      _buildStaticInsightTile(
                         icon: Icons.shopping_bag,
-                        title: "Pesanan terbaru",
-                        subtitle: "Kelola status order user",
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminOrderScreen())),
+                        title: "Pesanan Terbaru",
+                        subtitle: "Kelola status orderan user yang masuk",
                       ),
                     ],
                   ),
@@ -213,91 +214,104 @@ class AdminDashboardScreen extends StatelessWidget {
     );
   }
 
-  /// Widget Card Statistik
-  Widget _buildCard({
+  /// Widget Card Statistik Statis
+  Widget _buildStaticCard({
     required String title,
     required String value,
     required IconData icon,
     required Color color,
-    required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              color: Colors.black.withOpacity(0.04),
-              offset: const Offset(0, 4),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  title,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  /// Widget Tile Insight
-  Widget _buildInsightTile({
+  /// Widget Insight List Statis
+  Widget _buildStaticInsightTile({
     required IconData icon,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
   }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF7E8959).withOpacity(0.1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: const Color(0xFF7E8959), size: 20),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF7E8959).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: const Color(0xFF7E8959), size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Color(0xFF2D3128),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-      ),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-      trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
     );
   }
 }

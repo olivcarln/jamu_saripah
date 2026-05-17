@@ -51,23 +51,22 @@ class CartProvider with ChangeNotifier {
   }
 
   /// TAMBAH KE CART
-  void addToCart(CartItem newItem) {
-    int index = _items.indexWhere(
-      (i) => i.name == newItem.name && i.size == newItem.size,
-    );
+ void addToCart(CartItem newItem) {
+  // Cek berdasarkan ID (lebih akurat daripada Nama)
+  int index = _items.indexWhere((i) => i.id == newItem.id);
 
-    if (index != -1) {
-      _items[index].quantity += newItem.quantity;
-    } else {
-      newItem.isChecked = true;
-      _items.add(newItem);
-    }
-
-    _isAllChecked = _items.every((item) => item.isChecked);
-
-    notifyListeners();
+  if (index != -1) {
+    // Kalau ID sama, tinggal tambah qty
+    _items[index].quantity += newItem.quantity;
+  } else {
+    // Kalau ID beda, baru tambah baru
+    newItem.isChecked = true;
+    _items.add(newItem);
   }
-
+  
+  _isAllChecked = _items.every((item) => item.isChecked);
+  notifyListeners();
+}
   /// CHECK ITEM
   void checkItem(int index, bool value) {
     _items[index].isChecked = value;

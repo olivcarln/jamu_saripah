@@ -21,14 +21,16 @@ class VoucherScreen extends StatefulWidget {
 }
 
 class _VoucherScreenState extends State<VoucherScreen> {
-  String? selectedVoucherId;
   List<Map<String, dynamic>> selectedVoucherList = [];
 
   @override
   void initState() {
     super.initState();
-    selectedVoucherId = widget.selectedVoucher?['id'];
+    // Sinkronisasi data awal dari screen sebelumnya
     selectedVoucherList = [...widget.selectedVouchers];
+    if (widget.selectedVoucher != null && !isVoucherSelected(widget.selectedVoucher!['id'])) {
+      selectedVoucherList.add(widget.selectedVoucher!);
+    }
   }
 
   String formatHarga(int harga) {
@@ -48,6 +50,8 @@ class _VoucherScreenState extends State<VoucherScreen> {
       if (alreadySelected) {
         selectedVoucherList.removeWhere((item) => item['id'] == voucher['id']);
       } else {
+        // JIKA sistem kamu hanya memperbolehkan 1 voucher per transaksi, aktifkan line di bawah ini:
+        // selectedVoucherList.clear(); 
         selectedVoucherList.add(voucher);
       }
     });
@@ -88,65 +92,72 @@ class _VoucherScreenState extends State<VoucherScreen> {
             VoucherHeader(isVoucherActive: true, onPaydayTap: () {}),
             const Divider(height: 1),
             Expanded(
+              // STREAM 1: Mengambil seluruh riwayat voucher yang pernah diklaim user
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('global_vouchers').snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(userId)
+                    .collection('claimed_vouchers')
+                    .snapshots(),
+                builder: (context, userClaimsSnapshot) {
+                  if (userClaimsSnapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(child: Text("Belum ada voucher tersedia"));
+
+                  // Petakan data klaim ke dalam Map [voucherId: usageCount] untuk pencarian instan
+                  final Map<String, int> userUsageMap = {};
+                  if (userClaimsSnapshot.hasData) {
+                    for (var doc in userClaimsSnapshot.data!.docs) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      userUsageMap[doc.id] = data['usageCount'] ?? 0;
+                    }
                   }
 
-                  final now = DateTime.now();
-                  final filteredDocs = snapshot.data!.docs.where((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    if (data['isActive'] == false) return false;
-                    if ((data['quota'] ?? 0) <= 0) return false;
-                    if (data['expiredAt'] == null) return false;
+                  // STREAM 2: Mengambil Global Vouchers
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection('global_vouchers').snapshots(),
+                    builder: (context, globalVouchersSnapshot) {
+                      if (globalVouchersSnapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (!globalVouchersSnapshot.hasData || globalVouchersSnapshot.data!.docs.isEmpty) {
+                        return const Center(child: Text("Belum ada voucher tersedia"));
+                      }
 
-                    try {
-                      final expiredAt = (data['expiredAt'] as Timestamp).toDate();
-                      final today = DateTime(now.year, now.month, now.day);
-                      if (DateTime(expiredAt.year, expiredAt.month, expiredAt.day).isBefore(today)) return false;
-                    } catch (e) { return false; }
-                    return true;
-                  }).toList();
+                      final now = DateTime.now();
+                      final filteredDocs = globalVouchersSnapshot.data!.docs.where((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        if (data['isActive'] == false) return false;
+                        if ((data['quota'] ?? 0) <= 0) return false;
+                        if (data['expiredAt'] == null) return false;
 
-                  // Sort Diskon Tertinggi
-                  filteredDocs.sort((a, b) => ((b.data() as Map)['discount'] ?? 0).compareTo((a.data() as Map)['discount'] ?? 0));
+                        try {
+                          final expiredAt = (data['expiredAt'] as Timestamp).toDate();
+                          final today = DateTime(now.year, now.month, now.day);
+                          if (DateTime(expiredAt.year, expiredAt.month, expiredAt.day).isBefore(today)) return false;
+                        } catch (e) { return false; }
+                        return true;
+                      }).toList();
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    itemCount: filteredDocs.length,
-                    itemBuilder: (context, index) {
-                      final doc = filteredDocs[index];
-                      final data = doc.data() as Map<String, dynamic>;
-                      final expiredDate = (data['expiredAt'] as Timestamp).toDate();
-                      final minPurchase = data['minPurchase'] ?? 0;
-                      final maxUsagePerUser = data['maxUsagePerUser'] ?? 1; // Ambil limit dari Admin
+                      // Urutkan Diskon Tertinggi
+                      filteredDocs.sort((a, b) => ((b.data() as Map)['discount'] ?? 0).compareTo((a.data() as Map)['discount'] ?? 0));
 
-                      final isMinimumNotMet = widget.subtotal < minPurchase;
-                      final isSelected = isVoucherSelected(doc.id);
-                      final nominalDiskon = ((widget.subtotal * (data['discount'] ?? 0)) / 100).toInt();
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        itemCount: filteredDocs.length,
+                        itemBuilder: (context, index) {
+                          final doc = filteredDocs[index];
+                          final data = doc.data() as Map<String, dynamic>;
+                          final expiredDate = (data['expiredAt'] as Timestamp).toDate();
+                          final minPurchase = data['minPurchase'] ?? 0;
+                          final maxUsagePerUser = data['maxUsagePerUser'] ?? 1;
 
-                      // SINKRONISASI: Cek riwayat penggunaan user untuk voucher ini
-                      return StreamBuilder<DocumentSnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(userId)
-                            .collection('claimed_vouchers')
-                            .doc(doc.id)
-                            .snapshots(),
-                        builder: (context, claimSnapshot) {
-                          // Ambil jumlah pemakaian user dari field 'usageCount' di Firestore
-                          int userUsageCount = 0;
-                          if (claimSnapshot.hasData && claimSnapshot.data!.exists) {
-                            final claimData = claimSnapshot.data!.data() as Map<String, dynamic>;
-                            userUsageCount = claimData['usageCount'] ?? 0;
-                          }
+                          final isMinimumNotMet = widget.subtotal < minPurchase;
+                          final isSelected = isVoucherSelected(doc.id);
+                          final nominalDiskon = ((widget.subtotal * (data['discount'] ?? 0)) / 100).toInt();
 
-                          // Cek apakah user sudah mencapai limit yang ditentukan Admin
+                          // Ambil hitungan pemakaian langsung dari Map tanpa panggil Stream/Future lagi
+                          final userUsageCount = userUsageMap[doc.id] ?? 0;
                           final bool isLimitReached = userUsageCount >= maxUsagePerUser;
                           final isDisabled = isLimitReached || isMinimumNotMet;
 
@@ -167,9 +178,7 @@ class _VoucherScreenState extends State<VoucherScreen> {
                                             : "Diskon ${data['discount']}%",
                                     expiryDate: "${expiredDate.day}/${expiredDate.month}/${expiredDate.year}",
                                     minTransaction: "Min. Rp ${formatHarga(minPurchase)}",
-                                    quota: isLimitReached
-                                        ? "Limit Habis"
-                                        : "Sisa Kuota: ${data['quota'] ?? 0}",
+                                    quota: isLimitReached ? "Limit Habis" : "Sisa Kuota: ${data['quota'] ?? 0}",
                                     discountAmount: nominalDiskon.toDouble(),
                                     buttonText: isLimitReached
                                         ? "Sudah Limit"

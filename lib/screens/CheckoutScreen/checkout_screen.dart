@@ -142,16 +142,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   _buildDetailPesananSection(),
                   if (showSpecialPackage)
                     AddingMenuScreen(
-                      onAddTap: (name, size, price, image) {
-                        setState(() {
-                          localCartItems.add({
-                            'name': name,
-                            'size': size,
-                            'price': price,
-                            'qty': 1,
-                            'image': image,
+                      onAddTap: (name, size, price, image) async {
+                        String finalImage = image;
+
+                        // Kompresi gambar menu tambahan jika dalam format Base64
+                        if (image != null && !image.startsWith('assets')) {
+                          finalImage = await compressBase64Image(image);
+                        }
+
+                        if (mounted) {
+                          setState(() {
+                            localCartItems.add({
+                              'name': name,
+                              'size': size,
+                              'price': price,
+                              'qty': 1,
+                              'image': finalImage,
+                            });
+
+                            // Validasi ulang voucher jika diperlukan
+                            if (appliedVoucher != null) {
+                              final subtotal = calculateSubtotal();
+                              final minPurchase = (appliedVoucher!['minPurchase'] ?? 0) as int;
+                              if (subtotal < minPurchase) {
+                                appliedVoucher = null;
+                              }
+                            }
                           });
-                        });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: const Color(0xFF7E8959),
+                              content: Text("$name ($size) berhasil ditambahkan"),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ShoppingBagScreen(
@@ -188,14 +214,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         setState(() {
                           if (result.isNotEmpty) {
                             appliedVoucher = result.first;
+                          } else {
+                            appliedVoucher = null;
                           }
                         });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: const Color(0xFF7E8959),
-                            content: Text("${result.length} voucher berhasil digunakan"),
-                          ),
-                        );
+                        if (result.isNotEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: const Color(0xFF7E8959),
+                              content: Text("${result.length} voucher berhasil digunakan"),
+                            ),
+                          );
+                        }
                       }
                     },
                   ),
@@ -561,9 +591,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  /// ===================================================
-  /// LOGIC FIX DI SINI (UI BAWAAN TETAP UTUH SAKLEK 100%)
-  /// ===================================================
   Widget _buildBottomBar() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -590,7 +617,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               return;
             }
 
-            // FIX UTAMA 1: Mengunci reference target dialog loader root biar pop-nya 100% mati total
             BuildContext? dialogContext;
             showDialog(
               context: context,
@@ -617,7 +643,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               });
             }
 
-            // FIX UTAMA 2: Auto-ID murni dari Firestore SDK biar orderan ke-2 dst gak tabrakan milidetik mampet
             String autoDocId = FirebaseFirestore.instance.collection('orders').doc().id;
 
             final newOrder = OrderModel(
@@ -656,7 +681,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   .update({'quota': FieldValue.increment(-1)});
             }
 
-            // FIX UTAMA 3: Menutup root dialog loader secara paksa dan akurat sebelum berganti halaman
             if (dialogContext != null) {
               Navigator.of(dialogContext!).pop();
             }
@@ -678,7 +702,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               );
             }
           } catch (e) {
-            // Safety handler: jika gagal, matikan loader biar tombol gak ngunci hang
             if (mounted && Navigator.canPop(context)) {
               Navigator.of(context, rootNavigator: true).pop();
             }
