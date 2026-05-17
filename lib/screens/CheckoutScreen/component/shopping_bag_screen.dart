@@ -26,7 +26,7 @@ class ShoppingBagScreen extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.shopping_bag_outlined, 
+              Icons.shopping_bag_outlined,
               color: Color(0xFF7E8959), // Icon hijau tua
             ),
           ),
@@ -34,15 +34,14 @@ class ShoppingBagScreen extends StatelessWidget {
             'Perlu Tas Belanja?',
             style: TextStyle(fontWeight: FontWeight.w500),
           ),
-          subtitle: Text(
-            'Rp $harga',
-            style: const TextStyle(fontSize: 12),
-          ),
+          subtitle: Text('Rp $harga', style: const TextStyle(fontSize: 12)),
           trailing: Switch(
             value: isSelected,
             onChanged: onChanged,
-            // Warna switch saat posisi ON
-            activeThumbColor: const Color(0xFF7E8959), 
+            activeColor: Colors.white, // Warna buletan pas aktif
+            activeTrackColor: const Color(0xFF7E8959), // Hijau khas aplikasi lu
+            inactiveThumbColor: Colors.white,
+            inactiveTrackColor: Colors.grey[300],
           ),
         ),
       ],

@@ -1,17 +1,19 @@
 class CartItem {
+  final String id; // <--- Tambahkan ini
   final String name;
+  final int price;
   final String image;
   final String size;
-  final int price;    // ✅ Harus int
-  int quantity;       // ✅ Harus int
+  int quantity;
   bool isChecked;
 
   CartItem({
+    required this.id, // <--- Masukkan ke constructor
     required this.name,
+    required this.price,
     required this.image,
     required this.size,
-    required this.price,
     this.quantity = 1,
-    this.isChecked = false,
+    this.isChecked = true,
   });
 }

@@ -1,10 +1,13 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart'; 
 import 'package:jamu_saripah/Models/product_cart.dart';
-import 'package:jamu_saripah/Screens/HomeScreen/home_screen.dart';
+
+// TAMBAHAN IMPORT: Supaya bottom sheet bisa ngirim data ke keranjang global
+import 'package:provider/provider.dart';
+import 'package:jamu_saripah/provider/cart_provider.dart';
+import 'package:jamu_saripah/Models/cart_item.dart';
 
 class AddToCartBottomSheet extends StatefulWidget {
   final Product product;
@@ -34,82 +37,59 @@ class _AddToCartBottomSheetState extends State<AddToCartBottomSheet> {
   }
 
   // Fungsi pembantu supaya gambar muncul (SVG atau PNG)
-Widget _buildProductImage(String imageSource) {
-  /// BASE64 IMAGE
-  if (imageSource.isNotEmpty &&
-      !imageSource.startsWith('http') &&
-      !imageSource.endsWith('.png') &&
-      !imageSource.endsWith('.jpg') &&
-      !imageSource.endsWith('.jpeg') &&
-      !imageSource.endsWith('.svg')) {
-    try {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+  Widget _buildProductImage(String imageSource) {
+    if (imageSource.isNotEmpty &&
+        !imageSource.startsWith('http') &&
+        !imageSource.endsWith('.png') &&
+        !imageSource.endsWith('.jpg') &&
+        !imageSource.endsWith('.jpeg') &&
+        !imageSource.endsWith('.svg')) {
+      try {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.memory(
+            base64Decode(imageSource),
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+          ),
+        );
+      } catch (e) {
+        return const Icon(Icons.broken_image);
+      }
+    }
 
-        child: Image.memory(
-          base64Decode(imageSource),
-
-          width: 50,
-          height: 50,
-
-          fit: BoxFit.cover,
-        ),
-      );
-    } catch (e) {
-      return const Icon(
-        Icons.broken_image,
+    if (imageSource.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        imageSource,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
       );
     }
-  }
 
-  /// SVG ASSET
-  if (imageSource.toLowerCase().endsWith('.svg')) {
-    return SvgPicture.asset(
+    if (imageSource.startsWith('http')) {
+      return Image.network(
+        imageSource,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.broken_image);
+        },
+      );
+    }
+
+    return Image.asset(
       imageSource,
-
       width: 50,
       height: 50,
-
       fit: BoxFit.cover,
-    );
-  }
-
-  /// NETWORK IMAGE
-  if (imageSource.startsWith('http')) {
-    return Image.network(
-      imageSource,
-
-      width: 50,
-      height: 50,
-
-      fit: BoxFit.cover,
-
-      errorBuilder:
-          (context, error, stackTrace) {
-        return const Icon(
-          Icons.broken_image,
-        );
+      errorBuilder: (context, error, stackTrace) {
+        return const Icon(Icons.broken_image);
       },
     );
   }
-
-  /// LOCAL ASSET
-  return Image.asset(
-    imageSource,
-
-    width: 50,
-    height: 50,
-
-    fit: BoxFit.cover,
-
-    errorBuilder:
-        (context, error, stackTrace) {
-      return const Icon(
-        Icons.broken_image,
-      );
-    },
-  );
-}
 
   void _calculatePrice(String size) {
     bool isPaket = widget.product.name.contains("Paket");
@@ -188,7 +168,6 @@ Widget _buildProductImage(String imageSource) {
             ),
             child: Row(
               children: [
-                // Ganti Image.asset jadi pemanggilan fungsi pembantu
                 _buildProductImage(widget.product.image),
                 const SizedBox(width: 15),
                 Expanded(
@@ -238,6 +217,7 @@ Widget _buildProductImage(String imageSource) {
 
           const SizedBox(height: 30),
 
+          // --- TOMBOL MASUKKAN KERANJANG ---
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -249,16 +229,35 @@ Widget _buildProductImage(String imageSource) {
                 ),
               ),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "${widget.product.name} ($selectedSize) ditambahkan!",
+                try {
+                  // Tambahkan data ke CartProvider pas user ngeklik tombol ini
+                  Provider.of<CartProvider>(context, listen: false).addToCart(
+                    CartItem(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      name: widget.product.name,
+                      price: currentPrice.toInt(),
+                      quantity: widget.quantity,
+                      image: widget.product.image,
+                      size: selectedSize,
                     ),
-                    backgroundColor: const Color(0xFF7E8959),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-                Navigator.pop(context);
+                  );
+
+                  // Notifikasi Snackbar bawaan lu
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        "${widget.product.name} ($selectedSize) ditambahkan!",
+                      ),
+                      backgroundColor: const Color(0xFF7E8959),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+
+                  // Tutup Bottom Sheet setelah berhasil masuk keranjang
+                  Navigator.pop(context);
+                } catch (e) {
+                  debugPrint("Error CartProvider di BottomSheet: $e");
+                }
               },
               child: Text(
                 "Masukan Keranjang - ${formatCurrency.format(totalHarga)}",
@@ -272,6 +271,7 @@ Widget _buildProductImage(String imageSource) {
 
           const SizedBox(height: 10),
 
+          // --- TOMBOL LANJUT BELANJA ---
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
@@ -283,10 +283,8 @@ Widget _buildProductImage(String imageSource) {
                 ),
               ),
               onPressed: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  (route) => false,
-                );
+                // Cukup tutup modal bottom sheet-nya aja biar user lanjut di halaman detail
+                Navigator.pop(context);
               },
               child: const Text(
                 "Lanjut Belanja",

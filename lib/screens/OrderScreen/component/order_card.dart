@@ -8,11 +8,7 @@ class OrderCard extends StatelessWidget {
   final OrderModel order;
   final VoidCallback? onCancel;
 
-  const OrderCard({
-    super.key,
-    required this.order,
-    this.onCancel,
-  });
+  const OrderCard({super.key, required this.order, this.onCancel});
 
   @override
   Widget build(BuildContext context) {
@@ -59,18 +55,27 @@ class OrderCard extends StatelessWidget {
               /// IMAGE
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: order.items.isNotEmpty &&
+                child:
+                    order.items.isNotEmpty &&
                         order.items.first is Map &&
                         order.items.first['image'] != null
                     ? (() {
                         final image = order.items.first['image'].toString();
                         if (image.startsWith('http')) {
-                          return Image.network(image,
-                              width: 82, height: 82, fit: BoxFit.cover);
+                          return Image.network(
+                            image,
+                            width: 82,
+                            height: 82,
+                            fit: BoxFit.cover,
+                          );
                         }
                         if (image.startsWith('assets')) {
-                          return Image.asset(image,
-                              width: 82, height: 82, fit: BoxFit.cover);
+                          return Image.asset(
+                            image,
+                            width: 82,
+                            height: 82,
+                            fit: BoxFit.cover,
+                          );
                         }
                         return Image.memory(
                           base64Decode(image),
@@ -94,9 +99,13 @@ class OrderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// NAMA USER
+                    /// NAMA USER (Ganti bagian ini aja biar dinamis motong dari email kalau datanya "User")
                     Text(
-                      order.userName,
+                      order.userName == "User" &&
+                              order.userEmail != null &&
+                              order.userEmail!.contains('@')
+                          ? order.userEmail!.split('@')[0]
+                          : order.userName,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -107,10 +116,7 @@ class OrderCard extends StatelessWidget {
                     /// EMAIL USER
                     Text(
                       order.userEmail ?? "No Email",
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
                     const SizedBox(height: 6),
 
@@ -132,7 +138,9 @@ class OrderCard extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
-                          DateFormat('dd MMM yyyy, HH:mm').format(order.createdAt),
+                          DateFormat(
+                            'dd MMM yyyy, HH:mm',
+                          ).format(order.createdAt),
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 12,
@@ -140,7 +148,10 @@ class OrderCard extends StatelessWidget {
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Text("•", style: TextStyle(color: Colors.grey[400])),
+                          child: Text(
+                            "•",
+                            style: TextStyle(color: Colors.grey[400]),
+                          ),
                         ),
                         Text(
                           status,
@@ -159,13 +170,16 @@ class OrderCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
-          
+
           /// DAFTAR MENU SINGKAT
           Text(
-            order.items.take(2).map((item) {
-              if (item is Map) return "${item['qty']} ${item['name']}";
-              return item.toString();
-            }).join(", "),
+            order.items
+                .take(2)
+                .map((item) {
+                  if (item is Map) return "${item['qty']} ${item['name']}";
+                  return item.toString();
+                })
+                .join(", "),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(color: Colors.grey[700], fontSize: 12),
@@ -208,10 +222,15 @@ class OrderCard extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primaryOlive,
                   side: const BorderSide(color: AppColors.primaryOlive),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                 ),
-                child: const Text("Reorder", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "Reorder",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -219,17 +238,19 @@ class OrderCard extends StatelessWidget {
           /// =================================
           /// STATUS SPECIFIC INFO (BANNER)
           /// =================================
-          if (status == 'Diproses') _buildStatusBanner(
-            Icons.info_outline, 
-            Colors.orange, 
-            "Pesanan sedang diproses dan tidak dapat dibatalkan."
-          ),
-          
-          if (status == 'Menunggu Pengambilan') _buildStatusBanner(
-            Icons.store_mall_directory_outlined, 
-            Colors.purple, 
-            "Pesanan siap diambil di outlet."
-          ),
+          if (status == 'Diproses')
+            _buildStatusBanner(
+              Icons.info_outline,
+              Colors.orange,
+              "Pesanan sedang diproses dan tidak dapat dibatalkan.",
+            ),
+
+          if (status == 'Menunggu Pengambilan')
+            _buildStatusBanner(
+              Icons.store_mall_directory_outlined,
+              Colors.purple,
+              "Pesanan siap diambil di outlet.",
+            ),
 
           if (status == 'Sudah Diambil') _buildRatingSection(),
         ],
@@ -255,7 +276,11 @@ class OrderCard extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12),
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
             ),
           ),
         ],
@@ -276,11 +301,18 @@ class OrderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Rate your order", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          const Text(
+            "Rate your order",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(5, (index) => Icon(Icons.star_rounded, color: Colors.grey[300], size: 28)),
+            children: List.generate(
+              5,
+              (index) =>
+                  Icon(Icons.star_rounded, color: Colors.grey[300], size: 28),
+            ),
           ),
         ],
       ),
